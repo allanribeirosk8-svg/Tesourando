@@ -61,8 +61,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [weeklySchedule, setWeeklySchedule] = useState<Record<number, DayConfig>>(DEFAULT_WEEKLY);
   const [services, setServices] = useState<ServiceItem[]>(DEFAULT_SERVICES);
   const [barberProfile, setBarberProfile] = useState<BarberProfile>(DEFAULT_PROFILE);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [barberId, setBarberId] = useState<string | null>(null);
   const sessionRef = useRef<Session | null>(null);
@@ -368,15 +367,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     syncLocal();
   }, [appointments, customers, blockedSlots, unblockedSlots, weeklySchedule, services, barberProfile, isLoading]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_DARK_MODE, JSON.stringify(isDarkMode));
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   const addAppointment = useCallback(async (apt: Appointment, isExceptional?: boolean) => {
     console.log("1. Iniciando criação do agendamento");
@@ -955,10 +945,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     sync();
   }, []);
 
-  const toggleDarkMode = useCallback(() => {
-    setIsDarkMode(prev => !prev);
-  }, []);
-
+  
   return (
     <AppContext.Provider value={{ 
       appointments, 
@@ -968,9 +955,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       weeklySchedule, 
       services,
       barberProfile,
-      isDarkMode,
       isLoading,
-      toggleDarkMode,
       addAppointment, 
       updateAppointment,
       finishAppointment, 

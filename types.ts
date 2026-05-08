@@ -60,8 +60,6 @@ export interface AppState {
   weeklySchedule: Record<number, DayConfig>; // 0-6 (day of week) -> Config
   services: ServiceItem[];
   barberProfile: BarberProfile;
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
   addAppointment: (apt: Appointment, isExceptional?: boolean) => Promise<void>;
   updateAppointment: (id: string, updates: Partial<Appointment>) => void;
   finishAppointment: (id: string) => void;

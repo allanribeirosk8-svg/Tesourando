@@ -106,25 +106,25 @@ const Calendar: React.FC<CalendarProps> = ({
   const swipeHandlers = useSwipe(handleNextMonth, handlePrevMonth);
 
   return (
-    <div className={`bg-white dark:bg-[#242424] rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-surface  rounded-2xl overflow-hidden ${className}`}>
       <div className="p-4 flex items-center justify-between">
         <button 
           onClick={handlePrevMonth}
-          className="p-2 hover:bg-[#E8EEF5] dark:hover:bg-[#303030] rounded-full transition-colors text-[#8A98A8]"
+          className="p-2 hover:bg-[#E8EEF5] :bg-[#303030] rounded-full transition-colors text-[#8A98A8]"
         >
           <ChevronLeft size={20} />
         </button>
 
         <button 
           onClick={() => setViewMode(viewMode === 'days' ? 'years' : 'days')}
-          className="text-sm font-bold text-[#5A6878] dark:text-[#F8F8F8] hover:text-[#2898D8] transition-colors"
+          className="text-sm font-bold text-[#5A6878]  hover:text-[#2898D8] transition-colors"
         >
           {formatMonthYear(viewDate)}
         </button>
 
         <button 
           onClick={handleNextMonth}
-          className="p-2 hover:bg-[#E8EEF5] dark:hover:bg-[#303030] rounded-full transition-colors text-[#8A98A8]"
+          className="p-2 hover:bg-[#E8EEF5] :bg-[#303030] rounded-full transition-colors text-[#8A98A8]"
         >
           <ChevronRight size={20} />
         </button>
@@ -171,15 +171,15 @@ const Calendar: React.FC<CalendarProps> = ({
                     className={`h-10 w-full rounded-xl flex items-center justify-center text-xs font-bold transition-all relative
                       ${isSelected ? 'bg-[#2898D8] text-white shadow-md scale-105 z-10' : 
                         isToday ? 'bg-[#F59E0B] text-white' : 
-                        highlighted ? 'bg-[#E8F4FC] text-[#2898D8] dark:bg-[#1A3A58] dark:text-[#2898D8]' :
-                        type !== 'current' || isOutOfRange ? 'text-[#8A98A8] dark:text-[#5A6878]' : 
-                        closed ? 'text-red-400 dark:text-red-900/50' :
-                        'text-[#5A6878] dark:text-[#8A98A8] hover:bg-[#F4F7FB] dark:hover:bg-[#303030]'}`}
+                        highlighted ? 'bg-[#E8F4FC] text-[#2898D8]  ' :
+                        type !== 'current' || isOutOfRange ? 'text-[#8A98A8] ' : 
+                        closed ? 'text-red-400 ' :
+                        'text-[#5A6878]  hover:bg-[#F4F7FB] :bg-[#303030]'}`}
                   >
                     {date.getDate()}
                     {count > 0 && type === 'current' && (
                       <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold border-2
-                        ${isSelected ? 'bg-white text-[#2898D8] border-[#2898D8]' : 'bg-[#2898D8] text-white border-white dark:border-slate-900'}`}>
+                        ${isSelected ? 'bg-surface text-[#2898D8] border-[#2898D8]' : 'bg-[#2898D8] text-white border-white '}`}>
                         {count > 9 ? '9+' : count}
                       </div>
                     )}
@@ -204,7 +204,7 @@ const Calendar: React.FC<CalendarProps> = ({
                   setViewMode('days');
                 }}
                 className={`h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all
-                  ${viewDate.getFullYear() === year ? 'bg-[#2898D8] text-white shadow-sm' : 'bg-[#F4F7FB] dark:bg-[#303030] text-[#5A6878] dark:text-[#8A98A8] hover:bg-[#E8EEF5]'}`}
+                  ${viewDate.getFullYear() === year ? 'bg-[#2898D8] text-white shadow-sm' : 'bg-[#F4F7FB]  text-[#5A6878]  hover:bg-[#E8EEF5]'}`}
               >
                 {year}
               </button>

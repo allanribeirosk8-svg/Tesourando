@@ -7,27 +7,20 @@
   <meta name="description" content="Agende seu corte de cabelo de forma simples e rápida.">
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
           colors: {
-            brand: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              500: '#3b82f6',
-              600: '#2563eb',
-            },
-            soft: {
-              surface: '#ffffff',
-              background: '#f8fafc',
-              text: '#334155',
-            }
+            primary:   '#363062', 
+            secondary: '#F99417', 
+            surface:   '#2D2856', 
+            title:     '#8683A1', 
+            muted:     '#94A3B8', 
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
           },
           boxShadow: {
             'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
@@ -60,7 +53,6 @@
     }
   </script>
   <style>
-    body { background-color: #f8fafc; color: #334155; }
     /* Smooth scrolling */
     html { scroll-behavior: smooth; }
   </style>

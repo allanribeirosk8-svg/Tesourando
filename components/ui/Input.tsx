@@ -14,10 +14,10 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input: React.FC<InputProps> = ({ label, error, warning, errorMessage, requiredField, optionalField, icon, className = '', ...props }) => {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      <label className={`text-[10px] font-bold ml-1 uppercase tracking-widest flex items-center gap-1 ${error || errorMessage ? 'text-red-500' : warning ? 'text-amber-500' : 'text-slate-400 dark:text-[#CCCCCC]'}`}>
+      <label className={`text-[10px] font-bold ml-1 uppercase tracking-widest flex items-center gap-1 ${error || errorMessage ? 'text-red-500' : warning ? 'text-amber-500' : 'text-muted '}`}>
         {label}
         {requiredField && <span className="text-red-500 ml-0.5">*</span>}
-        {optionalField && <span className="text-slate-400 dark:text-slate-500 lowercase font-normal ml-1">(opcional)</span>}
+        {optionalField && <span className="text-muted  lowercase font-normal ml-1">(opcional)</span>}
       </label>
       <div className="relative">
         {icon && (
@@ -27,9 +27,9 @@ export const Input: React.FC<InputProps> = ({ label, error, warning, errorMessag
         )}
         <input 
           className={`
-            w-full ${icon ? 'pl-11' : 'px-4'} py-2.5 rounded-xl border bg-white dark:bg-[#2A2A2A] text-slate-800 dark:text-[#F0F0F0] placeholder-slate-400 dark:placeholder-slate-500
+            w-full ${icon ? 'pl-11' : 'px-4'} py-2.5 rounded-xl border bg-surface  text-title  placeholder-slate-400 
             transition-colors focus:outline-none focus:ring-2 text-sm
-            ${error || errorMessage ? 'border-red-400 focus:ring-red-100 dark:focus:ring-red-900/20' : warning ? 'border-amber-500 focus:ring-amber-100 dark:focus:ring-amber-900/20' : 'border-slate-100 dark:border-[#444444] focus:ring-brand-100 dark:focus:ring-brand-900/20 focus:border-brand-500'}
+            ${error || errorMessage ? 'border-red-400 focus:ring-red-100 :ring-red-900/20' : warning ? 'border-amber-500 focus:ring-amber-100 :ring-amber-900/20' : 'border-title/30  focus:ring-brand-100 :ring-brand-900/20 focus:border-brand-500'}
             ${error || errorMessage ? 'pr-10' : ''}
           `}
           {...props}
