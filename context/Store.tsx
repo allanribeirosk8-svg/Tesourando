@@ -202,8 +202,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         loadFromLocalStorage();
       }
 
-      const storedDarkMode = localStorage.getItem(STORAGE_KEY_DARK_MODE);
-      if (storedDarkMode) setIsDarkMode(JSON.parse(storedDarkMode));
+
     } catch (e) {
       console.error("Failed to load data", e);
       loadFromLocalStorage();

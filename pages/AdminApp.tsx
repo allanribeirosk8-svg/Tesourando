@@ -103,15 +103,15 @@ interface SectionHeaderProps {
 
 const SectionHeader = ({ title, count, accent = 'blue' }: SectionHeaderProps) => {
   const accentColor = {
-    blue:  'bg-[#2898D8]',
+    blue:  'bg-secondary',
     green: 'bg-green-500',
     gray:  'bg-[#8A98A8]',
   }[accent];
 
   const badgeColor = {
-    blue:  'bg-[#EAF4FC] text-[#2898D8]  ',
+    blue:  'bg-surface/80 text-secondary  ',
     green: 'bg-green-50 text-green-600  ',
-    gray:  'bg-[#F0F4F8] text-[#8A98A8]  ',
+    gray:  'bg-primary/40 text-title  ',
   }[accent];
 
   return (
@@ -120,7 +120,7 @@ const SectionHeader = ({ title, count, accent = 'blue' }: SectionHeaderProps) =>
       <div className={`w-1 h-4 rounded-full flex-shrink-0 ${accentColor}`} />
 
       {/* Título */}
-      <span className="text-xs font-black uppercase tracking-widest text-[#1A2332] ">
+      <span className="text-xs font-black uppercase tracking-widest text-title ">
         {title}
       </span>
 
@@ -151,24 +151,24 @@ const PhotoActionSheet: React.FC<{
         onClick={e => e.stopPropagation()}
       >
         <div className="p-6 space-y-3">
-          <h3 className="text-center text-xs font-black uppercase tracking-widest text-[#8A98A8] mb-4">Adicionar Foto</h3>
+          <h3 className="text-center text-xs font-black uppercase tracking-widest text-title mb-4">Adicionar Foto</h3>
           <button 
             onClick={() => onSelect('camera')}
-            className="w-full h-14 bg-[#F4F7FB]  rounded-2xl flex items-center justify-center gap-3 text-[#5A6878]  font-bold hover:bg-[#E8EEF5] transition-colors"
+            className="w-full h-14 bg-primary/40  rounded-2xl flex items-center justify-center gap-3 text-white  font-bold hover:bg-surface/80 transition-colors"
           >
-            <Camera size={20} className="text-[#2898D8]" />
+            <Camera size={20} className="text-secondary" />
             Tirar foto agora
           </button>
           <button 
             onClick={() => onSelect('gallery')}
-            className="w-full h-14 bg-[#F4F7FB]  rounded-2xl flex items-center justify-center gap-3 text-[#5A6878]  font-bold hover:bg-[#E8EEF5] transition-colors"
+            className="w-full h-14 bg-primary/40  rounded-2xl flex items-center justify-center gap-3 text-white  font-bold hover:bg-surface/80 transition-colors"
           >
-            <Plus size={20} className="text-[#2898D8]" />
+            <Plus size={20} className="text-secondary" />
             Escolher da galeria
           </button>
           <button 
             onClick={onClose}
-            className="w-full h-14 bg-surface  text-[#8A98A8] font-bold uppercase tracking-widest text-xs"
+            className="w-full h-14 bg-surface  text-title font-bold uppercase tracking-widest text-xs"
           >
             Cancelar
           </button>
@@ -198,12 +198,12 @@ const PhotoDescriptionModal: React.FC<{
       >
         <div className="p-6 space-y-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-[#D0D8E4]  shrink-0">
+            <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-title/30  shrink-0">
               <img src={photo} className="w-full h-full object-cover" alt="Preview" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xs font-black uppercase tracking-widest text-[#8A98A8]">Descrição da Foto</h3>
-              <p className="text-[10px] text-[#8A98A8] ">Adicione um detalhe sobre este atendimento</p>
+              <h3 className="text-xs font-black uppercase tracking-widest text-title">Descrição da Foto</h3>
+              <p className="text-[10px] text-title ">Adicione um detalhe sobre este atendimento</p>
             </div>
           </div>
           
@@ -213,15 +213,15 @@ const PhotoDescriptionModal: React.FC<{
               placeholder="Ex: Degradê com franja"
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full bg-[#F4F7FB]  border-none rounded-2xl p-4 text-sm text-[#5A6878]  focus:ring-2 ring-[#2898D8] h-20 resize-none"
+              className="w-full bg-primary/40  border-none rounded-2xl p-4 text-sm text-white  focus:ring-2 ring-secondary h-20 resize-none"
             />
           </div>
           
           <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 h-12 rounded-2xl text-[#8A98A8] font-bold uppercase tracking-widest text-[10px] bg-[#F4F7FB] ">Cancelar</button>
+            <button onClick={onClose} className="flex-1 h-12 rounded-2xl text-title font-bold uppercase tracking-widest text-[10px] bg-primary/40 ">Cancelar</button>
             <button 
               onClick={() => onConfirm(description)}
-              className="flex-1 h-12 bg-[#2898D8] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-[#2898D8]/20"
+              className="flex-1 h-12 bg-secondary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-secondary/20"
             >
               Confirmar
             </button>
@@ -241,18 +241,18 @@ const SettingsModal: React.FC<{
   const {  toggleDarkMode } = useStore();
   
   return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-[#242424]/40 backdrop-blur-md animate-in fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-surface/40 backdrop-blur-md animate-in fade-in" onClick={onClose}>
       <motion.div 
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="bg-[#FFFFFF]  w-full max-w-md rounded-t-[2.5rem] shadow-[0_-1px_20px_rgba(0,0,0,0.1)] overflow-hidden p-8 pt-4"
+        className="bg-surface  w-full max-w-md rounded-t-[2.5rem] shadow-[0_-1px_20px_rgba(0,0,0,0.1)] overflow-hidden p-8 pt-4"
         onClick={e => e.stopPropagation()}
       >
-        <div className="w-12 h-1.5 bg-[#D0D8E4]  rounded-full mx-auto mb-8" />
+        <div className="w-12 h-1.5 bg-title/30  rounded-full mx-auto mb-8" />
         
-        <h2 className="text-xl font-black text-[#1A2332]  uppercase tracking-tight mb-8">Configurações</h2>
+        <h2 className="text-xl font-black text-white  uppercase tracking-tight mb-8">Configurações</h2>
         
         <div className="space-y-4">
           <button 
@@ -260,15 +260,15 @@ const SettingsModal: React.FC<{
               onOpenWeekly();
               onClose();
             }}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#F4F7FB]  hover:bg-[#E4E7EB] :bg-[#3A3A3A] transition-all group"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-primary/40  hover:bg-primary/40 :bg-surface transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-[#FFFFFF]  flex items-center justify-center text-[#2898D8] shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-surface  flex items-center justify-center text-secondary shadow-sm">
                 <Calendar size={20} />
               </div>
-              <span className="font-bold text-[#1A2332] ">Padrão Semanal</span>
+              <span className="font-bold text-white ">Padrão Semanal</span>
             </div>
-            <ChevronRight size={18} className="text-[#B0BCC7] group-hover:translate-x-1 transition-transform" />
+            <ChevronRight size={18} className="text-title group-hover:translate-x-1 transition-transform" />
           </button>
           
           
@@ -278,7 +278,7 @@ const SettingsModal: React.FC<{
             className="w-full flex items-center justify-between p-4 rounded-2xl bg-red-50  hover:bg-red-100 :bg-red-500/20 transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-[#FFFFFF]  flex items-center justify-center text-red-500 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-surface  flex items-center justify-center text-red-500 shadow-sm">
                 <LogOut size={20} />
               </div>
               <span className="font-bold text-red-600">Sair da conta</span>
@@ -287,7 +287,7 @@ const SettingsModal: React.FC<{
         </div>
         
         <div className="mt-8 pb-safe">
-          <button onClick={onClose} className="w-full py-4 text-xs font-black uppercase tracking-widest text-[#8A98A8] hover:text-[#1A2332] transition-colors">Fechar</button>
+          <button onClick={onClose} className="w-full py-4 text-xs font-black uppercase tracking-widest text-title hover:text-white transition-colors">Fechar</button>
         </div>
       </motion.div>
     </div>
@@ -462,7 +462,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className={`w-full max-w-md bg-surface/10 backdrop-blur-xl border border-white/15 rounded-3xl shadow-2xl relative z-10 flex-shrink min-h-0 ${view === 'register' ? 'p-6' : 'p-8'}`}
+        className={`w-full max-w-md bg-surface backdrop-blur-xl border border-title/20 rounded-3xl shadow-2xl relative z-10 flex-shrink min-h-0 ${view === 'register' ? 'p-6' : 'p-8'}`}
         style={{ boxShadow: '0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -484,7 +484,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                     placeholder="E-mail"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-surface/10 border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-[#2898D8]/60 focus:border-[#2898D8]/60 outline-none transition-all shadow-inner"
+                    className="w-full bg-surface border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-secondary/60 focus:border-secondary/60 outline-none transition-all shadow-inner"
                     required
                   />
                 </div>
@@ -498,7 +498,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                     placeholder="Senha"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-surface/10 border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-12 focus:ring-2 focus:ring-[#2898D8]/60 focus:border-[#2898D8]/60 outline-none transition-all shadow-inner"
+                    className="w-full bg-surface border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-12 focus:ring-2 focus:ring-secondary/60 focus:border-secondary/60 outline-none transition-all shadow-inner"
                     required
                   />
                   <button 
@@ -524,7 +524,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                       placeholder="Confirmar Senha"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
-                      className="w-full bg-surface/10 border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-[#2898D8]/60 focus:border-[#2898D8]/60 outline-none transition-all shadow-inner"
+                      className="w-full bg-surface border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-secondary/60 focus:border-secondary/60 outline-none transition-all shadow-inner"
                       required
                     />
                   </motion.div>
@@ -557,11 +557,11 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
               <button 
                 type="submit" 
                 disabled={isLoading}
-                className="bg-surface text-[#1A3A6E] hover:bg-surface/90 disabled:opacity-70 disabled:cursor-not-allowed h-14 rounded-2xl font-black uppercase tracking-widest w-full transition-all shadow-lg shadow-black/20 active:scale-[0.98]"
+                className="bg-surface text-white hover:bg-surface/90 disabled:opacity-70 disabled:cursor-not-allowed h-14 rounded-2xl font-black uppercase tracking-widest w-full transition-all shadow-lg shadow-black/20 active:scale-[0.98]"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-[#1A3A6E]/30 border-t-[#1A3A6E] rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-title/30/30 border-t-[#1A3A6E] rounded-full animate-spin" />
                     <span>{view === 'login' ? 'Entrando...' : 'Criando conta...'}</span>
                   </div>
                 ) : (
@@ -740,9 +740,9 @@ export const AdminApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB]  relative">
+    <div className="min-h-screen bg-primary/40  relative">
       <motion.header 
-        className="sticky top-0 z-[100] h-20 bg-surface  backdrop-blur-md border-b border-[#D0D8E4]  px-6 flex items-center justify-between"
+        className="sticky top-0 z-[100] h-20 bg-surface  backdrop-blur-md border-b border-title/30  px-6 flex items-center justify-between"
         initial={false}
         animate={{ 
           y: footerVisible ? 0 : -100,
@@ -759,13 +759,13 @@ export const AdminApp: React.FC = () => {
                 onClick={() => setShowProfileModal(true)}
                 className="relative flex-shrink-0"
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#2898D8]/30 shadow-md shadow-[#2898D8]/10 bg-[#E8F4FC] ">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary/30 shadow-md shadow-secondary/20 bg-surface/80 ">
                   {barberProfile.photo ? (
                     <img src={barberProfile.photo} alt={barberProfile.name}
                       className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <User size={22} className="text-[#2898D8]" />
+                      <User size={22} className="text-secondary" />
                     </div>
                   )}
                 </div>
@@ -774,10 +774,10 @@ export const AdminApp: React.FC = () => {
               </button>
               {/* Texto em 2 linhas */}
               <div className="flex flex-col leading-tight">
-                <span className="text-[11px] font-medium text-[#8A98A8]  uppercase tracking-wider">
+                <span className="text-[11px] font-medium text-title  uppercase tracking-wider">
                   {getGreetingOnly()}
                 </span>
-                <span className="text-base font-bold text-[#1A2332]  leading-snug">
+                <span className="text-base font-bold text-white  leading-snug">
                   {barberProfile.name || 'Barbeiro'} {getGreetingEmoji()}
                 </span>
               </div>
@@ -785,7 +785,7 @@ export const AdminApp: React.FC = () => {
           ) : (
             <button 
               onClick={() => setActiveTab('agenda')}
-              className="w-10 h-10 rounded-full bg-surface  text-[#5A6878]  flex items-center justify-center hover:bg-[#F4F7FB] border border-[#D0D8E4]  transition-colors shadow-sm"
+              className="w-10 h-10 rounded-full bg-surface  text-white  flex items-center justify-center hover:bg-primary/40 border border-title/30  transition-colors shadow-sm"
               title="Voltar para Agenda"
             >
               <Home size={20} />
@@ -796,7 +796,7 @@ export const AdminApp: React.FC = () => {
         {/* Center: Title (Only for other tabs) */}
         {activeTab !== 'agenda' && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-            <h2 className="text-lg font-bold uppercase tracking-tight text-[#1A2332] ">
+            <h2 className="text-lg font-bold uppercase tracking-tight text-white ">
               {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : 'Relatórios'}
             </h2>
           </div>
@@ -804,7 +804,7 @@ export const AdminApp: React.FC = () => {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
-          <button onClick={() => setShowSettingsModal(true)} className="w-9 h-9 rounded-full bg-surface  text-[#8A98A8]  flex items-center justify-center hover:bg-[#F4F7FB] :bg-[#374151] transition-colors border border-[#D0D8E4]  shadow-sm" title="Configurações">
+          <button onClick={() => setShowSettingsModal(true)} className="w-9 h-9 rounded-full bg-surface  text-title  flex items-center justify-center hover:bg-primary/40 :bg-primary transition-colors border border-title/30  shadow-sm" title="Configurações">
             <Settings size={18} />
           </button>
         </div>
@@ -900,7 +900,7 @@ export const AdminApp: React.FC = () => {
               particleCount: 100,
               spread: 70,
               origin: { y: 0.6 },
-              colors: ['#2898D8', '#ffffff', '#3CB878']
+              colors: ['#F99417', '#ffffff', '#3CB878']
             });
           }}
         />
@@ -943,7 +943,7 @@ export const AdminApp: React.FC = () => {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-          <nav className="bg-[#FFFFFF]  border-t border-[#D0D8E4]  pb-safe px-2 flex justify-between items-center h-[54px] shadow-[0_-4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+          <nav className="bg-primary  border-t border-title/30  pb-safe px-2 flex justify-between items-center h-[54px] shadow-[0_-4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
             {[
               { id: 'agenda', label: 'Agenda', icon: <Calendar size={20} /> },
               { id: 'clientes', label: 'Clientes', icon: <Users size={20} /> },
@@ -957,14 +957,14 @@ export const AdminApp: React.FC = () => {
                     if(item.id !== 'clientes') setTargetCustomerPhone(null);
                 }}
                 className={`flex-1 flex flex-col items-center justify-center transition-all gap-0.5 h-full min-h-[44px]
-                  ${activeTab === item.id ? 'text-[#2898D8] ' : 'text-[#C0CAD4]  hover:text-[#8A98A8] :text-[#F8F8F8]'}`}
+                  ${activeTab === item.id ? 'text-secondary ' : 'text-title  hover:text-title :text-white'}`}
               >
-                <div className={`p-1.5 rounded-xl transition-all duration-300 relative ${activeTab === item.id ? 'bg-[#2898D8]/10' : 'bg-transparent'}`}>
+                <div className={`p-1.5 rounded-xl transition-all duration-300 relative ${activeTab === item.id ? 'bg-secondary/10' : 'bg-transparent'}`}>
                   <div className={`transition-transform ${activeTab === item.id ? 'scale-105' : ''}`}>
                     {item.icon}
                   </div>
                   {item.id === 'agenda' && pendingTodayCount > 0 && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[8px] font-bold border-2 border-[#FFFFFF] ">
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[8px] font-bold border-2 border-white ">
                       {pendingTodayCount}
                     </div>
                   )}
@@ -1180,7 +1180,7 @@ const AgendaView: React.FC<{
       particleCount: 100,
       spread: 70,
       origin: { y: 0.7 },
-      colors: ['#2898D8', '#3CB878', '#ffffff'],
+      colors: ['#F99417', '#3CB878', '#ffffff'],
       zIndex: 100
     });
 
@@ -1251,7 +1251,7 @@ const AgendaView: React.FC<{
 
   return (
     <div className="space-y-4">
-      <div {...agendaSwipeHandlers} className="bg-surface  rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden mx-2">
+      <div {...agendaSwipeHandlers} className="bg-surface rounded-2xl shadow-[0_3px_12px_rgba(0,0,0,0.3)] overflow-hidden mx-2">
         {/* Integrated Calendar Header */}
         <div className="pt-3 pb-1 flex flex-col items-center relative">
           <div className="flex items-center justify-center w-full relative h-8">
@@ -1266,7 +1266,7 @@ const AgendaView: React.FC<{
                       setViewDate(newDate);
                     }
                   }}
-                  className="p-1.5 text-[#2898D8] hover:bg-[#E8F4FC] rounded-full transition-colors"
+                  className="p-1.5 text-secondary hover:bg-surface/80 rounded-full transition-colors"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -1285,16 +1285,16 @@ const AgendaView: React.FC<{
                   setViewMode('days');
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1 hover:bg-[#F2F5F8] :bg-[#303030] rounded-xl transition-colors z-10"
+              className="flex items-center gap-1.5 px-3 py-1 hover:bg-primary/40 :bg-surface rounded-xl transition-colors z-10"
             >
-              <span className="text-[14px] font-bold text-[#1A2332] ">
+              <span className="text-[14px] font-bold text-white ">
                 {formatMonthYear(viewDate)}
               </span>
               <motion.div
                 animate={{ rotate: isCalendarExpanded ? 180 : 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <ChevronRight size={14} className="text-[#2898D8] rotate-90" />
+                <ChevronRight size={14} className="text-secondary rotate-90" />
               </motion.div>
             </button>
 
@@ -1311,7 +1311,7 @@ const AgendaView: React.FC<{
                       setSelectedDate(getTodayString());
                       setViewDate(new Date(getTodayString() + 'T12:00:00'));
                     }}
-                    className="px-3 h-6 rounded-full bg-[#F59E0B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+                    className="px-3 h-6 rounded-full bg-secondary text-white text-[10px] font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors flex items-center gap-1.5"
                   >
                     <RotateCcw size={10} strokeWidth={3} />
                     Hoje
@@ -1324,7 +1324,7 @@ const AgendaView: React.FC<{
                     setSlideDirection(1);
                     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
                   }}
-                  className="p-1.5 text-[#2898D8] hover:bg-[#E8F4FC] rounded-full transition-colors"
+                  className="p-1.5 text-secondary hover:bg-surface/80 rounded-full transition-colors"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -1348,7 +1348,7 @@ const AgendaView: React.FC<{
                 <div className="pb-3">
                   <div className="grid grid-cols-7 gap-1 mb-1">
                     {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'].map((d) => (
-                      <div key={d} className="h-6 flex items-center justify-center text-[9px] font-black text-[#8A98A8] uppercase">{d}</div>
+                      <div key={d} className="h-6 flex items-center justify-center text-[9px] font-black text-title uppercase">{d}</div>
                     ))}
                   </div>
                   <div className="grid grid-cols-7 gap-1">
@@ -1367,7 +1367,7 @@ const AgendaView: React.FC<{
                         const count = getAppointmentsCount(dateStr);
                         days.push(
                           <div key={`prev-${d}`} className="h-9 flex items-center justify-center relative opacity-20">
-                            <span className="text-[11px] font-bold text-[#8A98A8]">{d}</span>
+                            <span className="text-[11px] font-bold text-title">{d}</span>
                             {count > 0 && (
                               <div className="absolute top-0.5 right-0.5 w-3 h-3 bg-[#8A98A8] text-white rounded-full flex items-center justify-center text-[6px] font-bold">
                                 {count > 9 ? '9+' : count}
@@ -1395,11 +1395,11 @@ const AgendaView: React.FC<{
                               setIsCalendarExpanded(false);
                             }}
                             className={`h-9 w-full rounded-xl flex items-center justify-center text-[12px] font-bold transition-all relative
-                              ${isSelected ? 'bg-[#2898D8] text-white shadow-sm' : isToday ? 'bg-[#F59E0B] text-white' : isClosed ? 'text-[#B8C0C0] line-through ' : 'hover:bg-[#F2F5F8] :bg-[#303030] text-[#1A2332] '}`}
+                              ${isSelected ? 'bg-secondary text-white shadow-sm' : isToday ? 'bg-secondary text-white' : isClosed ? 'text-muted line-through ' : 'hover:bg-primary/40 :bg-surface text-white '}`}
                           >
                             {d}
                             {count > 0 && (
-                              <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold border bg-[#2898D8] text-white border-white ">
+                              <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold border bg-secondary text-white border-white ">
                                 {count > 9 ? '9+' : count}
                               </div>
                             )}
@@ -1415,7 +1415,7 @@ const AgendaView: React.FC<{
                         const count = getAppointmentsCount(dateStr);
                         days.push(
                           <div key={`next-${d}`} className="h-9 flex items-center justify-center relative opacity-20">
-                            <span className="text-[11px] font-bold text-[#8A98A8]">{d}</span>
+                            <span className="text-[11px] font-bold text-title">{d}</span>
                             {count > 0 && (
                               <div className="absolute top-0.5 right-0.5 w-3 h-3 bg-[#8A98A8] text-white rounded-full flex items-center justify-center text-[6px] font-bold">
                                 {count > 9 ? '9+' : count}
@@ -1439,7 +1439,7 @@ const AgendaView: React.FC<{
                         setViewMode('days');
                       }}
                       className={`h-11 rounded-xl flex items-center justify-center font-bold text-sm transition-all
-                        ${viewDate.getFullYear() === year ? 'bg-[#2898D8] text-white shadow-sm' : 'bg-[#F2F5F8]  text-[#1A2332]  hover:bg-[#E2E8F0]'}`}
+                        ${viewDate.getFullYear() === year ? 'bg-secondary text-white shadow-sm' : 'bg-primary/40  text-white  hover:bg-[#E2E8F0]'}`}
                     >
                       {year}
                     </button>
@@ -1455,7 +1455,7 @@ const AgendaView: React.FC<{
           <div className="px-2 pb-2 h-[60px] flex items-center gap-1">
             <button 
               onClick={() => navigateWeek('prev')}
-              className="w-8 h-10 flex items-center justify-center text-[#8A98A8] hover:text-[#2898D8] transition-colors"
+              className="w-8 h-10 flex items-center justify-center text-title hover:text-secondary transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
@@ -1473,23 +1473,23 @@ const AgendaView: React.FC<{
                     onClick={() => setSelectedDate(day.dateStr)}
                     className={`flex-1 flex flex-col items-center justify-center rounded-xl transition-all py-1.5 relative
                       ${isSelected 
-                        ? 'bg-[#2898D8] text-white ring-2 ring-[#2898D8] ring-offset-2 ' 
+                        ? 'bg-secondary text-white ring-2 ring-secondary ring-offset-2 ' 
                         : isToday 
-                          ? 'bg-[#F59E0B] text-white' 
+                          ? 'bg-secondary text-white' 
                           : isClosed
-                            ? 'text-[#B8C0C0] line-through '
-                            : 'hover:bg-[#F2F5F8] :bg-[#303030] text-[#8A98A8]'}`}
+                            ? 'text-muted line-through '
+                            : 'hover:bg-primary/40 :bg-surface text-title'}`}
                   >
                     <span className={`text-[9px] font-bold uppercase tracking-tighter 
-                      ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-[#8A98A8]'}`}>
+                      ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-title'}`}>
                       {day.dayLabel}
                     </span>
                     <span className={`text-sm font-black 
-                      ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-[#B8C0C0] ' : 'text-[#5A6878] '}`}>
+                      ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-muted ' : 'text-white '}`}>
                       {day.dayNum}
                     </span>
                     {count > 0 && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-[#2898D8] text-white border-white ">
+                      <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-secondary text-white border-white ">
                         {count > 9 ? '9+' : count}
                       </div>
                     )}
@@ -1500,7 +1500,7 @@ const AgendaView: React.FC<{
 
             <button 
               onClick={() => navigateWeek('next')}
-              className="w-8 h-10 flex items-center justify-center text-[#8A98A8] hover:text-[#2898D8] transition-colors"
+              className="w-8 h-10 flex items-center justify-center text-title hover:text-secondary transition-colors"
             >
               <ChevronRight size={20} />
             </button>
@@ -1511,9 +1511,9 @@ const AgendaView: React.FC<{
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 px-2 h-[80px]">
         <div 
-          className="rounded-2xl p-3 flex flex-col justify-center shadow-lg shadow-[#2898D8]/20 relative overflow-hidden group"
+          className="rounded-2xl p-3 flex flex-col justify-center shadow-[0_3px_12px_rgba(0,0,0,0.3)] relative overflow-hidden group"
           style={{
-            background: 'linear-gradient(135deg, #1E7FB8 0%, #2898D8 45%, #3AABFF 100%)'
+            background: 'linear-gradient(135deg, #FFB75E 0%, #F99417 100%)'
           }}
         >
           {/* Decoração — círculo grande translúcido */}
@@ -1524,7 +1524,7 @@ const AgendaView: React.FC<{
             style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
           />
           
-          <span className="text-[10px] font-black text-[#FFFFFF]/60 uppercase tracking-widest leading-none mb-1 relative z-10">{stats.dayLabel}</span>
+          <span className="text-[10px] font-black text-white/60 uppercase tracking-widest leading-none mb-1 relative z-10">{stats.dayLabel}</span>
           <div className="flex flex-col relative z-10">
             <span className="text-2xl font-black text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
             <span className="text-xs text-white/70 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
@@ -1532,13 +1532,13 @@ const AgendaView: React.FC<{
           <DollarSign size={48} className="text-white/10 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
 
-        <div className="bg-surface  rounded-2xl p-3 flex flex-col justify-center shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden group">
-          <span className="text-[9px] font-black text-[#8A98A8]  uppercase tracking-widest leading-none mb-1 relative z-10">{stats.weekLabel}</span>
+        <div className="bg-surface rounded-2xl p-3 flex flex-col justify-center shadow-[0_3px_12px_rgba(0,0,0,0.3)] relative overflow-hidden group">
+          <span className="text-[9px] font-black text-title  uppercase tracking-widest leading-none mb-1 relative z-10">{stats.weekLabel}</span>
           <div className="flex flex-col relative z-10">
-            <span className="text-[20px] font-black text-[#2898D8] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
-            <span className="text-[11px] font-medium text-[#8A98A8]  leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            <span className="text-[20px] font-black text-secondary leading-tight">{formatCurrency(stats.weekRevenue)}</span>
+            <span className="text-[11px] font-medium text-title  leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
           </div>
-          <DollarSign size={48} className="text-[#2898D8]/5 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
+          <DollarSign size={48} className="text-secondary/5 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
       </div>
 
@@ -1546,11 +1546,11 @@ const AgendaView: React.FC<{
         <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
 
         {(!dayConfig?.isOpen && currentDayAppointments.length === 0) ? (
-            <div className="bg-surface  p-12 rounded-[2rem] border-2 border-dashed border-[#D0D8E4]  text-center space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-                <div className="w-12 h-12 bg-[#F8FAFB]  rounded-full flex items-center justify-center mx-auto text-[#B0BCC7]">
+            <div className="bg-surface  p-12 rounded-[2rem] border-2 border-dashed border-title/30  text-center space-y-3 ">
+                <div className="w-12 h-12 bg-primary/40  rounded-full flex items-center justify-center mx-auto text-title">
                     <Lock size={24} />
                 </div>
-                <p className="text-[#8A98A8]  font-bold text-sm uppercase tracking-widest">Fechado hoje</p>
+                <p className="text-title  font-bold text-sm uppercase tracking-widest">Fechado hoje</p>
             </div>
         ) : (
             <div className="grid grid-cols-1 gap-3">
@@ -1563,14 +1563,14 @@ const AgendaView: React.FC<{
                     // If it's occupied by a duration but not the start slot
                     if (apt && !isStartSlot) {
                         return (
-                            <div key={slot} className="bg-[#F4F7FB]  p-3 rounded-2xl flex items-center gap-4 opacity-50 pointer-events-none shadow-[0_1px_4px_rgba(0,0,0,0.06)] min-h-[44px]">
-                                <div className="text-lg font-black text-[#8A98A8]  w-14 shrink-0">{slot}</div>
-                                <div className="flex-1 min-w-0 flex items-center gap-1.5 text-xs text-[#8A98A8]  truncate">
+                            <div key={slot} className="bg-primary/40  p-3 rounded-2xl flex items-center gap-4 opacity-50 pointer-events-none min-h-[44px]">
+                                <div className="text-lg font-black text-title  w-14 shrink-0">{slot}</div>
+                                <div className="flex-1 min-w-0 flex items-center gap-1.5 text-xs text-title  truncate">
                                     <span className="font-semibold flex items-center gap-1 shrink-0">
                                         <Lock size={14} />
                                         Ocupado
                                     </span>
-                                    <span className="text-[#D0D8E4] ">|</span>
+                                    <span className="text-title ">|</span>
                                     <span className="font-normal truncate">
                                         {apt.service} de {capitalizeName(apt.clientName)}
                                     </span>
@@ -1605,7 +1605,7 @@ const AgendaView: React.FC<{
                                     }}
                                     className="bg-red-50/20  border border-red-100/50  p-3 rounded-2xl flex items-center justify-between opacity-70  cursor-pointer min-h-[44px]"
                                 >
-                                    <div className="text-lg font-black text-[#8A98A8]  w-14">{slot}</div>
+                                    <div className="text-lg font-black text-title  w-14">{slot}</div>
                                     <div className="flex flex-col items-end flex-1 pr-4">
                                         <div className="flex items-center gap-1.5 text-red-400 ">
                                             {!isManualBlocked && isWeeklyBreak && <Repeat size={12} className="animate-pulse" />}
@@ -1614,7 +1614,7 @@ const AgendaView: React.FC<{
                                             </span>
                                         </div>
                                         {!isManualBlocked && isWeeklyBreak && (
-                                            <span className="text-[8px] text-[#8A98A8]  font-bold uppercase tracking-tighter">Regra Recorrente</span>
+                                            <span className="text-[8px] text-title  font-bold uppercase tracking-tighter">Regra Recorrente</span>
                                         )}
                                     </div>
                                     <div className="w-10 h-10 flex items-center justify-center text-red-200 ">
@@ -1639,7 +1639,7 @@ const AgendaView: React.FC<{
                                                 </button>
                                                 <button 
                                                     onClick={() => setActiveUnlockMenu(null)}
-                                                    className="h-8 px-4 bg-[#374151] text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                    className="h-8 px-4 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
                                                 >
                                                     Não
                                                 </button>
@@ -1656,10 +1656,10 @@ const AgendaView: React.FC<{
                             <div key={slot} className="relative group">
                                 <div 
                                     onClick={() => setActiveSlotMenu(isQuickActionOpen ? null : slot)} 
-                                    className={`slot-trigger bg-surface  min-h-[44px] hover:bg-[#E8F4FC] :bg-[#1A3A58] shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-3 rounded-2xl flex items-center gap-4 transition-colors cursor-pointer group ${past ? 'opacity-40 grayscale pointer-events-none' : ''}`}
+                                    className={`slot-trigger min-h-[44px] p-3 rounded-2xl flex items-center gap-4 transition-colors group ${past ? 'bg-white/30 opacity-40 grayscale pointer-events-none' : 'bg-white hover:bg-gray-50 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.25)]'}`}
                                 >
-                                    <div className="text-lg font-black text-[#1A2332]  w-14 shrink-0">{slot}</div>
-                                    <div className="flex items-center gap-2 text-[#8A98A8]  font-black text-[10px] uppercase tracking-widest group-hover:text-[#2898D8] transition-colors">
+                                    <div className="text-lg font-bold text-[#363062] w-14 shrink-0">{slot}</div>
+                                    <div className="flex items-center gap-2 text-[#363062]/60 font-black text-[10px] uppercase tracking-widest group-hover:text-[#363062] transition-colors">
                                         <Plus size={16} strokeWidth={3} />
                                         DISPONÍVEL
                                     </div>
@@ -1671,7 +1671,7 @@ const AgendaView: React.FC<{
                                             initial={{ x: -10, opacity: 0 }}
                                             animate={{ x: 0, opacity: 1 }}
                                             exit={{ x: -10, opacity: 0 }}
-                                            className="menu-container absolute top-0 bottom-0 right-0 left-[calc(3.5rem+1rem+0.75rem)] bg-surface/90 backdrop-blur-md shadow-lg rounded-r-2xl flex items-center z-50 overflow-hidden border-y-2 border-r-2 border-[#D0D8E4]"
+                                            className="menu-container absolute top-0 bottom-0 right-0 left-[calc(3.5rem+1rem+0.75rem)] bg-surface/90 backdrop-blur-md shadow-lg rounded-r-2xl flex items-center z-50 overflow-hidden border-y-2 border-r-2 border-title/30"
                                         >
                                             <div className="flex-1 h-full flex items-stretch">
                                                 <button 
@@ -1683,7 +1683,7 @@ const AgendaView: React.FC<{
                                                 </button>
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); onAddInSlot(selectedDate, slot); setActiveSlotMenu(null); }}
-                                                    className="flex-[1.25] flex flex-col items-center justify-center gap-1 bg-[#2898D8] hover:bg-[#1E7FB8] text-white transition-colors"
+                                                    className="flex-[1.25] flex flex-col items-center justify-center gap-1 bg-secondary hover:bg-secondary text-white transition-colors"
                                                 >
                                                     <Calendar size={18} />
                                                     <span className="text-[9px] font-black uppercase tracking-widest">Agendar</span>
@@ -1691,7 +1691,7 @@ const AgendaView: React.FC<{
                                             </div>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); setActiveSlotMenu(null); }}
-                                                className="w-10 h-full flex items-center justify-center text-[#8A98A8] hover:text-[#1A2332] bg-[#F4F7FB]/50 border-l border-[#D0D8E4]"
+                                                className="w-10 h-full flex items-center justify-center text-title hover:text-white bg-primary/40/50 border-l border-title/30"
                                             >
                                                 <X size={20} />
                                             </button>
@@ -1709,29 +1709,27 @@ const AgendaView: React.FC<{
                             initial={false}
                             animate={isFinishing ? { scale: [1, 1.05, 1] } : { scale: 1 }}
                             transition={{ duration: 0.4 }}
-                            className={`relative rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] min-h-[44px] overflow-hidden transition-all duration-500 flex
-                                ${isActuallyCompleted ? 'bg-[#D1FAE5] border-green-200 opacity-60' : 
-                                  isNoShow ? 'bg-amber-50 border-amber-200 opacity-50' : 
-                                  isFinishing ? 'bg-[#D1FAE5] border-green-200' : 'bg-[#EBF5FF]  border-l-4 border-l-[#2898D8] '}`}
+                            className={`relative rounded-2xl shadow-[0_3px_12px_rgba(0,0,0,0.35)] min-h-[44px] overflow-hidden transition-all duration-500 flex
+                                ${isActuallyCompleted ? 'bg-green-500/10 border-l-4 border-l-green-500 opacity-75' : isNoShow ? 'bg-amber-500/10 border-l-4 border-l-amber-400 opacity-65' : isFinishing ? 'bg-green-500/10 border-l-4 border-l-green-400' : 'bg-surface border-l-4 border-l-secondary'}`}
                         >
                             <div className="flex-1 min-w-0">
                                 {/* Header do Card */}
-                                <div className="px-4 py-3 flex items-start justify-between border-b border-[#D0D8E4]/20 ">
+                                <div className="px-4 py-3 flex items-start justify-between border-b border-white/5">
                                     <div className="flex gap-4 min-w-0">
-                                        <div className={`text-base font-bold shrink-0 mt-1 ${isActuallyCompleted ? 'text-green-700' : isNoShow ? 'text-amber-700' : 'text-[#1A2332] '}`}>
+                                        <div className={`text-base font-bold shrink-0 mt-1 ${isActuallyCompleted ? 'text-green-300' : isNoShow ? 'text-amber-300' : 'text-white'}`}>
                                             {apt.time}
                                         </div>
                                         <div className="flex flex-col gap-1.5 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-base font-bold truncate tracking-tight ${isActuallyCompleted ? 'text-green-800 line-through opacity-70' : isNoShow ? 'text-amber-800 line-through opacity-70' : 'text-[#1A2332] '}`}>
+                                                <span className={`text-base font-bold truncate tracking-tight ${isActuallyCompleted ? 'text-green-300 line-through opacity-70' : isNoShow ? 'text-amber-300 line-through opacity-70' : 'text-white'}`}>
                                                     {capitalizeName(apt.clientName)}
                                                 </span>
                                                 {isNoShow && (
-                                                    <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest shrink-0">FALTA</span>
+                                                    <span className="bg-amber-500/20 text-amber-300 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest shrink-0">FALTA</span>
                                                 )}
                                             </div>
                                             <div className="flex flex-col gap-1.5">
-                                                <span className={`text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 flex-wrap ${isActuallyCompleted ? 'text-green-700/60' : isNoShow ? 'text-amber-700/60' : 'text-[#2898D8]'}`}>
+                                                <span className={`text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 flex-wrap ${isActuallyCompleted ? 'text-green-400/70' : isNoShow ? 'text-amber-400/70' : 'text-secondary'}`}>
                                                     {isActuallyCompleted ? 'Atendimento Finalizado ✨' : isNoShow ? 'Falta Registrada' : (() => {
                                                         const numServices = apt.service.split(',').length;
                                                         const serviceLabel = numServices > 1 ? `${numServices} serviços` : apt.service;
@@ -1755,7 +1753,7 @@ const AgendaView: React.FC<{
                                                     const cleanObs = apt.observation.replace('[EXCEPCIONAL]', '').trim();
                                                     if (!cleanObs) return null;
                                                     return (
-                                                        <p className={`text-[10px] italic leading-tight ${isActuallyCompleted ? 'text-green-800 line-through opacity-40' : isNoShow ? 'text-amber-800 line-through opacity-40' : 'text-[#8A98A8] '}`}>
+                                                        <p className={`text-[10px] italic leading-tight ${isActuallyCompleted ? 'text-green-300/40 line-through' : isNoShow ? 'text-amber-300/40 line-through' : 'text-title'}`}>
                                                             Obs: {cleanObs}
                                                         </p>
                                                     );
@@ -1772,54 +1770,54 @@ const AgendaView: React.FC<{
                                         <button 
                                             disabled={isNoShow}
                                             onClick={() => handleCameraClick(apt.phone)}
-                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-xl ${isNoShow ? 'text-muted' : 'text-amber-500 hover:bg-amber-50'}`}
+                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-xl ${isNoShow ? 'text-muted opacity-30 cursor-not-allowed' : 'text-violet-400 hover:bg-violet-400/15'}`}
                                         >
                                             <Camera size={18} />
                                         </button>
-                                        <span className="text-[10px] text-[#8A98A8] ">Foto</span>
+                                        <span className="text-[10px] text-title">Foto</span>
                                     </div>
 
                                     <div className="flex flex-col items-center gap-1">
                                         <button 
                                             onClick={() => onOpenCustomer(apt.phone)}
-                                            className="w-10 h-10 flex items-center justify-center rounded-xl transition-colors text-[#2898D8] hover:bg-blue-50"
+                                            className="w-10 h-10 flex items-center justify-center rounded-xl transition-colors text-sky-400 hover:bg-sky-400/15"
                                         >
                                             <User size={18} />
                                         </button>
-                                        <span className="text-[10px] text-[#8A98A8] ">Cliente</span>
+                                        <span className="text-[10px] text-title">Cliente</span>
                                     </div>
 
                                     <div className="flex flex-col items-center gap-1">
                                         <button 
                                             disabled={isActuallyCompleted || isNoShow}
                                             onClick={() => onReschedule(apt)}
-                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-xl ${isActuallyCompleted || isNoShow ? 'text-muted' : 'text-emerald-500 hover:bg-emerald-50'}`}
+                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-xl ${isActuallyCompleted || isNoShow ? 'text-muted opacity-30 cursor-not-allowed' : 'text-emerald-400 hover:bg-emerald-400/15'}`}
                                         >
                                             <Edit3 size={18} />
                                         </button>
-                                        <span className="text-[10px] text-[#8A98A8] ">Editar</span>
+                                        <span className="text-[10px] text-title">Editar</span>
                                     </div>
 
                                     <div className="flex flex-col items-center gap-1">
                                         <button 
                                             disabled={isActuallyCompleted || isNoShow}
                                             onClick={() => setActiveNoShowMenu(apt.id)}
-                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-xl ${isActuallyCompleted || isNoShow ? 'text-muted' : 'text-red-500 hover:bg-red-50'}`}
+                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-xl ${isActuallyCompleted || isNoShow ? 'text-muted opacity-30 cursor-not-allowed' : 'text-red-400 hover:bg-red-400/15'}`}
                                         >
                                             <ThumbsDown size={18} />
                                         </button>
-                                        <span className="text-[10px] text-[#8A98A8] ">Falta</span>
+                                        <span className="text-[10px] text-title">Falta</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Botões de Ação Laterais */}
-                            <div className="w-14 flex flex-col items-center justify-center gap-4 border-l border-[#D0D8E4]/30  bg-[#F2F5F8]/50  shrink-0">
+                            <div className="w-14 flex flex-col items-center justify-center gap-4 border-l border-white/5 bg-white/5 shrink-0">
                                 <button 
                                     disabled={isActuallyCompleted || isNoShow}
                                     onClick={() => setActiveCancelMenu(apt.id)}
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${isActuallyCompleted || isNoShow ? 'text-[#8A98A8] opacity-30' : 'text-[#EF4444] hover:bg-red-50'}`}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${isActuallyCompleted || isNoShow ? 'text-muted opacity-20 cursor-not-allowed' : 'text-red-400 hover:bg-red-400/15 transition-all'}`}
                                     title="Cancelar"
                                 >
                                     <Trash2 size={16} />
@@ -1827,7 +1825,7 @@ const AgendaView: React.FC<{
                                 <button 
                                     disabled={isFinishing}
                                     onClick={() => (isActuallyCompleted || isNoShow) ? setActiveRevertMenu(apt.id) : setActiveFinishMenu(apt.id)}
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${isActuallyCompleted ? 'bg-surface text-green-600 shadow-sm border border-green-100' : isNoShow ? 'bg-surface text-amber-600 shadow-sm border border-amber-100' : 'bg-[#10B981] text-white shadow-md active:scale-90'}`}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${isActuallyCompleted ? 'bg-green-400/15 text-green-300 border border-green-400/25 hover:bg-green-400/25' : isNoShow ? 'bg-amber-400/15 text-amber-300 border border-amber-400/25 hover:bg-amber-400/25' : 'bg-secondary text-white shadow-md shadow-secondary/30 active:scale-90'}`}
                                     title={(isActuallyCompleted || isNoShow) ? "Retornar atendimento" : "Confirmar"}
                                 >
                                     {(isActuallyCompleted || isNoShow) ? <RotateCcw size={16} /> : <Check size={16} />}
@@ -1857,7 +1855,7 @@ const AgendaView: React.FC<{
                                             </button>
                                             <button 
                                                 onClick={() => setActiveCancelMenu(null)}
-                                                className="h-8 px-4 bg-[#374151] text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                className="h-8 px-4 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
                                             >
                                                 Não
                                             </button>
@@ -1889,7 +1887,7 @@ const AgendaView: React.FC<{
                                             </button>
                                             <button 
                                                 onClick={() => setActiveNoShowMenu(null)}
-                                                className="h-8 px-4 bg-[#374151] text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                className="h-8 px-4 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
                                             >
                                                 Não
                                             </button>
@@ -1917,7 +1915,7 @@ const AgendaView: React.FC<{
                                             </button>
                                             <button 
                                                 onClick={() => setActiveFinishMenu(null)}
-                                                className="h-8 px-4 bg-[#374151] text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                className="h-8 px-4 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
                                             >
                                                 Não
                                             </button>
@@ -1943,13 +1941,13 @@ const AgendaView: React.FC<{
                                                     setActiveRevertMenu(null); 
                                                     onSuccess?.('Atendimento retornado com sucesso!');
                                                 }}
-                                                className="h-8 px-4 bg-[#2898D8] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
+                                                className="h-8 px-4 bg-secondary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
                                             >
                                                 Sim
                                             </button>
                                             <button 
                                                 onClick={() => setActiveRevertMenu(null)}
-                                                className="h-8 px-4 bg-[#374151] text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                className="h-8 px-4 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
                                             >
                                                 Não
                                             </button>
@@ -1990,32 +1988,32 @@ const AgendaView: React.FC<{
                         return (
                             <div 
                                 key={apt.id}
-                                className={`border rounded-[12px] shadow-[0_1px_2px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-300 border-l-[3px] border-l-[#10B981] ${
-                                    isExpanded 
-                                        ? 'bg-green-50 (16,185,129,0.08)] border-[rgba(16,185,129,0.2)] opacity-100' 
-                                        : 'bg-green-50 (16,185,129,0.08)] border-[rgba(16,185,129,0.2)] opacity-70'
+                                className={`rounded-[12px] shadow-[0_3px_12px_rgba(0,0,0,0.35)] overflow-hidden transition-all duration-300 border-l-[4px] ${
+                                    isNoShow
+                                        ? 'bg-amber-500/10 border-amber-400/20 border-l-amber-400 opacity-65'
+                                        : 'bg-green-500/10 border-green-400/20 border-l-green-400 opacity-75'
                                 }`}
                             >
                                 {/* Accordion Header */}
                                 <div 
                                     onClick={() => setExpandedCompletedId(isExpanded ? null : apt.id)}
-                                    className="h-[48px] px-4 flex items-center justify-between cursor-pointer hover:bg-[#F4F7FB]/30 :bg-[#303030]/30 transition-colors"
+                                    className="h-[48px] px-4 flex items-center justify-between cursor-pointer hover:bg-primary/40/30 :bg-surface/30 transition-colors"
                                 >
                                     <div className="flex items-center gap-2.5 min-w-0">
-                                        <span className={`text-xs font-bold line-through shrink-0 ${isExpanded ? 'text-[#8A98A8]' : 'text-[#5A6878]  opacity-70'}`}>
+                                        <span className={`text-xs font-bold line-through shrink-0 opacity-70 ${isNoShow ? 'text-amber-300' : 'text-green-300'}`}>
                                             {apt.time}
                                         </span>
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className={`text-sm font-semibold truncate ${isExpanded ? 'text-[#5A6878] ' : 'text-[#5A6878]  opacity-70'}`}>
+                                            <span className={`text-sm font-semibold truncate line-through opacity-70 ${isNoShow ? 'text-amber-300' : 'text-green-300'}`}>
                                                 {capitalizeName(apt.clientName)}
-                                                <span className="text-xs font-normal text-[#8A98A8] ml-1">
+                                                <span className={`text-xs font-normal ml-1 ${isNoShow ? 'text-amber-400/70' : 'text-green-400/70'}`}>
                                                     ({apt.service})
                                                 </span>
                                             </span>
                                             {!isNoShow && <Check size={14} className="text-green-500 shrink-0" />}
                                         </div>
                                         {isNoShow && (
-                                            <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100 uppercase tracking-widest shrink-0">
+                                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 uppercase tracking-widest shrink-0">
                                                 FALTA
                                             </span>
                                         )}
@@ -2035,18 +2033,18 @@ const AgendaView: React.FC<{
                                             exit={{ height: 0, opacity: 0 }}
                                             transition={{ duration: 0.3, ease: 'easeInOut' }}
                                         >
-                                            <div className="px-4 pb-3 pt-1.5 border-t border-[#D0D8E4]/60  relative">
-                                                <div className="flex items-center justify-between bg-[#F4F7FB]  p-2 rounded-xl border border-[#D0D8E4]  w-full">
+                                            <div className="px-4 pb-3 pt-1.5 border-t border-title/20  relative">
+                                                <div className="flex items-center justify-between bg-primary/40  p-2 rounded-xl border border-title/30  w-full">
                                                     <div className="flex gap-4">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <button 
                                                                 disabled={isNoShow}
                                                                 onClick={(e) => { e.stopPropagation(); handleCameraClick(apt.phone); }}
-                                                                className={`w-8 h-8 flex items-center justify-center transition-colors rounded-xl ${isNoShow ? 'text-muted opacity-20 grayscale' : 'text-[#F59E0B] hover:bg-amber-50'}`}
+                                                                className={`w-8 h-8 flex items-center justify-center transition-colors rounded-xl ${isNoShow ? 'text-muted opacity-20 grayscale' : 'text-secondary hover:bg-amber-50'}`}
                                                             >
                                                                 <Camera size={16} />
                                                             </button>
-                                                            <span className="text-[10px] font-medium text-[#8A98A8]">Foto</span>
+                                                            <span className="text-[10px] font-medium text-title">Foto</span>
                                                         </div>
 
                                                         <div className="flex flex-col items-center gap-1">
@@ -2056,14 +2054,18 @@ const AgendaView: React.FC<{
                                                             >
                                                                 <User size={16} />
                                                             </button>
-                                                            <span className="text-[10px] font-medium text-[#8A98A8]">Cliente</span>
+                                                            <span className="text-[10px] font-medium text-title">Cliente</span>
                                                         </div>
                                                     </div>
 
                                                     <div className="flex-1 flex justify-end">
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); setActiveRevertMenu(apt.id); }}
-                                                            className="flex items-center gap-1.5 py-1 px-3 text-red-400 hover:text-red-500 transition-colors text-[11px] font-bold uppercase tracking-tight bg-transparent border-none outline-none"
+                                                            className={`flex items-center gap-1.5 py-1 px-3 rounded text-[11px] font-bold uppercase tracking-tight transition-colors ${
+                                                                isNoShow 
+                                                                    ? 'bg-amber-400/15 text-amber-300 border border-amber-400/25 hover:bg-amber-400/25' 
+                                                                    : 'bg-green-400/15 text-green-300 border border-green-400/25 hover:bg-green-400/25'
+                                                            }`}
                                                         >
                                                             <RotateCcw size={14} />
                                                             <span>Retornar</span>
@@ -2088,13 +2090,13 @@ const AgendaView: React.FC<{
                                                                         setActiveRevertMenu(null); 
                                                                         onSuccess?.('Atendimento retornado com sucesso!');
                                                                     }}
-                                                                    className="h-8 px-4 bg-[#2898D8] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
+                                                                    className="h-8 px-4 bg-secondary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
                                                                 >
                                                                     Sim
                                                                 </button>
                                                                 <button 
                                                                     onClick={() => setActiveRevertMenu(null)}
-                                                                    className="h-8 px-4 bg-[#374151] text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                                    className="h-8 px-4 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
                                                                 >
                                                                     Não
                                                                 </button>
@@ -2132,12 +2134,12 @@ const AgendaView: React.FC<{
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-surface w-[90%] max-w-sm rounded-[32px] shadow-2xl p-8 relative z-[200] border border-white/20 text-center space-y-6"
             >
-              <div className="w-16 h-16 bg-[#E8F4FC] rounded-full flex items-center justify-center mx-auto text-[#2898D8]">
+              <div className="w-16 h-16 bg-surface/80 rounded-full flex items-center justify-center mx-auto text-secondary">
                 <Repeat size={32} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-black text-[#1A2332] uppercase tracking-tighter">Liberar Horário</h3>
-                <p className="text-sm text-[#5A6878] font-medium">Como deseja liberar este horário das <span className="font-bold text-[#1A2332]">{weeklyUnlockSlot}</span>?</p>
+                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Liberar Horário</h3>
+                <p className="text-sm text-white font-medium">Como deseja liberar este horário das <span className="font-bold text-white">{weeklyUnlockSlot}</span>?</p>
               </div>
               
               <div className="space-y-3">
@@ -2147,7 +2149,7 @@ const AgendaView: React.FC<{
                     setWeeklyUnlockSlot(null);
                     onSuccess?.('Liberado apenas para hoje!');
                   }}
-                  className="w-full h-14 bg-[#E8EEF5] text-[#5A6878] rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-surface transition-all"
+                  className="w-full h-14 bg-surface/80 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-surface transition-all"
                 >
                   Liberar apenas para hoje
                 </button>
@@ -2157,13 +2159,13 @@ const AgendaView: React.FC<{
                     setWeeklyUnlockSlot(null);
                     onSuccess?.('Removido do padrão semanal!');
                   }}
-                  className="w-full h-14 bg-[#2898D8] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-[#2898D8]/20 hover:bg-[#1E7FB8] transition-all"
+                  className="w-full h-14 bg-secondary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-secondary/20 hover:bg-secondary transition-all"
                 >
                   Remover do padrão semanal
                 </button>
                 <button 
                   onClick={() => setWeeklyUnlockSlot(null)}
-                  className="w-full py-2 text-[#8A98A8] font-black uppercase tracking-widest text-[9px] hover:text-[#1A2332] transition-colors"
+                  className="w-full py-2 text-title font-black uppercase tracking-widest text-[9px] hover:text-white transition-colors"
                 >
                   Cancelar
                 </button>
@@ -2250,11 +2252,11 @@ const AddCustomerModal: React.FC<{ onClose: () => void, onSuccess: (msg: string)
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#242424]/40 backdrop-blur-md animate-in fade-in">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-surface/40 backdrop-blur-md animate-in fade-in">
       <div className="bg-surface  w-full max-w-[95%] sm:max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative border border-white/20 ">
-        <header className="p-6 border-b border-[#D0D8E4]/60  flex justify-between items-center shrink-0 bg-surface  sticky top-0 z-10">
-            <h2 className="text-lg font-bold text-[#1A2332]  uppercase tracking-tight">Novo Cliente</h2>
-            <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#E8EEF5]  text-[#8A98A8] flex items-center justify-center hover:bg-surface :bg-[#374151] transition-colors">
+        <header className="p-6 border-b border-title/20  flex justify-between items-center shrink-0 bg-surface  sticky top-0 z-10">
+            <h2 className="text-lg font-bold text-white  uppercase tracking-tight">Novo Cliente</h2>
+            <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface/80  text-title flex items-center justify-center hover:bg-surface :bg-primary transition-colors">
               <X size={20} />
             </button>
         </header>
@@ -2294,13 +2296,13 @@ const AddCustomerModal: React.FC<{ onClose: () => void, onSuccess: (msg: string)
             </div>
           </div>
           
-          <footer className="p-6 border-t border-[#D0D8E4]/60  shrink-0 bg-surface  sticky bottom-0 z-10 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <footer className="p-6 border-t border-title/20  shrink-0 bg-surface  sticky bottom-0 z-10 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
             {showErrorMsg && !duplicateError && <p className="text-red-500 text-[13px] font-bold text-center mb-4">Preencha todos os campos obrigatórios</p>}
             <Button 
               type="submit" 
               fullWidth 
               disabled={!!duplicateError}
-              className="h-14 font-black uppercase tracking-widest shadow-xl shadow-[#2898D8]/20 disabled:opacity-50 disabled:shadow-none"
+              className="h-14 font-black uppercase tracking-widest shadow-xl shadow-secondary/20 disabled:opacity-50 disabled:shadow-none"
             >
               {isValidating ? 'Validando...' : 'Cadastrar Cliente'}
             </Button>
@@ -2578,16 +2580,16 @@ const AddAppointmentModal: React.FC<{
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="bg-[#FFFFFF]  w-[90%] max-w-md rounded-[32px] shadow-2xl flex flex-col max-h-[85vh] relative z-[200] border border-[#D0D8E4]  overflow-hidden"
+        className="bg-surface  w-[90%] max-w-md rounded-[32px] shadow-2xl flex flex-col max-h-[85vh] relative z-[200] border border-title/30  overflow-hidden"
       >
-        <header className="px-6 pt-6 pb-4 flex justify-between items-center shrink-0 bg-[#FFFFFF]  sticky top-0 z-10 mb-6">
+        <header className="px-6 pt-6 pb-4 flex justify-between items-center shrink-0 bg-surface  sticky top-0 z-10 mb-6">
           <div className="flex items-center gap-2">
             {isExceptional && <Zap size={20} className="text-amber-500 fill-amber-500" />}
-            <h2 className="text-lg font-bold text-[#1A2332]  uppercase tracking-tight">
+            <h2 className="text-lg font-bold text-white  uppercase tracking-tight">
               {isExceptional ? 'Agendamento Excepcional' : 'Novo Agendamento'}
             </h2>
           </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#F0F2F5]  flex items-center justify-center text-[#8A98A8] hover:bg-[#E4E7EB] :bg-[#3A3A3A] transition-colors">
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-primary/40  flex items-center justify-center text-title hover:bg-primary/40 :bg-surface transition-colors">
             <X size={20} />
           </button>
         </header>
@@ -2628,11 +2630,11 @@ const AddAppointmentModal: React.FC<{
                     onFocus={() => setShowDropdown(true)}
                     placeholder="Digite nome ou WhatsApp..."
                     autoFocus
-                    icon={<Search size={18} className="text-[#8A98A8]" />}
+                    icon={<Search size={18} className="text-title" />}
                   />
                   
                   {showDropdown && searchTerm.length >= 2 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#FFFFFF]  rounded-2xl shadow-2xl border border-[#D0D8E4]  overflow-hidden z-[300] animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface  rounded-2xl shadow-2xl border border-title/30  overflow-hidden z-[300] animate-in fade-in slide-in-from-top-2">
                       {filteredCustomers.length > 0 ? (
                         <div className="max-h-[200px] overflow-y-auto">
                           {filteredCustomers.map(customer => (
@@ -2640,18 +2642,18 @@ const AddAppointmentModal: React.FC<{
                               key={customer.phone}
                               type="button"
                               onClick={() => handleSelectCustomer(customer)}
-                              className="w-full flex items-center gap-3 py-2 px-3 hover:bg-[#F4F7FB] :bg-[#2F2F2F]/50 transition-colors border-b border-[#D0D8E4]  last:border-0"
+                              className="w-full flex items-center gap-3 py-2 px-3 hover:bg-primary/40  transition-colors border-b border-title/30  last:border-0"
                             >
-                              <div className="w-10 h-10 rounded-full bg-[#E8F4FC]  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                              <div className="w-10 h-10 rounded-full bg-surface/80  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                                 {customer.avatar ? (
                                   <img src={customer.avatar} alt={customer.name} className="w-full h-full object-cover" />
                                 ) : (
-                                  <User size={20} className="text-[#2898D8] " />
+                                  <User size={20} className="text-secondary " />
                                 )}
                               </div>
                               <div className="flex-1 text-left min-w-0">
-                                <p className="text-sm font-semibold text-[#1A2332]  truncate">{capitalizeName(customer.name)}</p>
-                                <p className="text-xs text-[#8A98A8] ">{customer.phone}</p>
+                                <p className="text-sm font-semibold text-white  truncate">{capitalizeName(customer.name)}</p>
+                                <p className="text-xs text-title ">{customer.phone}</p>
                               </div>
                             </button>
                           ))}
@@ -2662,9 +2664,9 @@ const AddAppointmentModal: React.FC<{
                         <button
                           type="button"
                           onClick={handleCreateNew}
-                          className="w-full flex items-center gap-3 p-4 bg-[#E8F4FC]  hover:bg-[#D8EBF8] :bg-[#1A3A58]/20 transition-colors text-[#2898D8] "
+                          className="w-full flex items-center gap-3 p-4 bg-surface/80  hover:bg-surface/80 :bg-surface/80/20 transition-colors text-secondary "
                         >
-                          <div className="w-10 h-10 rounded-full bg-[#D8EBF8]  flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-surface/80  flex items-center justify-center shrink-0">
                             <UserPlus size={20} />
                           </div>
                           <div className="text-left">
@@ -2677,21 +2679,21 @@ const AddAppointmentModal: React.FC<{
                   )}
                 </div>
               ) : (
-                <div className={`p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 relative group bg-[#E8F4FC]/30 border-[#D8EBF8]  `}>
+                <div className={`p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 relative group bg-surface/80/30 border-title/30  `}>
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="w-12 h-12 rounded-full bg-surface  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                       {selectedCustomer?.avatar ? (
                         <img src={selectedCustomer.avatar} alt={selectedCustomer.name} className="w-full h-full object-cover" />
                       ) : (
-                        <User size={24} className="text-[#2898D8] " />
+                        <User size={24} className="text-secondary " />
                       )}
                     </div>
                     <div className="sm:hidden flex-1 min-w-0">
-                      <p className="text-[10px] font-bold text-[#2898D8]  uppercase tracking-widest mb-0.5">
+                      <p className="text-[10px] font-bold text-secondary  uppercase tracking-widest mb-0.5">
                         {selectedCustomer ? 'Cliente Selecionado' : 'Novo Cliente'}
                       </p>
                       {selectedCustomer && (
-                        <p className="text-xs text-[#8A98A8]  font-medium truncate">
+                        <p className="text-xs text-title  font-medium truncate">
                           {selectedCustomer.phone}
                         </p>
                       )}
@@ -2699,20 +2701,20 @@ const AddAppointmentModal: React.FC<{
                   </div>
 
                   <div className="flex-1 w-full min-w-0 flex flex-col">
-                    <p className="hidden sm:block text-[10px] font-bold text-[#2898D8]  uppercase tracking-widest mb-1 ml-1">
+                    <p className="hidden sm:block text-[10px] font-bold text-secondary  uppercase tracking-widest mb-1 ml-1">
                       {selectedCustomer ? 'Cliente Selecionado' : 'Novo Cliente'}
                     </p>
                     <div className="relative flex w-full">
                       <input 
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="bg-[#FFFFFF]  border border-[#D0D8E4]  px-3 h-10 rounded-xl text-base font-semibold text-[#1A2332]  tracking-tight focus:ring-2 focus:ring-[#2898D8] outline-none flex-1 w-full min-w-0 shadow-sm transition-all"
+                        className="bg-primary/60 border border-white/10 px-3 h-10 rounded-xl text-base font-semibold text-white tracking-tight focus:ring-2 focus:ring-secondary outline-none flex-1 w-full min-w-0 shadow-sm transition-all"
                         placeholder="Nome do Cliente"
                       />
                     </div>
                     <div className="hidden sm:block mt-1 ml-1">
                       {selectedCustomer && (
-                        <p className="text-xs text-[#8A98A8]  font-medium">
+                        <p className="text-xs text-title  font-medium">
                           {selectedCustomer.phone}
                         </p>
                       )}
@@ -2722,7 +2724,7 @@ const AddAppointmentModal: React.FC<{
                   <button 
                     type="button" 
                     onClick={clearSelectedCustomer}
-                    className="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 w-8 h-8 rounded-full bg-[#FFFFFF]  text-[#8A98A8] hover:text-red-500 shadow-sm flex items-center justify-center transition-all hover:scale-110"
+                    className="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 w-8 h-8 rounded-full bg-surface  text-title hover:text-red-500 shadow-sm flex items-center justify-center transition-all hover:scale-110"
                   >
                     <X size={16} />
                   </button>
@@ -2779,7 +2781,7 @@ const AddAppointmentModal: React.FC<{
                             setSaveToContacts(false);
                             executeFinalSave(formData, isNewCustomer, false);
                           }}
-                          className="flex-1 text-[#8A98A8]  text-[10px] font-bold py-2 rounded-xl hover:bg-[#F0F2F5] :bg-[#2F2F2F] transition-colors"
+                          className="flex-1 text-title  text-[10px] font-bold py-2 rounded-xl hover:bg-primary/40  transition-colors"
                         >
                           Continuar assim mesmo
                         </button>
@@ -2787,7 +2789,7 @@ const AddAppointmentModal: React.FC<{
                     </div>
                   )}
                   
-                  <label className="flex items-center gap-3 p-4 rounded-2xl bg-[#F4F7FB]  cursor-pointer group transition-colors hover:bg-[#E4E7EB] :bg-[#3A3A3A]">
+                  <label className="flex items-center gap-3 p-4 rounded-2xl bg-primary/40  cursor-pointer group transition-colors hover:bg-primary/40 :bg-surface">
                     <div className="relative flex items-center">
                       <input 
                         type="checkbox" 
@@ -2795,22 +2797,22 @@ const AddAppointmentModal: React.FC<{
                         onChange={e => setSaveToContacts(e.target.checked)}
                         className="peer sr-only"
                       />
-                      <div className="w-5 h-5 border-2 border-[#D0D8E4]  rounded-md peer-checked:bg-[#2898D8] peer-checked:border-[#2898D8] transition-all" />
+                      <div className="w-5 h-5 border-2 border-title/30  rounded-md peer-checked:bg-secondary peer-checked:border-secondary transition-all" />
                       <Check size={14} className="absolute left-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
                     </div>
-                    <span className="text-xs font-bold text-[#1A2332]  uppercase tracking-tight">Salvar nos contatos</span>
+                    <span className="text-xs font-bold text-white  uppercase tracking-tight">Salvar nos contatos</span>
                   </label>
                 </motion.div>
               )}
             </div>
             <div className="space-y-3">
-              <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.services ? 'text-red-500' : 'text-[#8A98A8] '}`}>
+              <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.services ? 'text-red-500' : 'text-title '}`}>
                 Serviços
                 <span className="text-red-500">*</span>
               </label>
               <div className={`flex flex-wrap gap-2 p-1 rounded-2xl transition-all ${errors.services ? 'ring-2 ring-red-500 bg-red-50/50' : ''}`}>
                 {services.map(s => (
-                  <button key={s.id} type="button" onClick={() => toggleService(s.id)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all border ${formData.serviceIds.includes(s.id) ? 'bg-[#2898D8] text-white border-[#2898D8] shadow-md' : 'bg-[#FFFFFF]  text-[#8A98A8] border-[#D0D8E4] '}`}>{s.name}</button>
+                  <button key={s.id} type="button" onClick={() => toggleService(s.id)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all border ${formData.serviceIds.includes(s.id) ? 'bg-secondary text-white border-secondary shadow-md' : 'bg-surface  text-title border-title/30 '}`}>{s.name}</button>
                 ))}
               </div>
               {errors.services && (
@@ -2840,7 +2842,7 @@ const AddAppointmentModal: React.FC<{
               />
             ) : (
               <div className="space-y-3">
-                <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.time ? 'text-red-500' : 'text-[#8A98A8] '}`}>
+                <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.time ? 'text-red-500' : 'text-title '}`}>
                   Horário
                   <span className="text-red-500">*</span>
                 </label>
@@ -2849,7 +2851,7 @@ const AddAppointmentModal: React.FC<{
                       const available = isSlotAvailable(slot);
                       if (isSlotPast(slot)) return null;
                       return (
-                        <button key={slot} type="button" disabled={!available} onClick={() => { setFormData({...formData, time: slot}); setErrors(prev => ({...prev, time: false})); setShowErrorMsg(false); }} className={`py-2 rounded-xl text-xs font-bold transition-all border ${formData.time === slot ? 'bg-[#2898D8] text-white border-[#2898D8]' : !available ? 'bg-[#F4F7FB]  text-[#D0D8E4]  border-[#D0D8E4] ' : 'bg-[#FFFFFF]  text-[#1A2332]  border-[#D0D8E4] '}`}>{slot}</button>
+                        <button key={slot} type="button" disabled={!available} onClick={() => { setFormData({...formData, time: slot}); setErrors(prev => ({...prev, time: false})); setShowErrorMsg(false); }} className={`py-2 rounded-xl text-xs font-bold transition-all border ${formData.time === slot ? 'bg-secondary text-white border-secondary' : !available ? 'bg-primary/40  text-title  border-title/30 ' : 'bg-surface  text-white  border-title/30 '}`}>{slot}</button>
                       );
                     })}
                 </div>
@@ -2862,21 +2864,21 @@ const AddAppointmentModal: React.FC<{
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#8A98A8]  uppercase tracking-widest ml-1 flex items-center gap-1">
+              <label className="text-[10px] font-bold text-title  uppercase tracking-widest ml-1 flex items-center gap-1">
                 Observação
-                <span className="text-[#8A98A8]  lowercase font-normal ml-1">(opcional)</span>
+                <span className="text-title  lowercase font-normal ml-1">(opcional)</span>
               </label>
-              <textarea value={formData.observation} onChange={e => setFormData({...formData, observation: e.target.value})} className="w-full px-4 py-3 rounded-2xl bg-[#F4F7FB]  border-none text-sm min-h-[80px] " />
+              <textarea value={formData.observation} onChange={e => setFormData({...formData, observation: e.target.value})} className="w-full px-4 py-3 rounded-2xl bg-primary/40  border-none text-sm min-h-[80px] " />
             </div>
           </div>
           
-          <footer className="px-6 pt-4 pb-2 shrink-0 bg-[#FFFFFF]  sticky bottom-0 z-10">
+          <footer className="px-6 pt-4 pb-2 shrink-0 bg-surface  sticky bottom-0 z-10">
             {showErrorMsg && <p className="text-red-500 text-[13px] font-bold text-center mb-4">Preencha todos os campos obrigatórios</p>}
             <Button 
               type="submit" 
               fullWidth 
               disabled={isExceptional && isWithinRegularHours}
-              className={`h-14 font-black uppercase tracking-widest shadow-xl shadow-[#2898D8]/20 text-sm px-4 disabled:opacity-50 transition-colors duration-300 ${isButtonFlashing ? '!bg-amber-500 !shadow-amber-500/40' : ''}`}
+              className={`h-14 font-black uppercase tracking-widest shadow-xl shadow-secondary/20 text-sm px-4 disabled:opacity-50 transition-colors duration-300 ${isButtonFlashing ? '!bg-amber-500 !shadow-amber-500/40' : ''}`}
             >
               Agendar Atendimento
             </Button>
@@ -2971,11 +2973,11 @@ const RescheduleModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#242424]/40 backdrop-blur-md animate-in fade-in">
-      <div className="bg-[#FFFFFF]  w-full max-w-[95%] sm:max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative border border-[#D0D8E4] ">
-        <header className="p-6 border-b border-[#D0D8E4]  flex justify-between items-center shrink-0 bg-[#FFFFFF]  sticky top-0 z-10">
-            <h2 className="text-lg font-bold text-[#1A2332]  uppercase tracking-tight">Editar Agendamento</h2>
-            <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#F0F2F5]  text-[#8A98A8] flex items-center justify-center hover:bg-[#E4E7EB] :bg-[#3A3A3A] transition-colors">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-surface/40 backdrop-blur-md animate-in fade-in">
+      <div className="bg-surface  w-full max-w-[95%] sm:max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative border border-title/30 ">
+        <header className="p-6 border-b border-title/30  flex justify-between items-center shrink-0 bg-surface  sticky top-0 z-10">
+            <h2 className="text-lg font-bold text-white  uppercase tracking-tight">Editar Agendamento</h2>
+            <button onClick={onClose} className="w-10 h-10 rounded-full bg-primary/40  text-title flex items-center justify-center hover:bg-primary/40 :bg-surface transition-colors">
               <X size={20} />
             </button>
         </header>
@@ -2983,13 +2985,13 @@ const RescheduleModal: React.FC<{
         <form onSubmit={handleConfirm} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
             <div className="space-y-2">
-              <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.services ? 'text-red-500' : 'text-[#8A98A8] '}`}>
+              <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.services ? 'text-red-500' : 'text-title '}`}>
                 Serviços
                 <span className="text-red-500">*</span>
               </label>
               <div className={`flex flex-wrap gap-2 p-1 rounded-2xl transition-all ${errors.services ? 'ring-2 ring-red-500 bg-red-50/50' : ''}`}>
                 {services.map(s => (
-                  <button key={s.id} type="button" onClick={() => toggleService(s.id)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase border transition-all ${serviceIds.includes(s.id) ? 'bg-[#2898D8] text-white border-[#2898D8]' : 'bg-[#FFFFFF]  text-[#8A98A8] border-[#D0D8E4] '}`}>{s.name}</button>
+                  <button key={s.id} type="button" onClick={() => toggleService(s.id)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase border transition-all ${serviceIds.includes(s.id) ? 'bg-secondary text-white border-secondary' : 'bg-surface  text-title border-title/30 '}`}>{s.name}</button>
                 ))}
               </div>
               {errors.services && (
@@ -3008,7 +3010,7 @@ const RescheduleModal: React.FC<{
               requiredField
             />
             <div className="space-y-2">
-              <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.time ? 'text-red-500' : 'text-[#8A98A8] '}`}>
+              <label className={`text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 ${errors.time ? 'text-red-500' : 'text-title '}`}>
                 Novo Horário
                 <span className="text-red-500">*</span>
               </label>
@@ -3017,7 +3019,7 @@ const RescheduleModal: React.FC<{
                     const available = isSlotAvailable(slot);
                     if (isSlotPast(slot)) return null;
                     return (
-                      <button key={slot} type="button" disabled={!available} onClick={() => { setNewTime(slot); setErrors(prev => ({...prev, time: false})); setShowErrorMsg(false); }} className={`py-2 rounded-xl text-xs font-bold transition-all border ${newTime === slot ? 'bg-[#2898D8] text-white border-[#2898D8]' : !available ? 'bg-[#F4F7FB]  text-[#D0D8E4]  border-[#D0D8E4] ' : 'bg-[#FFFFFF]  text-[#1A2332]  border-[#D0D8E4] '}`}>{slot}</button>
+                      <button key={slot} type="button" disabled={!available} onClick={() => { setNewTime(slot); setErrors(prev => ({...prev, time: false})); setShowErrorMsg(false); }} className={`py-2 rounded-xl text-xs font-bold transition-all border ${newTime === slot ? 'bg-secondary text-white border-secondary' : !available ? 'bg-primary/40  text-title  border-title/30 ' : 'bg-surface  text-white  border-title/30 '}`}>{slot}</button>
                     );
                   })}
               </div>
@@ -3029,17 +3031,17 @@ const RescheduleModal: React.FC<{
               )}
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-[#8A98A8]  uppercase tracking-widest ml-1 flex items-center gap-1">
+              <label className="text-[10px] font-bold text-title  uppercase tracking-widest ml-1 flex items-center gap-1">
                 Observação
-                <span className="text-[#8A98A8]  lowercase font-normal ml-1">(opcional)</span>
+                <span className="text-title  lowercase font-normal ml-1">(opcional)</span>
               </label>
-              <textarea value={observation} onChange={e => setObservation(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-[#F4F7FB]  border-none text-sm min-h-[80px] " />
+              <textarea value={observation} onChange={e => setObservation(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-primary/40  border-none text-sm min-h-[80px] " />
             </div>
           </div>
           
-          <footer className="p-6 border-t border-[#D0D8E4]  shrink-0 bg-[#FFFFFF]  sticky bottom-0 z-10 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <footer className="p-6 border-t border-title/30  shrink-0 bg-surface  sticky bottom-0 z-10 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
             {showErrorMsg && <p className="text-red-500 text-[13px] font-bold text-center mb-4">Preencha todos os campos obrigatórios</p>}
-            <Button type="submit" fullWidth className="h-14 font-black uppercase tracking-widest shadow-xl shadow-[#2898D8]/20">
+            <Button type="submit" fullWidth className="h-14 font-black uppercase tracking-widest shadow-xl shadow-secondary/20">
               Salvar Alterações
             </Button>
           </footer>
@@ -3082,21 +3084,21 @@ const ProfileModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#242424]/40 backdrop-blur-md animate-in fade-in">
-            <div className="bg-[#FFFFFF]  w-full max-w-[95%] sm:max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] relative border border-[#D0D8E4] ">
-                <header className="p-6 border-b border-[#D0D8E4]  flex justify-between items-center shrink-0 bg-[#FFFFFF]  sticky top-0 z-10">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-surface/40 backdrop-blur-md animate-in fade-in">
+            <div className="bg-surface  w-full max-w-[95%] sm:max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] relative border border-title/30 ">
+                <header className="p-6 border-b border-title/30  flex justify-between items-center shrink-0 bg-surface  sticky top-0 z-10">
                     <div>
-                        <h2 className="text-lg font-bold text-[#1A2332]  uppercase tracking-tight">Meu Perfil</h2>
-                        <p className="text-[10px] text-[#8A98A8] font-medium uppercase tracking-widest">Personalize seu Aplicativo</p>
+                        <h2 className="text-lg font-bold text-white  uppercase tracking-tight">Meu Perfil</h2>
+                        <p className="text-[10px] text-title font-medium uppercase tracking-widest">Personalize seu Aplicativo</p>
                     </div>
-                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#F0F2F5]  flex items-center justify-center text-[#8A98A8] hover:bg-[#E4E7EB] :bg-[#3A3A3A] transition-colors">
+                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-primary/40  flex items-center justify-center text-title hover:bg-primary/40 :bg-surface transition-colors">
                       <X size={20} />
                     </button>
                 </header>
                 
-                <div className="flex border-b border-[#D0D8E4]  shrink-0 bg-[#FFFFFF]  sticky top-[88px] z-10">
-                   <button onClick={() => setModalTab('personal')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${modalTab === 'personal' ? 'text-[#2898D8] border-b-2 border-[#2898D8]' : 'text-[#B0BCC7]'}`}>Pessoal</button>
-                   <button onClick={() => setModalTab('business')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${modalTab === 'business' ? 'text-[#2898D8] border-b-2 border-[#2898D8]' : 'text-[#B0BCC7]'}`}>Negócio</button>
+                <div className="flex border-b border-title/30  shrink-0 bg-surface  sticky top-[88px] z-10">
+                   <button onClick={() => setModalTab('personal')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${modalTab === 'personal' ? 'text-secondary border-b-2 border-secondary' : 'text-title'}`}>Pessoal</button>
+                   <button onClick={() => setModalTab('business')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${modalTab === 'business' ? 'text-secondary border-b-2 border-secondary' : 'text-title'}`}>Negócio</button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
@@ -3104,11 +3106,11 @@ const ProfileModal: React.FC<{
                       {modalTab === 'personal' ? (
                         <div className="space-y-4">
                           <div className="flex flex-col items-center gap-3">
-                              <div onClick={() => photoInputRef.current?.click()} className="w-20 h-20 rounded-full bg-[#F4F7FB]  border-2 border-dashed border-[#D0D8E4]  flex items-center justify-center overflow-hidden cursor-pointer">
-                                  {formData.photo ? <img src={formData.photo} className="w-full h-full object-cover" alt="Foto" /> : <User size={32} className="text-[#B0BCC7]" />}
+                              <div onClick={() => photoInputRef.current?.click()} className="w-20 h-20 rounded-full bg-primary/40  border-2 border-dashed border-title/30  flex items-center justify-center overflow-hidden cursor-pointer">
+                                  {formData.photo ? <img src={formData.photo} className="w-full h-full object-cover" alt="Foto" /> : <User size={32} className="text-title" />}
                               </div>
                               <input type="file" ref={photoInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
-                              <p className="text-[10px] font-bold text-[#8A98A8] uppercase tracking-widest">Sua Foto de Perfil</p>
+                              <p className="text-[10px] font-bold text-title uppercase tracking-widest">Sua Foto de Perfil</p>
                           </div>
                           <Input label="Seu Nome" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                           <Input label="Telefone Pessoal" value={formData.personalPhone} onChange={e => setFormData({...formData, personalPhone: formatPhone(e.target.value)})} maxLength={15} />
@@ -3116,8 +3118,8 @@ const ProfileModal: React.FC<{
                       ) : (
                         <div className="space-y-4">
                           <div className="flex flex-col items-center gap-3">
-                              <div onClick={() => logoInputRef.current?.click()} className="w-20 h-20 rounded-2xl bg-[#F4F7FB]  border-2 border-dashed border-[#D0D8E4]  flex items-center justify-center overflow-hidden cursor-pointer">
-                                  {formData.logo ? <img src={formData.logo} className="w-full h-full object-cover" alt="Logo" /> : <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#B0BCC7]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
+                              <div onClick={() => logoInputRef.current?.click()} className="w-20 h-20 rounded-2xl bg-primary/40  border-2 border-dashed border-title/30  flex items-center justify-center overflow-hidden cursor-pointer">
+                                  {formData.logo ? <img src={formData.logo} className="w-full h-full object-cover" alt="Logo" /> : <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-title" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
                               </div>
                               <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
                           </div>
@@ -3128,8 +3130,8 @@ const ProfileModal: React.FC<{
                       )}
                   </div>
                   
-                  <footer className="p-6 border-t border-[#D0D8E4]  shrink-0 bg-[#FFFFFF]  sticky bottom-0 z-10 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-                    <Button type="submit" fullWidth className="h-14 font-black uppercase tracking-widest shadow-xl shadow-[#2898D8]/20">
+                  <footer className="p-6 border-t border-title/30  shrink-0 bg-surface  sticky bottom-0 z-10 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+                    <Button type="submit" fullWidth className="h-14 font-black uppercase tracking-widest shadow-xl shadow-secondary/20">
                       Salvar Perfil
                     </Button>
                   </footer>
@@ -3273,10 +3275,11 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#FFFFFF]  p-4 rounded-3xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] space-y-3">
-        <h2 className="font-semibold text-sm text-[#1A2332]  uppercase tracking-widest">Novo Serviço</h2>
+      <div className="bg-surface p-4 rounded-3xl space-y-3">
+        <h2 className="font-semibold text-sm text-white  uppercase tracking-widest">Novo Serviço</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
           <Input 
+            inputClassName="bg-primary/60 border-white/10 text-white placeholder:text-muted"
             label="Nome do Serviço" 
             placeholder="Ex: Corte de Cabelo"
             value={formData.name} 
@@ -3289,6 +3292,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
           <div className="flex gap-3">
             <div className="flex-1">
               <Input 
+                inputClassName="bg-primary/60 border-white/10 text-white placeholder:text-muted"
                 label="Preço" 
                 placeholder="R$ 0,00"
                 value={formData.price} 
@@ -3297,11 +3301,11 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
               />
             </div>
             <div className="flex-1 flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-[#8A98A8]  ml-1 uppercase tracking-widest">Duração</label>
+              <label className="text-[10px] font-bold text-title  ml-1 uppercase tracking-widest">Duração</label>
               <select 
                 value={formData.duration} 
                 onChange={e => setFormData({...formData, duration: e.target.value})}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#D0D8E4]  bg-[#FFFFFF]  text-[#1A2332]  text-sm focus:outline-none focus:ring-2 focus:ring-[#2898D8]/20 transition-colors h-[42px]"
+                className="w-full px-4 py-2.5 rounded-xl border border-title/30  bg-surface  text-white  text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-colors h-[42px]"
               >
                 {durationOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -3315,26 +3319,26 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
 
       <div className="pt-2">
         <div className="flex items-center gap-4 mb-4">
-          <div className="h-px flex-1 bg-[#D0D8E4] "></div>
-          <h3 className="text-[10px] font-black text-[#8A98A8] uppercase tracking-[0.2em]">Serviços Cadastrados</h3>
-          <div className="h-px flex-1 bg-[#D0D8E4] "></div>
+          <div className="h-px flex-1 bg-title/30 "></div>
+          <h3 className="text-[10px] font-black text-title border-white/10 uppercase tracking-[0.2em]">Serviços Cadastrados</h3>
+          <div className="h-px flex-1 bg-title/30 "></div>
         </div>
-        <Reorder.Group axis="y" values={services} onReorder={reorderServices} className="space-y-2">
+        <Reorder.Group axis="y" values={services} onReorder={reorderServices} className="flex flex-col">
           {services.map((s) => (
             <Reorder.Item 
               key={s.id}
               value={s}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#FFFFFF]  p-3 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] flex items-center gap-3 group"
+              className="bg-surface p-3 flex items-center gap-3 group border-b border-white/5 last:border-0"
             >
-              <div className="cursor-grab active:cursor-grabbing text-[#B0BCC7]  hover:text-[#8A98A8] transition-colors shrink-0">
+              <div className="cursor-grab active:cursor-grabbing text-title  hover:text-title transition-colors shrink-0">
                 <GripVertical size={20} />
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-[#1A2332]  text-base truncate">{s.name}</p>
-                <p className="text-[#2898D8]  font-medium text-xs">
+                <p className="font-bold text-white  text-base truncate">{s.name}</p>
+                <p className="text-secondary  font-medium text-xs">
                   {formatCurrency(s.price)} | {s.duration} min
                 </p>
               </div>
@@ -3342,7 +3346,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
               <div className="flex gap-1">
                 <button 
                   onClick={() => startEditing(s)} 
-                  className="p-2 text-[#8A98A8] hover:text-[#2898D8] transition-colors"
+                  className="p-2 text-title hover:text-secondary transition-colors"
                 >
                   <Edit3 size={18} />
                 </button>
@@ -3366,7 +3370,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
               onClick={() => setEditingService(null)}
-              className="absolute inset-0 bg-[#111827]/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-surface/40 backdrop-blur-sm"
             />
             <motion.div 
               initial={{ y: '100%', opacity: 1 }}
@@ -3379,14 +3383,14 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
               onDragEnd={(e, info) => {
                 if (info.offset.y > 100) setEditingService(null);
               }}
-              className="w-full max-w-lg bg-[#FFFFFF]  rounded-t-3xl sm:rounded-3xl shadow-2xl relative flex flex-col max-h-[90vh]"
+              className="w-full max-w-lg bg-surface  rounded-t-3xl sm:rounded-3xl shadow-2xl relative flex flex-col max-h-[90vh]"
             >
-              <div className="w-12 h-1.5 bg-[#D0D8E4]  rounded-full mx-auto my-3 shrink-0" />
+              <div className="w-12 h-1.5 bg-title/30  rounded-full mx-auto my-3 shrink-0" />
               <div className="px-6 flex justify-between items-center pb-2 shrink-0">
-                <h2 className="text-lg font-bold text-[#1A2332] ">Editar Serviço</h2>
+                <h2 className="text-lg font-bold text-white ">Editar Serviço</h2>
                 <button 
                   onClick={() => setEditingService(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F4F7FB]  text-[#8A98A8] hover:bg-[#E4E7EB] :bg-[#3A3A3A] transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/40  text-title hover:bg-primary/40 :bg-surface transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -3395,7 +3399,8 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
               <div className="p-6 overflow-y-auto">
                 <form id="edit-service-form" onSubmit={handleEditSubmit} className="space-y-4">
                   <Input 
-                    label="Nome do Serviço" 
+            inputClassName="bg-primary/60 border-white/10 text-white placeholder:text-muted"
+            label="Nome do Serviço" 
                     placeholder="Ex: Corte de Cabelo"
                     value={editFormData.name} 
                     onChange={e => {
@@ -3407,7 +3412,8 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
                   <div className="flex gap-3">
                     <div className="flex-1">
                       <Input 
-                        label="Preço" 
+                inputClassName="bg-primary/60 border-white/10 text-white placeholder:text-muted"
+                label="Preço" 
                         placeholder="R$ 0,00"
                         value={editFormData.price} 
                         onChange={(e) => {
@@ -3419,11 +3425,11 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
                       />
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-[#8A98A8]  ml-1 uppercase tracking-widest">Duração</label>
+                      <label className="text-[10px] font-bold text-title  ml-1 uppercase tracking-widest">Duração</label>
                       <select 
                         value={editFormData.duration} 
                         onChange={e => setEditFormData({...editFormData, duration: e.target.value})}
-                        className="w-full px-4 py-2.5 rounded-xl border border-[#D0D8E4]  bg-[#FFFFFF]  text-[#1A2332]  text-sm focus:outline-none focus:ring-2 focus:ring-[#2898D8]/20 transition-colors h-[42px]"
+                        className="w-full px-4 py-2.5 rounded-xl border border-title/30  bg-surface  text-white  text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-colors h-[42px]"
                       >
                         {durationOptions.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -3433,7 +3439,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
                   </div>
                 </form>
               </div>
-              <div className="p-6 border-t border-[#D0D8E4]  shrink-0">
+              <div className="p-6 border-t border-title/30  shrink-0">
                 <Button fullWidth form="edit-service-form" type="submit" className="h-12 shadow-md">
                   Salvar Alterações
                 </Button>
@@ -3474,18 +3480,18 @@ const WeeklyConfigModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="bg-[#FFFFFF]  w-[90%] max-w-md rounded-[32px] shadow-2xl flex flex-col max-h-[85vh] relative z-[200] overflow-hidden"
+        className="bg-surface  w-[90%] max-w-md rounded-[32px] shadow-2xl flex flex-col max-h-[85vh] relative z-[200] overflow-hidden"
       >
-        <header className="px-6 pt-6 pb-4 flex justify-between items-center shrink-0 bg-[#FFFFFF]  sticky top-0 z-10">
-          <h2 className="text-lg font-bold text-[#1A2332]  uppercase tracking-tight">Padrão Semanal</h2>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#F0F2F5]  text-[#8A98A8] flex items-center justify-center hover:bg-[#E4E7EB] :bg-[#3A3A3A] transition-colors">
+        <header className="px-6 pt-6 pb-4 flex justify-between items-center shrink-0 bg-surface  sticky top-0 z-10">
+          <h2 className="text-lg font-bold text-white  uppercase tracking-tight">Padrão Semanal</h2>
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-primary/40  text-title flex items-center justify-center hover:bg-primary/40 :bg-surface transition-colors">
             <X size={20} />
           </button>
         </header>
         
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-2 space-y-6">
             <div className="space-y-3">
-              <label className="text-[10px] font-medium text-[#8A98A8]  uppercase tracking-widest ml-1">Selecione o Dia</label>
+              <label className="text-[10px] font-medium text-title  uppercase tracking-widest ml-1">Selecione o Dia</label>
               <div className="grid grid-cols-7 gap-1 shrink-0">
                 {WEEKDAYS.map((name, idx) => {
                   const dayConfig = weeklySchedule[idx];
@@ -3495,7 +3501,7 @@ const WeeklyConfigModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       key={idx} 
                       onClick={() => setSelectedDay(idx)} 
                       className={`flex flex-col items-center py-2.5 rounded-xl transition-all 
-                        ${isSelected ? 'bg-[#2898D8] text-white shadow-md' : 'bg-[#F4F7FB]  text-[#8A98A8] '}`}
+                        ${isSelected ? 'bg-secondary text-white shadow-md' : 'bg-primary/40  text-title '}`}
                     >
                       <span className="text-[9px] font-bold uppercase tracking-tighter">{name.substring(0, 3)}</span>
                       {dayConfig && (
@@ -3508,11 +3514,11 @@ const WeeklyConfigModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
             
             {/* Day Status Line */}
-            <div className="py-4 border-y border-[#D0D8E4]  flex items-center justify-between">
-              <span className="text-[13px] font-bold text-[#1A2332] ">Aberto para agendamentos</span>
+            <div className="py-4 border-y border-title/30  flex items-center justify-between">
+              <span className="text-[13px] font-bold text-white ">Aberto para agendamentos</span>
               <button 
                 onClick={() => updateDayConfig(selectedDay, { isOpen: !currentConfig?.isOpen })} 
-                className={`w-12 h-7 rounded-full transition-colors relative ${currentConfig?.isOpen ? 'bg-green-500' : 'bg-[#D0D8E4] '}`}
+                className={`w-12 h-7 rounded-full transition-colors relative ${currentConfig?.isOpen ? 'bg-green-500' : 'bg-title/30 '}`}
               >
                 <div className={`w-5 h-5 bg-surface rounded-full absolute top-1 transition-all shadow-sm ${currentConfig?.isOpen ? 'left-6' : 'left-1'}`}></div>
               </button>
@@ -3527,24 +3533,24 @@ const WeeklyConfigModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
                 {/* Summary Line */}
                 <div className="text-center">
-                  <p className="text-[12px] text-[#8A98A8] font-medium">
+                  <p className="text-[12px] text-title font-medium">
                     {availableCount} disponíveis · {blockedCount} bloqueados
                   </p>
                 </div>
                 
                 <div className="space-y-3">
                   <div className="flex flex-col gap-1 ml-1">
-                    <label className="text-[10px] font-medium text-[#8A98A8]  uppercase tracking-widest">Horários Disponíveis</label>
-                    <span className="text-[11px] text-[#8A98A8] font-medium">Toque para bloquear/desbloquear</span>
+                    <label className="text-[10px] font-medium text-title  uppercase tracking-widest">Horários Disponíveis</label>
+                    <span className="text-[11px] text-title font-medium">Toque para bloquear/desbloquear</span>
                   </div>
                   <div className="grid grid-cols-5 gap-1.5">
                       {previewSlots.map(slot => (
                         <button 
                           key={slot} 
                           onClick={() => toggleWeeklyBreak(selectedDay, slot)} 
-                          className={`h-[44px] flex items-center justify-center rounded-xl text-[10px] font-bold transition-all shadow-[0_1px_4px_rgba(0,0,0,0.06)]
+                          className={`h-[44px] flex items-center justify-center rounded-xl text-[10px] font-bold transition-all 
                             ${!currentConfig.breaks.includes(slot) 
-                              ? 'bg-[#FFFFFF]  text-[#1A2332] ' 
+                              ? 'bg-surface  text-white ' 
                               : 'bg-red-50  text-red-400 opacity-60'}`}
                         >
                           {slot}
@@ -3557,11 +3563,11 @@ const WeeklyConfigModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             {/* Spacer for gradient */}
             <div className="h-4" />
           {/* Bottom Fade Gradient */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#FFFFFF]  to-transparent pointer-events-none z-20"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-primary  to-transparent pointer-events-none z-20"></div>
         </div>
         
-        <footer className="px-6 pt-4 pb-6 shrink-0 bg-[#FFFFFF]  sticky bottom-0 z-10 border-t border-[#F1F5F9] ">
-          <Button fullWidth onClick={onClose} className="h-14 font-black uppercase tracking-widest shadow-xl shadow-[#2898D8]/20">
+        <footer className="px-6 pt-4 pb-6 shrink-0 bg-surface  sticky bottom-0 z-10 border-t border-title/30 ">
+          <Button fullWidth onClick={onClose} className="h-14 font-black uppercase tracking-widest shadow-xl shadow-secondary/20">
             Salvar e Fechar
           </Button>
         </footer>
@@ -3620,10 +3626,10 @@ const CustomersView: React.FC<{
   });
 
   return (
-    <div className="space-y-2 relative pb-24">
+    <div className="flex flex-col gap-3 px-4 pb-24 relative">
       <div className="space-y-2">
-        <Input label="Buscar Cliente" placeholder="Nome ou telefone..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-        <p className="text-[10px] text-[#8A98A8]  font-medium ml-1">
+        <Input label="Buscar Cliente" placeholder="Nome ou telefone..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} inputClassName="bg-surface border-white/10 text-white placeholder:text-muted shadow-[0_2px_8px_rgba(0,0,0,0.3)]" />
+        <p className="text-[10px] text-title uppercase tracking-widest font-bold px-1 mb-1">
           {searchTerm 
             ? `${customerList.length} ${customerList.length === 1 ? 'resultado' : 'resultados'} para "${searchTerm}"`
             : `${customerList.length} ${customerList.length === 1 ? 'cliente cadastrado' : 'clientes cadastrados'}`
@@ -3632,63 +3638,65 @@ const CustomersView: React.FC<{
       </div>
 
       {customerList.length === 0 ? (
-        <div className="bg-[#FFFFFF]  p-12 rounded-[2rem] border-2 border-dashed border-[#D0D8E4]  text-center space-y-3">
-          <div className="w-12 h-12 bg-[#F4F7FB]  rounded-full flex items-center justify-center mx-auto text-[#B0BCC7] ">
+        <div className="bg-surface  p-12 rounded-[2rem] border-2 border-dashed border-title/30  text-center space-y-3">
+          <div className="w-12 h-12 bg-primary/40  rounded-full flex items-center justify-center mx-auto text-title ">
             <UserX size={24} />
           </div>
-          <p className="text-[#8A98A8] font-bold text-sm uppercase tracking-widest">Nenhum cliente encontrado</p>
+          <p className="text-title font-bold text-sm uppercase tracking-widest">Nenhum cliente encontrado</p>
         </div>
       ) : (
-        customerList.map(cust => {
-          return (
-            <div 
-              key={cust.phone} 
-              onClick={() => setSelectedPhone(normalizePhone(cust.phone))} 
-              className="bg-[#FFFFFF]  px-4 py-[10px] rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] cursor-pointer flex items-center h-16"
-            >
-              <div className={`w-9 h-9 rounded-full ${getAvatarColor(cust.name)} flex items-center justify-center text-white font-bold text-[13px] shrink-0 shadow-sm overflow-hidden mr-3`}>
-                {cust.avatar ? (
-                  <img src={cust.avatar} className="w-full h-full object-cover" alt={cust.name} referrerPolicy="no-referrer" />
-                ) : (
-                  getInitials(cust.name)
-                )}
-              </div>
-              
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <h3 className="font-semibold text-[#1A2332]  text-sm truncate leading-tight">
-                  {capitalizeName(cust.name)}
-                </h3>
-                <p className="text-xs text-[#8A98A8]  leading-tight">
-                  {cust.phone}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0 ml-2">
-                {cust.cutCount === 0 && (
-                  <div className="bg-green-50  px-1.5 py-0.5 rounded-md border border-green-100 ">
-                    <span className="text-[9px] text-green-600  font-black uppercase tracking-widest">NOVO</span>
-                  </div>
-                )}
+        <div className="flex flex-col gap-2">
+          {customerList.map(cust => {
+            return (
+              <div 
+                key={cust.phone} 
+                onClick={() => setSelectedPhone(normalizePhone(cust.phone))} 
+                className="bg-surface rounded-2xl px-4 py-3 flex items-center gap-3 h-16 cursor-pointer"
+              >
+                <div className={`w-9 h-9 rounded-full ${getAvatarColor(cust.name)} flex items-center justify-center text-white font-bold text-[13px] shrink-0 shadow-sm overflow-hidden mr-3`}>
+                  {cust.avatar ? (
+                    <img src={cust.avatar} className="w-full h-full object-cover" alt={cust.name} referrerPolicy="no-referrer" />
+                  ) : (
+                    getInitials(cust.name)
+                  )}
+                </div>
                 
-                <a 
-                  href={`https://wa.me/55${cust.phone.replace(/\D/g, '')}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center text-white hover:scale-110 transition-transform"
-                >
-                  <FaWhatsapp size={18} />
-                </a>
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h3 className="font-semibold text-white  text-sm truncate leading-tight">
+                    {capitalizeName(cust.name)}
+                  </h3>
+                  <p className="text-xs text-title  leading-tight">
+                    {cust.phone}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  {cust.cutCount === 0 && (
+                    <div className="bg-green-50  px-1.5 py-0.5 rounded-md border border-green-100 ">
+                      <span className="text-[9px] text-green-600  font-black uppercase tracking-widest">NOVO</span>
+                    </div>
+                  )}
+                  
+                  <a 
+                    href={`https://wa.me/55${cust.phone.replace(/\D/g, '')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center text-white hover:scale-110 transition-transform"
+                  >
+                    <FaWhatsapp size={18} />
+                  </a>
+                </div>
               </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
 
       {/* FAB */}
       <button 
         onClick={onAddCustomer}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-[#2898D8] text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-[#2098F0] active:scale-90 transition-all z-50 pointer-events-auto"
+        className="fixed bottom-24 right-6 w-14 h-14 bg-secondary text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-secondary active:scale-90 transition-all z-50 pointer-events-auto"
       >
         <Plus size={28} strokeWidth={3} />
       </button>
@@ -3843,29 +3851,29 @@ const CustomerDetail: React.FC<{
   return (
     <div className="animate-fade-in pb-10">
       <div className="flex items-center justify-between mb-6">
-        <button onClick={onBack} className="text-[10px] font-black text-[#8A98A8] flex items-center gap-1 uppercase tracking-widest hover:text-[#2898D8] transition-colors">
+        <button onClick={onBack} className="text-[10px] font-black text-title flex items-center gap-1 uppercase tracking-widest hover:text-secondary transition-colors">
           <ChevronLeft size={16} />
           Voltar
         </button>
         <button 
           onClick={() => onNewAppointment(customer)}
-          className="text-[10px] font-black text-white flex items-center gap-2 bg-[#2898D8] px-4 py-2 rounded-full uppercase tracking-widest shadow-md shadow-[#2898D8]/20 active:scale-95 transition-all"
+          className="text-[10px] font-black text-white flex items-center gap-2 bg-secondary px-4 py-2 rounded-full uppercase tracking-widest shadow-md shadow-secondary/20 active:scale-95 transition-all"
         >
           <Calendar size={14} />
           Novo Agendamento
         </button>
       </div>
-      <div className="bg-[#FFFFFF]  p-6 rounded-3xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] mb-6 text-center relative overflow-hidden">
+      <div className="bg-surface  p-6 rounded-3xl mb-6 text-center relative overflow-hidden">
         <button 
           onClick={() => isEditing ? handleCancelEdit() : setIsEditing(true)}
-          className="absolute top-4 right-4 w-10 h-10 bg-[#F4F7FB]  text-[#8A98A8] rounded-full flex items-center justify-center hover:bg-[#E4E7EB] transition-colors"
+          className="absolute top-4 right-4 w-10 h-10 bg-primary/40  text-title rounded-full flex items-center justify-center hover:bg-primary/40 transition-colors"
         >
           {isEditing ? <X size={18} /> : <Edit3 size={18} />}
         </button>
 
         <div className="flex flex-col items-center mb-4">
           <div className="relative group">
-            <div className={`w-24 h-24 rounded-full ${getAvatarColor(customer.name)} flex items-center justify-center text-white font-black text-2xl shadow-xl overflow-hidden border-4 border-[#FFFFFF] `}>
+            <div className={`w-24 h-24 rounded-full ${getAvatarColor(customer.name)} flex items-center justify-center text-white font-black text-2xl shadow-xl overflow-hidden border-4 border-white `}>
               {customer.avatar ? (
                 <img src={customer.avatar} className="w-full h-full object-cover" alt={customer.name} />
               ) : (
@@ -3874,7 +3882,7 @@ const CustomerDetail: React.FC<{
             </div>
             <button 
               onClick={() => { setPhotoType('avatar'); setShowActionSheet(true); }}
-              className="absolute bottom-0 right-0 w-8 h-8 bg-[#2898D8] text-white rounded-full flex items-center justify-center border-2 border-[#FFFFFF]  shadow-lg hover:bg-[#2098F0] transition-colors"
+              className="absolute bottom-0 right-0 w-8 h-8 bg-secondary text-white rounded-full flex items-center justify-center border-2 border-white  shadow-lg hover:bg-secondary transition-colors"
             >
               <Camera size={14} />
             </button>
@@ -3887,26 +3895,26 @@ const CustomerDetail: React.FC<{
               type="text" 
               value={editName} 
               onChange={e => setEditName(e.target.value)}
-              className="w-full bg-[#F4F7FB]  border-none rounded-xl p-3 text-center font-bold text-[#1A2332] "
+              className="w-full bg-primary/40  border-none rounded-xl p-3 text-center font-bold text-white "
               placeholder="Nome do cliente"
             />
             <input 
               type="tel" 
               value={editPhone} 
               onChange={e => setEditPhone(e.target.value)}
-              className="w-full bg-[#F4F7FB]  border-none rounded-xl p-3 text-center text-[#8A98A8] "
+              className="w-full bg-primary/40  border-none rounded-xl p-3 text-center text-title "
               placeholder="Telefone"
             />
             <Button fullWidth onClick={handleSaveEdit} className="h-10 rounded-xl bg-green-600">Salvar</Button>
           </div>
         ) : (
           <>
-            <h2 className="text-lg font-bold text-[#1A2332] ">{capitalizeName(customer.name)}</h2>
-            <p className="text-[#8A98A8]  text-xs mb-4">{customer.phone}</p>
+            <h2 className="text-lg font-bold text-white ">{capitalizeName(customer.name)}</h2>
+            <p className="text-title  text-xs mb-4">{customer.phone}</p>
           </>
         )}
         <div className="flex justify-center gap-3">
-          <div className="bg-[#2898D8] text-white px-6 py-2 rounded-2xl shadow-lg shadow-[#2898D8]/20 flex-1 max-w-[120px]">
+          <div className="bg-secondary/20 text-secondary border border-secondary/30 px-6 py-2 rounded-2xl shadow-lg flex-1 max-w-[120px]">
             <span className="font-black text-xl">{customer.cutCount}</span>
             <span className="text-[8px] ml-2 uppercase font-black tracking-widest opacity-80">
               {customer.cutCount === 1 ? 'corte' : 'cortes'}
@@ -3914,8 +3922,8 @@ const CustomerDetail: React.FC<{
           </div>
           <div className={`px-6 py-2 rounded-2xl shadow-lg flex-1 max-w-[120px] transition-all ${
             (customer.noShowCount || 0) > 0 
-              ? 'bg-amber-500 text-white shadow-amber-100' 
-              : 'bg-[#F4F7FB]  text-[#B0BCC7]  border border-[#D0D8E4]  shadow-none'
+              ? 'bg-amber-500/20 text-amber-300 border border-amber-400/20' 
+              : 'bg-primary/40  text-title  border border-title/30  shadow-none'
           }`}>
             <span className="font-black text-xl">{customer.noShowCount || 0}</span>
             <span className="text-[8px] ml-2 uppercase font-black tracking-widest opacity-80">
@@ -3925,29 +3933,29 @@ const CustomerDetail: React.FC<{
         </div>
       </div>
       <div className="space-y-6">
-        <h3 className="font-semibold text-[#1A2332]  text-sm uppercase tracking-widest mb-4">Histórico</h3>
-        <div className="bg-[#FFFFFF]  rounded-3xl border border-[#D0D8E4]  overflow-hidden divide-y divide-[#D0D8E4] ">
+        <h3 className="font-semibold text-white  text-sm uppercase tracking-widest mb-4">Histórico</h3>
+        <div className="space-y-3">
           {isLoadingData && localHistory.length === 0 ? (
-            <div className="p-8 text-center text-[#8A98A8] text-xs animate-pulse">Carregando histórico...</div>
+            <div className="p-8 text-center text-title text-xs animate-pulse">Carregando histórico...</div>
           ) : localHistory.length === 0 ? (
-            <div className="p-8 text-center text-[#8A98A8] text-xs italic">Nenhum histórico encontrado.</div>
+            <div className="p-8 text-center text-title text-xs italic">Nenhum histórico encontrado.</div>
           ) : (
             localHistory.map((h: any, i) => {
               const isNoShow = h.status === 'no-show' || h.service.includes('Falta registrada');
               return (
-                <div key={i} className={`p-4 flex justify-between items-center ${isNoShow ? 'bg-amber-50/30 ' : ''}`}>
+                <div key={i} className={`p-4 rounded-xl flex justify-between items-center bg-surface ${isNoShow ? "border-amber-400/20" : ""}`}>
                   <div>
-                    <span className={`text-xs font-bold block ${isNoShow ? 'text-amber-700 ' : 'text-[#1A2332] '}`}>{h.service}</span>
+                    <span className={`text-xs font-bold block ${isNoShow ? "text-amber-300 " : "text-white "}`}>{h.service}</span>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-[#1A2332]  font-bold uppercase">{formatDate(h.date)}</span>
-                      {h.time && <span className="text-[9px] text-[#8A98A8]  font-medium uppercase">{h.time}</span>}
+                      <span className="text-[10px] text-white  font-bold uppercase">{formatDate(h.date)}</span>
+                      {h.time && <span className="text-[9px] text-title  font-medium uppercase">{h.time}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {h.price && h.price > 0 ? (
-                      <span className="text-[10px] font-black text-[#8A98A8]">{formatCurrency(h.price)}</span>
+                      <span className="text-[10px] font-black text-title">{formatCurrency(h.price)}</span>
                     ) : null}
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${isNoShow ? 'bg-amber-100 text-amber-600' : 'bg-green-50 text-green-600'}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${isNoShow ? "bg-amber-500/10 text-amber-300" : "bg-green-500/10 text-green-400"}`}>
                       {isNoShow ? <ThumbsDown size={14} /> : '✓'}
                     </div>
                   </div>
@@ -3957,24 +3965,24 @@ const CustomerDetail: React.FC<{
           )}
         </div>
         <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-[#1A2332]  text-sm uppercase tracking-widest">Fotos</h3>
-            <button onClick={() => { setPhotoType('history'); setShowActionSheet(true); }} className="text-[9px] bg-[#2898D8] text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest">+ Adicionar foto</button>
+            <h3 className="font-semibold text-white  text-sm uppercase tracking-widest">Fotos</h3>
+            <button onClick={() => { setPhotoType('history'); setShowActionSheet(true); }} className="text-[9px] bg-secondary text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest">+ Adicionar foto</button>
             <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleFileChange} />
             <input type="file" accept="image/*" ref={galleryInputRef} className="hidden" onChange={handleFileChange} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           {isLoadingData && localPhotos.length === 0 ? (
-            <div className="col-span-2 p-8 text-center text-[#8A98A8] text-xs animate-pulse">Carregando fotos...</div>
+            <div className="col-span-2 p-8 text-center text-title text-xs animate-pulse">Carregando fotos...</div>
           ) : localPhotos.length === 0 ? (
-            <div className="col-span-2 p-8 text-center text-[#8A98A8] text-xs italic">Nenhuma foto encontrada.</div>
+            <div className="col-span-2 p-8 text-center text-title text-xs italic">Nenhuma foto encontrada.</div>
           ) : (
             localPhotos.map((photo, idx) => (
               <div key={idx} className="flex flex-col gap-2">
-                <div className="aspect-[3/4] rounded-2xl overflow-hidden border-2 border-[#FFFFFF]  shadow-sm">
+                <div className="aspect-[3/4] rounded-2xl overflow-hidden border-2 border-white  shadow-sm">
                   <img src={photo.url} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 {photo.description && (
-                  <p className="text-[10px] text-[#8A98A8]  italic px-1 leading-tight">
+                  <p className="text-[10px] text-title  italic px-1 leading-tight">
                     {photo.description}
                   </p>
                 )}
@@ -4028,14 +4036,14 @@ const InfoTooltip = ({ text }: { text: string }) => {
   return (
     <div className="relative inline-flex flex-shrink-0">
       <button ref={btnRef} onClick={handleOpen}
-        className="text-[#8A98A8]  text-[11px] leading-none p-0.5 outline-none hover:text-[#2898D8] transition-colors">
+        className="text-title  text-[11px] leading-none p-0.5 outline-none hover:text-secondary transition-colors">
         <Info size={12} />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className={`absolute z-50 top-5 ${side === 'right' ? 'left-0' : 'right-0'}
-            bg-[#1A2332] text-white text-[11px] rounded-xl p-3 w-[170px] shadow-xl leading-relaxed`}>
+            bg-surface text-white text-[11px] rounded-xl p-3 w-[170px] shadow-xl leading-relaxed`}>
             {text}
           </div>
         </>
@@ -4050,8 +4058,8 @@ const TodayScheduleList: React.FC<{ appointments: Appointment[], date: string }>
     .sort((a, b) => a.time.localeCompare(b.time));
 
   return (
-    <div className="bg-[#FFFFFF]  p-5 rounded-[2rem] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#D0D8E4] ">
-      <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8A98A8] mb-4 text-center">
+    <div className="bg-surface p-5 rounded-[2rem] ">
+      <h4 className="text-[10px] font-bold uppercase tracking-widest text-title mb-4 text-center">
         {date === getTodayString() ? 'Sua agenda de hoje' : `Agenda de ${formatDateShort(date)}`}
       </h4>
       <div className="space-y-3">
@@ -4062,17 +4070,17 @@ const TodayScheduleList: React.FC<{ appointments: Appointment[], date: string }>
               : apt.status === 'no-show' ? 'no-show'
               : 'scheduled';
             return (
-              <div key={idx} className="flex items-center justify-between gap-2 bg-surface  rounded-2xl px-4 py-3 border border-[#E8EEF5] ">
-                <span className="text-xs font-mono text-[#8A98A8] w-10 flex-shrink-0">{apt.time}</span>
+              <div key={idx} className="flex items-center justify-between gap-2 bg-surface  rounded-2xl px-4 py-3 border border-title/30 ">
+                <span className="text-xs font-mono text-title w-10 flex-shrink-0">{apt.time}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-[#1A2332]  truncate">{apt.clientName}</p>
-                  <p className="text-[11px] text-[#8A98A8] truncate">{apt.service}</p>
+                  <p className="text-sm font-bold text-white  truncate">{apt.clientName}</p>
+                  <p className="text-[11px] text-title truncate">{apt.service}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <span className={`text-sm font-bold
                     ${status === 'finished' ? 'text-green-500' : ''}
-                    ${status === 'scheduled' ? 'text-[#8A98A8]' : ''}
-                    ${status === 'no-show' ? 'line-through text-[#8A98A8] opacity-50' : ''}
+                    ${status === 'scheduled' ? 'text-title' : ''}
+                    ${status === 'no-show' ? 'line-through text-title opacity-50' : ''}
                   `}>
                     {formatCurrency(apt.price ?? 0)}
                   </span>
@@ -4082,7 +4090,7 @@ const TodayScheduleList: React.FC<{ appointments: Appointment[], date: string }>
                     </span>
                   )}
                   {status === 'scheduled' && (
-                    <span className="text-[10px] font-semibold text-[#8A98A8] bg-[#F0F4F8]  px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-semibold text-title bg-primary/40  px-2 py-0.5 rounded-full">
                       Agendado
                     </span>
                   )}
@@ -4096,7 +4104,7 @@ const TodayScheduleList: React.FC<{ appointments: Appointment[], date: string }>
             );
           })
         ) : (
-          <div className="flex flex-col items-center justify-center p-6 text-center text-[#8A98A8]">
+          <div className="flex flex-col items-center justify-center p-6 text-center text-title">
             <Calendar size={24} className="mb-2 opacity-30" strokeWidth={1.5} />
             <p className="text-xs font-medium">Nenhum atendimento neste dia</p>
           </div>
@@ -4384,7 +4392,7 @@ const ReportsView: React.FC = () => {
     
     const absDiff = Math.abs(diff).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
-    if (diff === 0) return <p className="text-[9px] text-[#8A98A8] mt-0.5">Mesmo que o período anterior</p>;
+    if (diff === 0) return <p className="text-[9px] text-title mt-0.5">Mesmo que o período anterior</p>;
     
     return (
       <p className={`flex items-center gap-1 font-bold text-sm ${isUp ? 'text-green-500' : 'text-red-500'}`}>
@@ -4474,8 +4482,8 @@ const ReportsView: React.FC = () => {
       return (
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-[#5A6878] ">Selecionar Ano</h4>
-            <button onClick={() => setViewMode('days')} className="text-[10px] font-bold text-[#2898D8]">Voltar</button>
+            <h4 className="text-xs font-bold text-white ">Selecionar Ano</h4>
+            <button onClick={() => setViewMode('days')} className="text-[10px] font-bold text-secondary">Voltar</button>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {years.map(year => (
@@ -4486,7 +4494,7 @@ const ReportsView: React.FC = () => {
                   setViewMode('days');
                 }}
                 className={`h-10 rounded-xl flex items-center justify-center text-[11px] font-bold transition-all
-                  ${viewDate.getFullYear() === year ? 'bg-[#2898D8] text-white shadow-sm' : 'bg-[#F4F7FB]  text-[#5A6878]  hover:bg-[#E8EEF5]'}`}
+                  ${viewDate.getFullYear() === year ? 'bg-secondary text-white shadow-sm' : 'bg-primary/40  text-white  hover:bg-surface/80'}`}
               >
                 {year}
               </button>
@@ -4505,7 +4513,7 @@ const ReportsView: React.FC = () => {
     
     // Previous month
     for (let i = offset - 1; i >= 0; i--) {
-      days.push(<div key={`prev-${i}`} className="h-8 flex items-center justify-center opacity-20 text-[10px] font-bold text-[#8A98A8]">{prevMonthLastDay - i}</div>);
+      days.push(<div key={`prev-${i}`} className="h-8 flex items-center justify-center opacity-20 text-[10px] font-bold text-title">{prevMonthLastDay - i}</div>);
     }
     
     // Current month
@@ -4526,7 +4534,7 @@ const ReportsView: React.FC = () => {
             setShowSelector(false);
           }}
           className={`h-8 w-full rounded-lg flex items-center justify-center text-[11px] font-bold transition-all relative
-            ${isSelected || isWeekSelected ? 'bg-[#2898D8] text-white shadow-sm' : isToday ? 'bg-[#E8F4FC]   text-[#2898D8]' : 'hover:bg-[#F4F7FB] :bg-[#3A3A3A] text-[#5A6878] '}
+            ${isSelected || isWeekSelected ? 'bg-secondary text-white shadow-sm' : isToday ? 'bg-surface/80   text-secondary' : 'hover:bg-primary/40 :bg-surface text-white '}
             ${isBefore2026 && (period === 'semana' || period === 'mes') ? 'opacity-20 cursor-not-allowed' : ''}`}
         >
           {d}
@@ -4537,22 +4545,22 @@ const ReportsView: React.FC = () => {
     // Next month
     const remaining = 42 - days.length;
     for (let d = 1; d <= remaining; d++) {
-      days.push(<div key={`next-${d}`} className="h-8 flex items-center justify-center opacity-20 text-[10px] font-bold text-[#8A98A8]">{d}</div>);
+      days.push(<div key={`next-${d}`} className="h-8 flex items-center justify-center opacity-20 text-[10px] font-bold text-title">{d}</div>);
     }
 
     return (
       <div {...reportsSwipeHandlers} className="p-4 space-y-4 overflow-hidden">
         <div className="flex items-center justify-between">
-          <button onClick={handleReportsSwipeRight} className="p-1 text-[#8A98A8] hover:text-[#2898D8]">
+          <button onClick={handleReportsSwipeRight} className="p-1 text-title hover:text-secondary">
             <ChevronLeft size={16} />
           </button>
           <button 
             onClick={() => setViewMode('years')}
-            className="text-xs font-bold text-[#5A6878]  capitalize hover:text-[#2898D8] transition-colors"
+            className="text-xs font-bold text-white  capitalize hover:text-secondary transition-colors"
           >
             {viewDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
           </button>
-          <button onClick={handleReportsSwipeLeft} className="p-1 text-[#8A98A8] hover:text-[#2898D8]">
+          <button onClick={handleReportsSwipeLeft} className="p-1 text-title hover:text-secondary">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -4566,7 +4574,7 @@ const ReportsView: React.FC = () => {
           >
             <div className="grid grid-cols-7 gap-1">
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-                <div key={d} className="h-8 flex items-center justify-center text-[9px] font-black text-[#8A98A8] uppercase">{d}</div>
+                <div key={d} className="h-8 flex items-center justify-center text-[9px] font-black text-title uppercase">{d}</div>
               ))}
               {days}
             </div>
@@ -4582,13 +4590,13 @@ const ReportsView: React.FC = () => {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <button onClick={() => setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1))} className="p-1 text-[#8A98A8] hover:text-[#2898D8]">
+          <button onClick={() => setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1))} className="p-1 text-title hover:text-secondary">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs font-bold text-[#5A6878] ">
+          <span className="text-xs font-bold text-white ">
             {viewDate.getFullYear()}
           </span>
-          <button onClick={() => setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1))} className="p-1 text-[#8A98A8] hover:text-[#2898D8]">
+          <button onClick={() => setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1))} className="p-1 text-title hover:text-secondary">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -4606,7 +4614,7 @@ const ReportsView: React.FC = () => {
                   setShowSelector(false);
                 }}
                 className={`h-10 rounded-xl flex items-center justify-center text-[11px] font-bold transition-all
-                  ${isSelected ? 'bg-[#2898D8] text-white shadow-sm' : 'bg-[#F4F7FB]  text-[#5A6878]  hover:bg-[#E8EEF5]'}
+                  ${isSelected ? 'bg-secondary text-white shadow-sm' : 'bg-primary/40  text-white  hover:bg-surface/80'}
                   ${isBefore2026 ? 'opacity-20 cursor-not-allowed' : ''}`}
               >
                 {m}
@@ -4635,7 +4643,7 @@ const ReportsView: React.FC = () => {
               setShowSelector(false);
             }}
             className={`h-10 rounded-xl flex items-center justify-center text-[11px] font-bold transition-all
-              ${currentDate.getFullYear() === year ? 'bg-[#2898D8] text-white shadow-sm' : 'bg-[#F4F7FB]  text-[#5A6878]  hover:bg-[#E8EEF5]'}`}
+              ${currentDate.getFullYear() === year ? 'bg-secondary text-white shadow-sm' : 'bg-primary/40  text-white  hover:bg-surface/80'}`}
           >
             {year}
           </button>
@@ -4659,8 +4667,8 @@ const ReportsView: React.FC = () => {
   return (
     <div className="space-y-6 pb-24 max-w-full overflow-x-hidden">
       {/* Chips de período — sempre 4, sempre visíveis */}
-      <div className="sticky top-0 bg-[#F4F7FB]  z-10 pt-2 pb-3 relative">
-        <div className="grid grid-cols-4 gap-1 w-full relative z-20">
+      <div className="sticky top-0 bg-primary/40  z-10 pt-2 pb-3 relative">
+        <div className="grid grid-cols-4 gap-1 w-full relative z-20 bg-surface/50 p-1 rounded-2xl ">
           {/* Chip Hoje/Data — dinâmico */}
           <button
             onClick={() => {
@@ -4668,13 +4676,10 @@ const ReportsView: React.FC = () => {
                 setShowSelector(v => !v);
               } else {
                 setPeriod('dia');
-                setShowSelector(false);
+                setShowSelector(true);
               }
             }}
-            className={`py-2 px-1 rounded-full text-xs font-semibold text-center transition-all truncate
-              ${period === 'dia'
-                ? 'bg-[#2898D8] text-white shadow-sm border border-[#2898D8]'
-                : 'bg-surface  text-[#8A98A8]  border border-[#D0D8E4]  shadow-[0_1px_3px_rgba(0,0,0,0.06)]'}`}
+            className={`py-2 px-1 rounded-xl text-xs font-semibold text-center transition-all truncate ${period === 'dia' ? 'bg-surface text-secondary' : 'bg-transparent text-title shadow-none border-none'}`}
           >
             {period === 'dia' && !isCurrentDateSelected
               ? `${formatDateShort(currentDate.toISOString().split('T')[0])} ▾`
@@ -4689,13 +4694,10 @@ const ReportsView: React.FC = () => {
                   setShowSelector(v => !v);
                 } else {
                   setPeriod(p);
-                  setShowSelector(false);
+                  setShowSelector(true);
                 }
               }}
-              className={`py-2 px-1 rounded-full text-xs font-semibold text-center transition-all
-                ${period === p
-                  ? 'bg-[#2898D8] text-white shadow-sm border border-[#2898D8]'
-                  : 'bg-surface  text-[#8A98A8]  border border-[#D0D8E4]  shadow-[0_1px_3px_rgba(0,0,0,0.06)]'}`}
+              className={`py-2 px-1 rounded-xl text-xs font-semibold text-center transition-all ${period === p ? 'bg-surface text-secondary' : 'bg-transparent text-title shadow-none border-none'}`}
             >
               {period === p
                 ? `${['Semana', 'Mês', 'Ano'][i]} ▾`
@@ -4711,7 +4713,7 @@ const ReportsView: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="absolute left-0 right-0 z-10 w-full overflow-hidden bg-[#FFFFFF]  rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] mt-2 border border-[#D0D8E4] "
+              className="absolute left-0 right-0 z-10 w-full overflow-hidden bg-surface  rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] mt-2 border border-title/30 "
             >
               {(period === 'dia' || period === 'semana') && renderCalendar()}
               {period === 'mes' && renderMonthGrid()}
@@ -4722,12 +4724,12 @@ const ReportsView: React.FC = () => {
       </div>
 
       {/* Hero card faturamento */}
-      <div className="bg-[#FFFFFF]  p-5 rounded-[2rem] shadow-[0_1px_4px_rgba(0,0,0,0.06)] flex flex-col items-center justify-center border border-[#D0D8E4]  relative">
+      <div className="bg-surface p-5 rounded-[2rem] flex flex-col items-center justify-center relative">
         <div className="absolute top-4 right-4">
           <InfoTooltip text="Total recebido pelos atendimentos concluídos no período" />
         </div>
-        <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#8A98A8]  mb-2">Faturamento</h3>
-        <p className="text-[32px] font-black text-[#1A2332]  tracking-tighter leading-none mb-3">
+        <h3 className="text-[10px] font-bold uppercase tracking-widest text-title  mb-2">Faturamento</h3>
+        <p className="text-[32px] font-black text-white  tracking-tighter leading-none mb-3">
           {formatCurrency(stats.current.revenue)}
         </p>
         <div className="flex items-center justify-center">
@@ -4737,42 +4739,42 @@ const ReportsView: React.FC = () => {
         <div className="w-full mt-6 space-y-1.5 relative">
           <div className="flex justify-between items-center px-1">
             <div className="flex items-center gap-1">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[#8A98A8]">Ocupação</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-title">Ocupação</span>
               <InfoTooltip text="Percentual dos seus horários disponíveis que foram agendados no período." />
             </div>
-            <span className="text-[10px] font-black text-[#2898D8] bg-[#E8F4FC]   px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-black text-secondary bg-surface/80   px-2 py-0.5 rounded-full">
                {Math.round(occupancyRatio * 100)}%
             </span>
           </div>
-          <div className="h-2 w-full bg-[#E8EEF5]  rounded-full overflow-hidden">
-             <div className="h-full bg-[#2898D8] rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.round(occupancyRatio * 100)}%` }} />
+          <div className="h-2 w-full bg-surface/80  rounded-full overflow-hidden">
+             <div className="h-full bg-secondary rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.round(occupancyRatio * 100)}%` }} />
           </div>
         </div>
       </div>
 
       {/* 3 chips compactos */}
       <div className="grid grid-cols-3 gap-2">
-         <div className="bg-[#FFFFFF]  p-3 py-4 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#E8EEF5]  flex flex-col justify-center relative">
+         <div className="bg-surface p-3 py-4 rounded-2xl flex flex-col justify-center relative">
             <div className="flex items-start justify-between w-full mb-1">
-               <p className="text-[10px] uppercase tracking-widest font-bold leading-tight text-[#8A98A8]">
+               <p className="text-[10px] uppercase tracking-widest font-bold leading-tight text-title">
                  Ticket<br />Médio
                </p>
                <InfoTooltip text="Valor médio cobrado por atendimento no período." />
             </div>
-            <p className="text-base font-black text-[#1A2332]  mt-1 text-center">{formatCurrency(stats.current.ticket)}</p>
+            <p className="text-base font-black text-white  mt-1 text-center">{formatCurrency(stats.current.ticket)}</p>
          </div>
-         <div className="bg-[#FFFFFF]  p-3 py-4 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#E8EEF5]  flex flex-col justify-center relative">
+         <div className="bg-surface p-3 py-4 rounded-2xl flex flex-col justify-center relative">
             <div className="flex items-start justify-between w-full mb-1">
-               <p className="text-[10px] uppercase tracking-widest font-bold leading-tight text-[#8A98A8]">
+               <p className="text-[10px] uppercase tracking-widest font-bold leading-tight text-title">
                  Novos<br />Clientes
                </p>
                <InfoTooltip text="Clientes que vieram pela primeira vez no período" />
             </div>
-            <p className="text-base font-black text-[#1A2332]  mt-1 text-center">{stats.newClients}</p>
+            <p className="text-base font-black text-white  mt-1 text-center">{stats.newClients}</p>
          </div>
-         <div className="bg-[#FFFFFF]  p-3 py-4 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#E8EEF5]  flex flex-col justify-center relative">
+         <div className="bg-surface p-3 py-4 rounded-2xl flex flex-col justify-center relative">
             <div className="flex items-start justify-between w-full mb-1">
-               <p className="text-[10px] uppercase tracking-widest font-bold leading-tight text-[#8A98A8]">
+               <p className="text-[10px] uppercase tracking-widest font-bold leading-tight text-title">
                  Faltas<br /><span>&nbsp;</span>
                </p>
                <InfoTooltip text="Clientes que agendaram e não compareceram" />
@@ -4787,8 +4789,8 @@ const ReportsView: React.FC = () => {
       {period === 'dia' ? (
         <TodayScheduleList appointments={appointments} date={currentDate.toISOString().split('T')[0]} />
       ) : (
-        <div className="bg-[#FFFFFF]  p-5 rounded-[2rem] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#D0D8E4]  relative">
-          <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8A98A8]  mb-4 text-center">
+        <div className="bg-surface p-5 rounded-[2rem] relative">
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-title  mb-4 text-center">
             {stats.chartTitle}
           </h4>
           <div className="h-[200px] w-full">
@@ -4820,7 +4822,7 @@ const ReportsView: React.FC = () => {
                     return (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill="#2898D8"
+                        fill="#F99417"
                         fillOpacity={isMax ? 1 : 0.3}
                       />
                     );
@@ -4834,8 +4836,8 @@ const ReportsView: React.FC = () => {
 
       {/* Top 5 Clientes */}
       {period !== 'dia' && (
-        <div className="bg-[#FFFFFF]  p-5 rounded-[2rem] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#D0D8E4] ">
-          <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8A98A8] mb-4 text-center">Top 5 Clientes</h4>
+        <div className="bg-surface p-5 rounded-[2rem] ">
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-title mb-4 text-center">Top 5 Clientes</h4>
           <div className="space-y-4">
             {stats.topClients.length > 0 ? stats.topClients.map((client, idx) => (
               <div key={idx} className="flex items-center gap-3">
@@ -4843,10 +4845,10 @@ const ReportsView: React.FC = () => {
                   {getInitials(client.name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-[#1A2332]  truncate leading-tight">{client.name}</p>
+                  <p className="text-sm font-bold text-white  truncate leading-tight">{client.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] font-medium text-[#8A98A8]">{client.count} visitas</p>
-                    <span className="w-1 h-1 bg-[#D0D8E4]  rounded-full"></span>
+                    <p className="text-[10px] font-medium text-title">{client.count} visitas</p>
+                    <span className="w-1 h-1 bg-title/30  rounded-full"></span>
                     <p className="text-[10px] font-bold text-green-500">{formatCurrency(client.spent)}</p>
                   </div>
                 </div>
@@ -4857,15 +4859,15 @@ const ReportsView: React.FC = () => {
                 )}
               </div>
             )) : (
-              <p className="text-center text-[#8A98A8] text-xs py-4 font-medium">Nenhum cliente no período</p>
+              <p className="text-center text-title text-xs py-4 font-medium">Nenhum cliente no período</p>
             )}
           </div>
         </div>
       )}
 
       {/* Ranking de Serviços */}
-      <div className="bg-[#FFFFFF]  p-5 rounded-[2rem] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-[#D0D8E4] ">
-        <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8A98A8] mb-4 text-center">Ranking de Serviços</h4>
+      <div className="bg-surface p-5 rounded-[2rem] ">
+        <h4 className="text-[10px] font-bold uppercase tracking-widest text-title mb-4 text-center">Ranking de Serviços</h4>
         <div className="space-y-5">
           {stats.topServices.length > 0 ? stats.topServices.map((service, idx) => {
             const maxRevenue = Math.max(...stats.topServices.map(s => s.revenue));
@@ -4873,19 +4875,19 @@ const ReportsView: React.FC = () => {
             return (
               <div key={idx} className="space-y-1.5 relative">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="font-bold text-[#1A2332]  truncate pr-2">{service.name}</span>
-                  <span className="font-black text-[#2898D8] shrink-0">{formatCurrency(service.revenue)}</span>
+                  <span className="font-bold text-white  truncate pr-2">{service.name}</span>
+                  <span className="font-black text-secondary shrink-0">{formatCurrency(service.revenue)}</span>
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-[#8A98A8] mb-1 font-medium">
+                <div className="flex justify-between items-center text-[10px] text-title mb-1 font-medium">
                   <span>{service.count} atendimentos</span>
                 </div>
-                <div className="w-full h-1.5 bg-[#E8EEF5]  rounded-full overflow-hidden">
-                  <div className="h-full bg-[#2898D8] rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }} />
+                <div className="w-full h-1.5 bg-surface/80  rounded-full overflow-hidden">
+                  <div className="h-full bg-secondary rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }} />
                 </div>
               </div>
             );
           }) : (
-            <p className="text-center text-[#8A98A8] text-xs py-4 font-medium">Nenhum serviço no período</p>
+            <p className="text-center text-title text-xs py-4 font-medium">Nenhum serviço no período</p>
           )}
         </div>
       </div>

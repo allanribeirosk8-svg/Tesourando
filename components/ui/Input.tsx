@@ -9,9 +9,10 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   requiredField?: boolean;
   optionalField?: boolean;
   icon?: React.ReactNode;
+  inputClassName?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ label, error, warning, errorMessage, requiredField, optionalField, icon, className = '', ...props }) => {
+export const Input: React.FC<InputProps> = ({ label, error, warning, errorMessage, requiredField, optionalField, icon, className = '', inputClassName = '', ...props }) => {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <label className={`text-[10px] font-bold ml-1 uppercase tracking-widest flex items-center gap-1 ${error || errorMessage ? 'text-red-500' : warning ? 'text-amber-500' : 'text-muted '}`}>
@@ -27,9 +28,10 @@ export const Input: React.FC<InputProps> = ({ label, error, warning, errorMessag
         )}
         <input 
           className={`
-            w-full ${icon ? 'pl-11' : 'px-4'} py-2.5 rounded-xl border bg-surface  text-title  placeholder-slate-400 
-            transition-colors focus:outline-none focus:ring-2 text-sm
-            ${error || errorMessage ? 'border-red-400 focus:ring-red-100 :ring-red-900/20' : warning ? 'border-amber-500 focus:ring-amber-100 :ring-amber-900/20' : 'border-title/30  focus:ring-brand-100 :ring-brand-900/20 focus:border-brand-500'}
+            w-full ${icon ? 'pl-11' : 'px-4'} py-2.5 rounded-xl border text-sm
+            transition-colors focus:outline-none focus:ring-2 
+            ${error || errorMessage ? 'border-red-400 focus:ring-red-100' : warning ? 'border-amber-500 focus:ring-amber-100' : ''}
+            ${inputClassName || 'bg-surface text-title border-title/30 placeholder-slate-400'}
             ${error || errorMessage ? 'pr-10' : ''}
           `}
           {...props}
