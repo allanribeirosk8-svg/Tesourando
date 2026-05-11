@@ -243,11 +243,7 @@ const ConfiguracoesScreen: React.FC<{
 
   return (
     <>
-      <header className="sticky top-0 z-[100] h-20 bg-surface flex items-center justify-center">
-        <h1 className="text-lg font-bold text-white uppercase tracking-tight">CONFIGURAÇÕES</h1>
-      </header>
-
-      <div className="px-4 pt-3 pb-24 relative space-y-6">
+      <div className="px-4 pt-4 pb-24 relative space-y-6">
         {/* Bloco de Perfil */}
         <button 
           onClick={onOpenProfile}
@@ -859,7 +855,7 @@ export const AdminApp: React.FC = () => {
         {activeTab !== 'agenda' && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
             <h2 className="text-lg font-bold uppercase tracking-tight text-white ">
-              {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : 'Relatórios'}
+              {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : activeTab === 'configuracoes' ? 'Configurações' : 'Relatórios'}
             </h2>
           </div>
         )}
@@ -1004,9 +1000,9 @@ export const AdminApp: React.FC = () => {
           <nav className="bg-surface/90 backdrop-blur-[12px] border-t border-white/10 pb-safe flex justify-between items-center h-[64px] pointer-events-auto px-2 relative z-50">
             {[
               { id: 'clientes', label: 'Clientes', icon: Users, ariaLabel: 'Ir para Clientes' },
-              { id: 'relatorios', label: 'Relatórios', icon: BarChart3, ariaLabel: 'Ir para Relatórios' },
-              { id: 'agenda', label: 'Agenda', icon: Calendar, ariaLabel: 'Ir para Agenda', isCenter: true },
               { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
+              { id: 'agenda', label: 'Agenda', icon: Calendar, ariaLabel: 'Ir para Agenda', isCenter: true },
+              { id: 'relatorios', label: 'Relatórios', icon: BarChart3, ariaLabel: 'Ir para Relatórios' },
               { id: 'configuracoes', label: 'Configurações', icon: Settings, ariaLabel: 'Ir para Configurações' },
             ].map((item) => {
               const isActive = activeTab === item.id;
