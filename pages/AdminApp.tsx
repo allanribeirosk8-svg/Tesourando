@@ -47,7 +47,7 @@ import {
   Unlock,
   ThumbsDown,
   Repeat,
-  Home,
+  ArrowLeft,
   GripVertical,
   TrendingUp,
   TrendingDown,
@@ -232,67 +232,130 @@ const PhotoDescriptionModal: React.FC<{
   );
 };
 
-const SettingsModal: React.FC<{ 
-  onClose: () => void;
+
+const ConfiguracoesScreen: React.FC<{
+  onOpenProfile: () => void;
   onOpenWeekly: () => void;
   onLogout: () => void;
-}> = ({ onClose, onOpenWeekly, onLogout }) => {
-  useLockBodyScroll();
-  const {  toggleDarkMode } = useStore();
-  
+}> = ({ onOpenProfile, onOpenWeekly, onLogout }) => {
+  const { barberProfile } = useStore();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-surface/40 backdrop-blur-md animate-in fade-in" onClick={onClose}>
-      <motion.div 
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="bg-surface  w-full max-w-md rounded-t-[2.5rem] shadow-[0_-1px_20px_rgba(0,0,0,0.1)] overflow-hidden p-8 pt-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="w-12 h-1.5 bg-title/30  rounded-full mx-auto mb-8" />
-        
-        <h2 className="text-xl font-black text-white  uppercase tracking-tight mb-8">Configurações</h2>
-        
+    <>
+      <header className="sticky top-0 z-[100] h-20 bg-surface flex items-center justify-center">
+        <h1 className="text-lg font-bold text-white uppercase tracking-tight">CONFIGURAÇÕES</h1>
+      </header>
+
+      <div className="px-4 pt-3 pb-24 relative space-y-6">
+        {/* Bloco de Perfil */}
+        <button 
+          onClick={onOpenProfile}
+          className="w-full bg-white/5 rounded-2xl p-4 flex items-center gap-4 text-left"
+        >
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0 overflow-hidden shadow-sm bg-primary">
+            {barberProfile?.avatar ? (
+              <img src={barberProfile.avatar} alt={barberProfile.name || 'Barbeiro'} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              getInitials(barberProfile?.name || 'Barbeiro')
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold text-white truncate">{barberProfile?.name || 'Barbearia'}</h2>
+            <p className="text-sm text-title truncate">{barberProfile?.phone ? formatPhone(barberProfile.phone) : 'Barbeiro'}</p>
+          </div>
+          <ChevronRight size={20} className="text-title shrink-0" />
+        </button>
+
+        {/* Seção CONTA */}
         <div className="space-y-4">
-          <button 
-            onClick={() => {
-              onOpenWeekly();
-              onClose();
-            }}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-primary/40  hover:bg-primary/40 :bg-surface transition-all group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-surface  flex items-center justify-center text-secondary shadow-sm">
-                <Calendar size={20} />
+          <h3 className="text-xs font-semibold tracking-[0.08em] text-title px-4">CONTA</h3>
+          <div className="bg-surface rounded-2xl overflow-hidden flex flex-col">
+            <button 
+              onClick={onOpenProfile}
+              className="flex items-center gap-3 p-4 min-h-[60px] active:bg-white/5 transition-colors border-b border-white/5"
+            >
+              <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                <User size={18} className="text-secondary" />
               </div>
-              <span className="font-bold text-white ">Padrão Semanal</span>
-            </div>
-            <ChevronRight size={18} className="text-title group-hover:translate-x-1 transition-transform" />
-          </button>
-          
-          
-          
-          <button 
-            onClick={onLogout}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-red-50  hover:bg-red-100 :bg-red-500/20 transition-all group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-surface  flex items-center justify-center text-red-500 shadow-sm">
-                <LogOut size={20} />
+              <div className="flex-1 text-left">
+                <p className="text-base font-medium text-white">Meu Perfil</p>
+                <p className="text-xs text-title mt-0.5">Nome, foto, telefone</p>
               </div>
-              <span className="font-bold text-red-600">Sair da conta</span>
+              <ChevronRight size={18} className="text-title shrink-0" />
+            </button>
+            <button 
+              onClick={onOpenWeekly}
+              className="flex items-center gap-3 p-4 min-h-[60px] active:bg-white/5 transition-colors"
+            >
+              <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                <Calendar size={18} className="text-secondary" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-base font-medium text-white">Padrão Semanal</p>
+                <p className="text-xs text-title mt-0.5">Horários e dias de trabalho</p>
+              </div>
+              <ChevronRight size={18} className="text-title shrink-0" />
+            </button>
+          </div>
+        </div>
+
+        {/* Seção SESSÃO */}
+        <div className="space-y-4 mt-8">
+          <h3 className="text-xs font-semibold tracking-[0.08em] text-title px-4">SESSÃO</h3>
+          <button 
+            onClick={() => setShowLogoutConfirm(true)}
+            className="w-full bg-surface rounded-2xl p-4 min-h-[60px] flex items-center gap-3 active:bg-red-500/10 transition-colors"
+          >
+            <div className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+              <LogOut size={18} className="text-red-500" />
             </div>
+            <p className="text-base font-medium text-red-500">Sair da conta</p>
           </button>
         </div>
-        
-        <div className="mt-8 pb-safe">
-          <button onClick={onClose} className="w-full py-4 text-xs font-black uppercase tracking-widest text-title hover:text-white transition-colors">Fechar</button>
+
+        {/* Rodapé */}
+        <div className="pt-4 pb-8">
+          <p className="text-xs text-title/50 text-center">Meu Corte v1.0.0</p>
         </div>
-      </motion.div>
-    </div>
+      </div>
+
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-surface w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-white/10"
+            >
+              <h3 className="text-lg font-black text-white text-center uppercase tracking-tight mb-2">Sair da conta?</h3>
+              <p className="text-sm text-title text-center mb-8">Você precisará fazer login novamente.</p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 h-12 rounded-xl text-white font-bold text-sm bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowLogoutConfirm(false);
+                    onLogout();
+                  }}
+                  className="flex-1 h-12 rounded-xl text-white font-bold text-sm bg-red-500 hover:bg-red-600 transition-colors"
+                >
+                  Sair
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
+
 
 const useScrollDirection = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -597,14 +660,13 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
 export const AdminApp: React.FC = () => {
   const { barberProfile, appointments } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'relatorios'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'relatorios' | 'configuracoes'>('agenda');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [showWeeklyModal, setShowWeeklyModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
+    const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [reschedulingApt, setReschedulingApt] = useState<Appointment | null>(null);
   const [targetCustomerPhone, setTargetCustomerPhone] = useState<string | null>(null);
   
@@ -619,7 +681,7 @@ export const AdminApp: React.FC = () => {
 
   const isVisible = useScrollDirection();
   const isAnyModalOpen = showAddModal || showAddCustomerModal || showWeeklyModal || 
-                         showProfileModal || showSettingsModal || showCalendarModal || 
+                         showProfileModal || showCalendarModal || 
                          !!reschedulingApt || showPhotoActionSheet || showPhotoDescription;
   
   const footerVisible = isVisible && !isAnyModalOpen;
@@ -694,7 +756,7 @@ export const AdminApp: React.FC = () => {
       await supabase.auth.signOut();
     }
     setIsAuthenticated(false);
-    setShowSettingsModal(false);
+    
   };
 
   const handleNavigateToCustomer = (phone: string) => {
@@ -788,7 +850,7 @@ export const AdminApp: React.FC = () => {
               className="w-10 h-10 rounded-full bg-surface  text-white  flex items-center justify-center hover:bg-primary/40 border border-title/30  transition-colors shadow-sm"
               title="Voltar para Agenda"
             >
-              <Home size={20} />
+              <ArrowLeft size={20} />
             </button>
           )}
         </div>
@@ -802,12 +864,7 @@ export const AdminApp: React.FC = () => {
           </div>
         )}
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
-          <button onClick={() => setShowSettingsModal(true)} className="w-9 h-9 rounded-full bg-surface  text-title  flex items-center justify-center hover:bg-primary/40 :bg-primary transition-colors border border-title/30  shadow-sm" title="Configurações">
-            <Settings size={18} />
-          </button>
-        </div>
+        
       </motion.header>
 
       <main className="px-4 pt-3 pb-20 relative">
@@ -840,6 +897,13 @@ export const AdminApp: React.FC = () => {
           />
         )}
         {activeTab === 'relatorios' && <ReportsView />}
+        {activeTab === 'configuracoes' && (
+          <ConfiguracoesScreen 
+            onOpenProfile={() => setShowProfileModal(true)} 
+            onOpenWeekly={() => setShowWeeklyModal(true)} 
+            onLogout={handleLogout} 
+          />
+        )}
         {activeTab === 'servicos' && (
           <ServicesView 
             onSuccess={(msg) => {
@@ -869,13 +933,7 @@ export const AdminApp: React.FC = () => {
 
       {/* Modais Globais */}
       <AnimatePresence>
-        {showSettingsModal && (
-          <SettingsModal 
-            onClose={() => setShowSettingsModal(false)}
-            onOpenWeekly={() => setShowWeeklyModal(true)}
-            onLogout={handleLogout}
-          />
-        )}
+        
         {showWeeklyModal && (
           <WeeklyConfigModal onClose={() => setShowWeeklyModal(false)} />
         )}
@@ -943,37 +1001,63 @@ export const AdminApp: React.FC = () => {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-          <nav className="bg-primary  border-t border-title/30  pb-safe px-2 flex justify-between items-center h-[54px] shadow-[0_-4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+          <nav className="bg-surface/90 backdrop-blur-[12px] border-t border-white/10 pb-safe flex justify-between items-center h-[64px] pointer-events-auto px-2 relative z-50">
             {[
-              { id: 'agenda', label: 'Agenda', icon: <Calendar size={20} /> },
-              { id: 'clientes', label: 'Clientes', icon: <Users size={20} /> },
-              { id: 'servicos', label: 'Serviços', icon: <Scissors size={20} /> },
-              { id: 'relatorios', label: 'Relatórios', icon: <BarChart3 size={20} /> },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
+              { id: 'clientes', label: 'Clientes', icon: Users, ariaLabel: 'Ir para Clientes' },
+              { id: 'relatorios', label: 'Relatórios', icon: BarChart3, ariaLabel: 'Ir para Relatórios' },
+              { id: 'agenda', label: 'Agenda', icon: Calendar, ariaLabel: 'Ir para Agenda', isCenter: true },
+              { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
+              { id: 'configuracoes', label: 'Configurações', icon: Settings, ariaLabel: 'Ir para Configurações' },
+            ].map((item) => {
+              const isActive = activeTab === item.id;
+              
+              if (item.isCenter) {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab('agenda');
+                                          }}
+                    className="flex flex-col items-center justify-start flex-1 h-[64px] transition-all duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.92]"
+                    aria-label={item.ariaLabel}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <div className="bg-secondary rounded-full flex items-center justify-center -translate-y-2.5 shadow-[0_4px_16px_rgba(249,148,23,0.45)] relative transition-all duration-[180ms]" style={{ padding: '10px 12px' }}>
+                      <item.icon size={26} className="text-white" />
+                      {pendingTodayCount > 0 && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[8px] font-bold border-2 border-white ">
+                          {pendingTodayCount}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-secondary font-semibold text-[12px] -mt-1 transition-all duration-[180ms]">
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              }
+              
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
                     setActiveTab(item.id as any);
                     if(item.id !== 'clientes') setTargetCustomerPhone(null);
-                }}
-                className={`flex-1 flex flex-col items-center justify-center transition-all gap-0.5 h-full min-h-[44px]
-                  ${activeTab === item.id ? 'text-secondary ' : 'text-title  hover:text-title :text-white'}`}
-              >
-                <div className={`p-1.5 rounded-xl transition-all duration-300 relative ${activeTab === item.id ? 'bg-secondary/10' : 'bg-transparent'}`}>
-                  <div className={`transition-transform ${activeTab === item.id ? 'scale-105' : ''}`}>
-                    {item.icon}
+                  }}
+                  className="flex flex-col items-center justify-center flex-1 h-full min-h-[44px] transition-all duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.88] active:opacity-75 relative"
+                  aria-label={item.ariaLabel}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <div className="relative mb-0.5 flex flex-col items-center justify-center pt-1">
+                    <div className={`w-1 h-1 rounded-full bg-secondary transition-opacity duration-[180ms] ease-in-out absolute -top-1.5 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
+                    <item.icon size={22} className={`transition-colors duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isActive ? 'text-secondary' : 'text-muted'}`} />
                   </div>
-                  {item.id === 'agenda' && pendingTodayCount > 0 && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[8px] font-bold border-2 border-white ">
-                      {pendingTodayCount}
-                    </div>
-                  )}
-                </div>
-                <span className={`text-[10px] font-black uppercase tracking-widest transition-opacity duration-300 ${activeTab === item.id ? 'opacity-100 font-bold' : 'opacity-100'}`}>
-                  {item.label}
-                </span>
-              </button>
-            ))}
+                  <span className={`text-[12px] font-medium transition-colors duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isActive ? 'text-secondary' : 'text-muted'}`}>
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </nav>
       </motion.div>
 
@@ -1721,7 +1805,7 @@ const AgendaView: React.FC<{
                                         </div>
                                         <div className="flex flex-col gap-1.5 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-base font-bold truncate tracking-tight ${isActuallyCompleted ? 'text-green-300 line-through opacity-70' : isNoShow ? 'text-amber-300 line-through opacity-70' : 'text-white'}`}>
+                                                <span className={`text-base font-bold truncate tracking-tight ${isActuallyCompleted ? 'text-green-300 opacity-70' : isNoShow ? 'text-amber-300 opacity-70' : 'text-white'}`}>
                                                     {capitalizeName(apt.clientName)}
                                                 </span>
                                                 {isNoShow && (
@@ -2004,9 +2088,9 @@ const AgendaView: React.FC<{
                                             {apt.time}
                                         </span>
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className={`text-sm font-semibold truncate line-through opacity-70 ${isNoShow ? 'text-amber-300' : 'text-green-300'}`}>
+                                            <span className={`text-sm font-semibold truncate opacity-70 ${isNoShow ? 'text-amber-300' : 'text-green-300'}`}>
                                                 {capitalizeName(apt.clientName)}
-                                                <span className={`text-xs font-normal ml-1 ${isNoShow ? 'text-amber-400/70' : 'text-green-400/70'}`}>
+                                                <span className={`text-xs font-normal line-through ml-1 ${isNoShow ? 'text-amber-400/70' : 'text-green-400/70'}`}>
                                                     ({apt.service})
                                                 </span>
                                             </span>
@@ -2061,11 +2145,7 @@ const AgendaView: React.FC<{
                                                     <div className="flex-1 flex justify-end">
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); setActiveRevertMenu(apt.id); }}
-                                                            className={`flex items-center gap-1.5 py-1 px-3 rounded text-[11px] font-bold uppercase tracking-tight transition-colors ${
-                                                                isNoShow 
-                                                                    ? 'bg-amber-400/15 text-amber-300 border border-amber-400/25 hover:bg-amber-400/25' 
-                                                                    : 'bg-green-400/15 text-green-300 border border-green-400/25 hover:bg-green-400/25'
-                                                            }`}
+                                                            className="flex items-center gap-1.5 py-1 px-3 rounded text-[11px] font-bold uppercase tracking-tight transition-colors bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25"
                                                         >
                                                             <RotateCcw size={14} />
                                                             <span>Retornar</span>
