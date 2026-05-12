@@ -7,6 +7,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { compressImage, formatDate, getTodayString, generateTimeSlots, formatCurrency, formatPhone, getOccupiedSlots, normalizePhone, normalizeTime, formatDateLong, capitalizeName, getInitials, getAvatarColor , calcOccupancySlots } from '../utils/helpers';
 import { useSwipe } from '../hooks/useSwipe';
+import { Onboarding } from '../components/Onboarding';
+import { SetupWizard } from '../components/SetupWizard';
 import { Customer, ServiceItem, Appointment, BarberProfile } from '../types';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, Reorder } from 'motion/react';
@@ -648,8 +650,10 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
   );
 };
 
+let hasCompletedSetup = false;
+
 export const AdminApp: React.FC = () => {
-  const { barberProfile, appointments } = useStore();
+  const { barberProfile, appointments, session, isLoading } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'relatorios' | 'configuracoes'>('agenda');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -665,6 +669,39 @@ export const AdminApp: React.FC = () => {
   const [isExceptionalMode, setIsExceptionalMode] = useState(false);
   const [prefilledCustomer, setPrefilledCustomer] = useState<Customer | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSetup, setShowSetup] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const isNewUser = 
+    !hasCompletedSetup &&
+    !isLoading &&
+    session !== null &&
+    barberProfile.shopName === 'Meu Corte' &&
+    barberProfile.name === 'Barbeiro' &&
+    barberProfile.personalPhone === '';
+
+  useEffect(() => {
+    if (isNewUser) setShowSetup(true);
+  }, [isLoading, isNewUser]);
+
+  const handleCompleteSetup = () => {
+    hasCompletedSetup = true;
+    setShowSetup(false);
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const hasSeen = localStorage.getItem('tesourando_onboarding');
+      if (!hasSeen) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [isAuthenticated]);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('tesourando_onboarding', 'true');
+    setShowOnboarding(false);
+  };
 
   const [photoTargetPhone, setPhotoTargetPhone] = useState<string | null>(null);
   const [showPhotoActionSheet, setShowPhotoActionSheet] = useState(false);
@@ -924,7 +961,14 @@ export const AdminApp: React.FC = () => {
 
       {/* Modais Globais */}
       <AnimatePresence>
-        
+        {showSetup && (
+          <SetupWizard onComplete={handleCompleteSetup} />
+        )}
+
+        {showOnboarding && (
+          <Onboarding onComplete={handleOnboardingComplete} />
+        )}
+
         {showWeeklyModal && (
           <WeeklyConfigModal onClose={() => setShowWeeklyModal(false)} />
         )}
