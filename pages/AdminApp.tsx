@@ -472,70 +472,61 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
   };
 
   return (
-    <div 
-      className="h-screen flex flex-col items-center justify-between px-6 py-8 relative transition-colors duration-500 overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #1A3A6E 0%, #2563E8 45%, #4A8FFF 75%, #94D4FF 100%)'
-      }}
-    >
-      {/* Noise texture overlay */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          opacity: 0.03
-        }}
-      />
-
-      {/* Decorative Orbs */}
-      <div className="fixed top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none z-0"
-        style={{ background: 'radial-gradient(circle, rgba(148,212,255,0.20) 0%, transparent 70%)' }}
-      />
-      <div className="fixed bottom-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full pointer-events-none z-0"
-        style={{ background: 'radial-gradient(circle, rgba(37,99,232,0.25) 0%, transparent 70%)' }}
-      />
-
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center relative z-10 flex-shrink-0 mt-2"
-      >
-        <div className="w-20 h-20 bg-surface/15 backdrop-blur-sm border border-white/25 rounded-[2rem] flex items-center justify-center text-white mb-4 shadow-xl">
-          <Scissors size={40} />
+    <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden bg-secondary font-sans">
+      
+      {/* Parte laranja */}
+      <div className="flex-[3] w-full flex items-center justify-end pb-8 relative z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent pointer-events-none" />
+        
+        {/* Logo */}
+        <div className="relative z-10 flex flex-col items-center justify-center">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="w-32 h-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]" 
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              const nextEl = e.currentTarget.nextElementSibling;
+              if (nextEl) nextEl.classList.remove('hidden');
+            }}
+          />
+          {/* Fallback caso a logo não exista */}
+          <div className="hidden w-20 h-20 bg-white/20 backdrop-blur-sm border border-white/40 rounded-[2rem] flex flex-col items-center justify-center text-white shadow-xl">
+            <Scissors size={40} />
+          </div>
+          <h1 className="text-2xl font-black text-white mt-4 tracking-[0.2em] uppercase mix-blend-overlay opacity-90 hidden logo-text-fallback">MEU CORTE</h1>
         </div>
-        <h1 className="text-2xl font-black text-white uppercase tracking-[0.3em]">MEU CORTE</h1>
-        <AnimatePresence mode="wait">
-          <motion.p 
-            key={view}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="text-white/50 text-sm mt-2 font-medium"
-          >
-            {view === 'login' ? 'Faça login para continuar' : 'Crie sua conta'}
-          </motion.p>
-        </AnimatePresence>
-      </motion.div>
+      </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 24, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className={`w-full max-w-md bg-surface backdrop-blur-xl border border-title/20 rounded-3xl shadow-2xl relative z-10 flex-shrink min-h-0 ${view === 'register' ? 'p-6' : 'p-8'}`}
-        style={{ boxShadow: '0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' }}
-      >
-        <AnimatePresence mode="wait" initial={false}>
+      {/* Card branco */}
+      <div className="flex-[5] w-full bg-white rounded-t-[2rem] relative z-10 px-6 pt-7 pb-4 flex flex-col justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.15)] overflow-hidden">
+        
+        <AnimatePresence mode="wait">
           <motion.div
             key={view}
-            initial={{ opacity: 0, x: view === 'login' ? -20 : 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: view === 'login' ? 20 : -20 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 flex flex-col"
           >
-            <form onSubmit={handleAuth} className={view === 'register' ? "space-y-3" : "space-y-4"}>
-              <div className={view === 'register' ? "space-y-3" : "space-y-4"}>
+            {/* Header / Titulo */}
+            <div className="mb-4">
+              <h2 className="text-[26px] leading-tight font-black text-[#1E1B4B] mb-1 tracking-tight">
+                {view === 'login' ? 'Bem-vindo, Barbeiro 👋' : 'Criar nova conta 👋'}
+              </h2>
+              <p className="text-[#1E1B4B] opacity-70 text-sm font-medium">
+                {view === 'login' ? 'Preencha seus dados para entrar na plataforma.' : 'Preencha os dados abaixo para se registrar.'}
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleAuth} className="flex-1 flex flex-col justify-between">
+              <div className="flex flex-col gap-3">
+                
+                {/* Email Field */}
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white transition-colors">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1E1B4B] transition-colors">
                     <Mail size={20} />
                   </div>
                   <input 
@@ -543,13 +534,14 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                     placeholder="E-mail"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-surface border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-secondary/60 focus:border-secondary/60 outline-none transition-all shadow-inner"
+                    className="w-full bg-[#F5F5F8] border border-[rgba(30,27,75,0.2)] text-[#1E1B4B] placeholder:text-[#1E1B4B] placeholder:opacity-50 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 outline-none transition-all font-medium"
                     required
                   />
                 </div>
 
+                {/* Password Field */}
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white transition-colors">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1E1B4B] transition-colors">
                     <Lock size={20} />
                   </div>
                   <input 
@@ -557,25 +549,26 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                     placeholder="Senha"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-surface border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-12 focus:ring-2 focus:ring-secondary/60 focus:border-secondary/60 outline-none transition-all shadow-inner"
+                    className="w-full bg-[#F5F5F8] border border-[rgba(30,27,75,0.2)] text-[#1E1B4B] placeholder:text-[#1E1B4B] placeholder:opacity-50 rounded-2xl h-14 pl-12 pr-12 focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 outline-none transition-all font-medium"
                     required
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1E1B4B] hover:opacity-70 transition-colors p-1"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
 
+                {/* Confirm Password (Register View) */}
                 {view === 'register' && (
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="relative group overflow-hidden"
+                    className="relative group overflow-hidden mt-1"
                   >
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white transition-colors">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1E1B4B] transition-colors">
                       <Lock size={20} />
                     </div>
                     <input 
@@ -583,71 +576,83 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                       placeholder="Confirmar Senha"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
-                      className="w-full bg-surface border border-white/20 text-white placeholder:text-white/35 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-secondary/60 focus:border-secondary/60 outline-none transition-all shadow-inner"
+                      className="w-full bg-[#F5F5F8] border border-[rgba(30,27,75,0.2)] text-[#1E1B4B] placeholder:text-[#1E1B4B] placeholder:opacity-50 rounded-2xl h-14 pl-12 pr-4 focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 outline-none transition-all font-medium"
                       required
                     />
                   </motion.div>
                 )}
+                
+                {/* Esqueci minha senha link */}
+                <div className="flex justify-end pt-1">
+                  {view === 'login' && (
+                    <button type="button" className="text-sm font-semibold text-[#1E1B4B] hover:opacity-80 transition-opacity">
+                      Esqueci minha senha
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <AnimatePresence>
-                {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="bg-red-500/20 border border-red-400/30 text-red-300 rounded-2xl p-3 text-sm text-center font-bold"
-                  >
-                    {error}
-                  </motion.div>
-                )}
-                {successMsg && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="bg-green-500/20 border border-green-400/30 text-green-300 rounded-2xl p-3 text-sm text-center font-bold"
-                  >
-                    {successMsg}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="flex flex-col gap-3">
+                {/* Warnings/Success */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-3 text-sm text-center font-semibold"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                  {successMsg && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className="bg-green-50 border border-green-200 text-green-600 rounded-2xl p-3 text-sm text-center font-semibold"
+                    >
+                      {successMsg}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="bg-[#1E1B4B] text-white hover:bg-[#1E1B4B]/90 disabled:opacity-70 disabled:cursor-not-allowed h-[56px] rounded-2xl font-bold w-full transition-all active:scale-[0.98] shadow-lg shadow-[#1E1B4B]/20 flex items-center justify-center text-[15px] mt-2"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>{view === 'login' ? 'Entrando...' : 'Criando conta...'}</span>
+                    </div>
+                  ) : (
+                    <span>{view === 'login' ? 'Entrar' : 'Registrar'}</span>
+                  )}
+                </button>
 
-              <button 
-                type="submit" 
-                disabled={isLoading}
-                className="bg-surface text-white hover:bg-surface/90 disabled:opacity-70 disabled:cursor-not-allowed h-14 rounded-2xl font-black uppercase tracking-widest w-full transition-all shadow-lg shadow-black/20 active:scale-[0.98]"
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-title/30/30 border-t-[#1A3A6E] rounded-full animate-spin" />
-                    <span>{view === 'login' ? 'Entrando...' : 'Criando conta...'}</span>
-                  </div>
-                ) : (
-                  <span>{view === 'login' ? 'Entrar' : 'Criar conta'}</span>
-                )}
-              </button>
+                <div className="text-center mt-1">
+                  <p className="text-[#1E1B4B] text-sm font-medium">
+                    {view === 'login' ? 'Não tem uma conta?' : 'Já possui uma conta?'}{' '}
+                    <button 
+                      type="button"
+                      onClick={toggleView}
+                      className="font-bold text-[#1E1B4B] hover:opacity-80 transition-opacity ml-1"
+                    >
+                      {view === 'login' ? 'Registrar' : 'Entrar'}
+                    </button>
+                  </p>
+                </div>
+                
+                <div className="flex justify-center mt-1">
+                  <Link to="/" className="text-[rgba(30,27,75,0.4)] hover:text-[#1E1B4B] font-bold uppercase tracking-[0.1em] text-[11px] transition-colors">
+                    Sou Cliente
+                  </Link>
+                </div>
+              </div>
             </form>
           </motion.div>
         </AnimatePresence>
-
-        <div className={`${view === 'register' ? 'mt-4' : 'mt-8'} text-center flex flex-col gap-1`}>
-          <p className="text-white/40 text-[11px] font-bold uppercase tracking-widest">
-            {view === 'login' ? 'Ainda não tem conta?' : 'Já possui uma conta?'}
-          </p>
-          <button 
-            onClick={toggleView}
-            className="text-white text-xs font-bold hover:text-white/80 transition-colors"
-          >
-            {view === 'login' ? 'Criar conta' : 'Fazer login'}
-          </button>
-        </div>
-      </motion.div>
-
-      <div className="mt-4 mb-2 relative z-10 flex-shrink-0">
-        <Link to="/" className="text-white/25 hover:text-white/50 font-black uppercase tracking-[0.2em] text-[11px] transition-colors">
-          Sou Cliente
-        </Link>
       </div>
     </div>
   );
