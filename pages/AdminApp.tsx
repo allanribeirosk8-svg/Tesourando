@@ -475,7 +475,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
     <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden bg-secondary font-sans">
       
       {/* Parte laranja */}
-      <div className="flex-[3] w-full flex items-center justify-end pb-8 relative z-0">
+      <div className="flex-[3] w-full flex items-center justify-center relative z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent pointer-events-none" />
         
         {/* Logo */}
@@ -483,18 +483,8 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
           <img 
             src="/logo.png" 
             alt="Logo" 
-            className="w-32 h-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]" 
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              const nextEl = e.currentTarget.nextElementSibling;
-              if (nextEl) nextEl.classList.remove('hidden');
-            }}
+            className="w-32 h-32 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]" 
           />
-          {/* Fallback caso a logo não exista */}
-          <div className="hidden w-20 h-20 bg-white/20 backdrop-blur-sm border border-white/40 rounded-[2rem] flex flex-col items-center justify-center text-white shadow-xl">
-            <Scissors size={40} />
-          </div>
-          <h1 className="text-2xl font-black text-white mt-4 tracking-[0.2em] uppercase mix-blend-overlay opacity-90 hidden logo-text-fallback">MEU CORTE</h1>
         </div>
       </div>
 
