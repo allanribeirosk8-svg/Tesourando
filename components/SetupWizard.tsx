@@ -377,11 +377,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
                     {step === 3 && (
                       <div className="flex flex-col flex-1 min-h-0 mt-2">
-                        <div className="flex flex-row items-center px-2 mb-1 gap-2 shrink-0">
+                        <div className="flex flex-row items-center pl-2 pr-3 mb-1 gap-2 shrink-0">
                           <div className="w-4 shrink-0"></div>
-                          <span className="flex-[3] text-[11px] font-medium text-[#888] text-center">Serviço</span>
-                          <span className="flex-[1.5] text-[11px] font-medium text-[#888] text-center">Preço</span>
-                          <span className="flex-[1.5] text-[11px] font-medium text-[#888] text-center">Duração</span>
+                          <span className="flex-[3] text-[11px] font-medium text-[#888] text-center w-0">Serviço</span>
+                          <span className="flex-[1.5] text-[11px] font-medium text-[#888] text-center w-0">Preço</span>
+                          <span className="flex-[1.5] text-[11px] font-medium text-[#888] text-center w-0">Duração</span>
                           <div className="w-8 shrink-0"></div>
                         </div>
 

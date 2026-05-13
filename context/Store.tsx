@@ -50,7 +50,8 @@ const DEFAULT_PROFILE: BarberProfile = {
   logo: '',
   description: '',
   instagram: '',
-  website: ''
+  website: '',
+  onboarding_seen: false
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

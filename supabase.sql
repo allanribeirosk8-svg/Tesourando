@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   description TEXT,
   instagram TEXT,
   website TEXT,
+  onboarding_seen BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

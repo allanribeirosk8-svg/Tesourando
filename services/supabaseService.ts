@@ -49,7 +49,8 @@ export const supabaseService = {
         name: newProfile.name,
         personalPhone: '',
         shopName: 'Meu Corte',
-        businessPhone: ''
+        businessPhone: '',
+        onboarding_seen: false
       } as BarberProfile;
     }
     if (error) throw error;
@@ -66,7 +67,8 @@ export const supabaseService = {
       logo: d.logo,
       description: d.description,
       instagram: d.instagram,
-      website: d.website
+      website: d.website,
+      onboarding_seen: d.onboarding_seen
     } as BarberProfile;
   },
   async updateProfile(profile: BarberProfile) {
@@ -85,6 +87,7 @@ export const supabaseService = {
       description: profile.description,
       instagram: profile.instagram,
       website: profile.website,
+      onboarding_seen: profile.onboarding_seen,
       updated_at: new Date().toISOString()
     } as any);
     if (error) throw error;

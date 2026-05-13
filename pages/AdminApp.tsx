@@ -652,7 +652,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
 };
 
 export const AdminApp: React.FC = () => {
-  const { barberProfile, appointments, session, isLoading } = useStore();
+  const { barberProfile, appointments, session, isLoading, updateBarberProfile } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'relatorios' | 'configuracoes'>('agenda');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -687,16 +687,31 @@ export const AdminApp: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const hasSeen = localStorage.getItem('tesourando_onboarding');
-      if (!hasSeen) {
+      window.scrollTo(0, 0);
+      setActiveTab('agenda');
+      setSelectedDate(getTodayString());
+      
+      if (!isLoading && barberProfile?.onboarding_seen === false) {
         setShowOnboarding(true);
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading, barberProfile?.onboarding_seen]);
 
-  const handleOnboardingComplete = () => {
-    localStorage.setItem('tesourando_onboarding', 'true');
+  useEffect(() => {
+    if (activeTab === 'agenda') {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [activeTab]);
+
+  const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
+    try {
+      if (barberProfile) {
+        await updateBarberProfile({ ...barberProfile, onboarding_seen: true });
+      }
+    } catch (err) {
+      console.error('Erro ao salvar onboarding_seen:', err);
+    }
   };
 
   const [photoTargetPhone, setPhotoTargetPhone] = useState<string | null>(null);
@@ -891,7 +906,7 @@ export const AdminApp: React.FC = () => {
         
       </motion.header>
 
-      <main className="px-4 pt-3 pb-20 relative">
+      <main className="px-4 pt-3 pb-20 relative bg-[#f7f7f7]">
         {activeTab === 'agenda' && (
             <AgendaView 
                 selectedDate={selectedDate}

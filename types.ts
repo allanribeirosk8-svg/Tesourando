@@ -59,6 +59,7 @@ export interface BarberProfile {
   instagram?: string;
   website?: string;
   working_hours?: Record<string, DaySchedule>;
+  onboarding_seen?: boolean;
 }
 
 export interface AppState {
