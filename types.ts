@@ -36,6 +36,14 @@ export interface DayConfig {
   isOpen: boolean;
 }
 
+export type DaySchedule = {
+  enabled: boolean;
+  open: string;
+  close: string;
+  breakStart: string | null;
+  breakEnd: string | null;
+};
+
 export interface BarberProfile {
   // Personal
   name: string;
@@ -50,6 +58,7 @@ export interface BarberProfile {
   description?: string;
   instagram?: string;
   website?: string;
+  working_hours?: Record<string, DaySchedule>;
 }
 
 export interface AppState {

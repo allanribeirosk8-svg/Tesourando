@@ -1,12 +1,50 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Store, User, Phone, PhoneCall, MapPin, Instagram, Scissors, Trash2, Clock, CheckCircle } from 'lucide-react';
+import { Store, User, Phone, PhoneCall, MapPin, Instagram, Scissors, List, Trash2, Clock, CheckCircle } from 'lucide-react';
 import { useStore } from '../context/Store';
-import { ServiceItem } from '../types';
+import { ServiceItem, DaySchedule } from '../types';
 
 interface SetupWizardProps {
   onComplete: () => void;
 }
+
+const DEFAULT_SCHEDULE: Record<string, DaySchedule> = {
+  SEG: { enabled: true,  open: '09:00', close: '18:00', breakStart: '12:00', breakEnd: '14:00' },
+  TER: { enabled: true,  open: '09:00', close: '18:00', breakStart: '12:00', breakEnd: '14:00' },
+  QUA: { enabled: true,  open: '09:00', close: '18:00', breakStart: null,    breakEnd: null    },
+  QUI: { enabled: true,  open: '09:00', close: '18:00', breakStart: '12:00', breakEnd: '14:00' },
+  SEX: { enabled: true,  open: '09:00', close: '18:00', breakStart: '12:00', breakEnd: '14:00' },
+  SAB: { enabled: false, open: '09:00', close: '18:00', breakStart: null,    breakEnd: null    },
+  DOM: { enabled: false, open: '09:00', close: '18:00', breakStart: null,    breakEnd: null    },
+};
+
+const phoneMask = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+};
+
+const validatePhone = (raw: string) => {
+  const digits = raw.replace(/\D/g, '');
+  return digits.length === 10 || digits.length === 11;
+};
+
+const generateDurationOptions = () => {
+  const options = [];
+  for (let minutes = 15; minutes <= 480; minutes += 15) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    let label = '';
+    if (hours > 0 && mins > 0) label = `${hours}h ${mins}min`;
+    else if (hours > 0) label = `${hours}h`;
+    else label = `${mins}min`;
+    options.push({ label, value: minutes });
+  }
+  return options;
+};
 
 export function SetupWizard({ onComplete }: SetupWizardProps) {
   const { updateBarberProfile, addService, updateDayConfig, services, removeService } = useStore();
@@ -30,31 +68,37 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     { id: 'setup-3', name: 'Corte + Barba', price: 50, duration: 60 },
   ]);
 
-  const [localSchedule, setLocalSchedule] = useState({
-    openDays: [1, 2, 3, 4, 5, 6], // 0=Dom ... 6=Sáb
-    startTime: '09:00',
-    endTime: '19:00',
-  });
+  const [schedule, setSchedule] = useState<Record<string, DaySchedule>>(DEFAULT_SCHEDULE);
 
   const [errors, setErrors] = useState<string[]>([]);
 
-  const isStep1Valid = profileData.shopName.trim() !== '' && profileData.name.trim() !== '' && profileData.personalPhone.trim() !== '';
+  const commDigits = profileData.businessPhone.replace(/\D/g, '');
+  const isBusinessPhoneValid = commDigits.length === 0 || validatePhone(profileData.businessPhone);
+  const isStep1Valid = profileData.name.trim() !== '' && validatePhone(profileData.personalPhone) && isBusinessPhoneValid;
+  const isStep2Valid = profileData.shopName.trim() !== '';
 
   const handleNext = () => {
     if (step === 1) {
       if (!isStep1Valid) {
         const newErrors = [];
-        if (profileData.shopName.trim() === '') newErrors.push('shopName');
         if (profileData.name.trim() === '') newErrors.push('name');
-        if (profileData.personalPhone.trim() === '') newErrors.push('personalPhone');
+        if (!validatePhone(profileData.personalPhone)) newErrors.push('personalPhone');
+        if (commDigits.length > 0 && !validatePhone(profileData.businessPhone)) newErrors.push('businessPhone');
         setErrors(newErrors);
         return;
       }
       setErrors([]);
       setStep(2);
     } else if (step === 2) {
+      if (!isStep2Valid) {
+        setErrors(['shopName']);
+        return;
+      }
+      setErrors([]);
       setStep(3);
     } else if (step === 3) {
+      setStep(4);
+    } else if (step === 4) {
       handleComplete();
     }
   };
@@ -69,6 +113,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         logo: '',
         photo: '',
         website: '',
+        working_hours: schedule,
       });
 
       // 2. Substituir serviços
@@ -80,13 +125,19 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       }
 
       // 3. Salvar horários
-      const allDays = [0, 1, 2, 3, 4, 5, 6];
-      for (const day of allDays) {
+      const dayMap: Record<number, string> = { 0: 'DOM', 1: 'SEG', 2: 'TER', 3: 'QUA', 4: 'QUI', 5: 'SEX', 6: 'SAB' };
+      for (let day = 0; day <= 6; day++) {
+        const dayKey = dayMap[day];
+        const daySched = schedule[dayKey];
+        const breaks = [];
+        if (daySched.breakStart) {
+          breaks.push(daySched.breakStart);
+        }
         await updateDayConfig(day, {
-          isOpen: localSchedule.openDays.includes(day),
-          start: localSchedule.startTime,
-          end: localSchedule.endTime,
-          breaks: [],
+          isOpen: daySched.enabled,
+          start: daySched.open,
+          end: daySched.close,
+          breaks: breaks,
         });
       }
 
@@ -118,29 +169,29 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setLocalServices(localServices.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
-  const toggleDay = (day: number) => {
-    setLocalSchedule(prev => ({
+  const updateScheduleDay = (dayKey: string, field: keyof DaySchedule, value: string | boolean | null) => {
+    setSchedule(prev => ({
       ...prev,
-      openDays: prev.openDays.includes(day) 
-        ? prev.openDays.filter(d => d !== day)
-        : [...prev.openDays, day].sort()
+      [dayKey]: {
+        ...prev[dayKey],
+        [field]: value
+      }
     }));
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col" style={{ background: 'linear-gradient(to bottom, #F5A623 38%, #FFFFFF 38%)' }}>
-      <div className="flex-1 w-full flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] flex flex-col h-[100dvh] w-full bg-[#F5A623] pt-[env(safe-area-inset-top)]">
+      
+      <div className="flex-1 w-full bg-white flex flex-col mx-auto max-w-[480px] relative px-6 pt-4 pb-5 justify-between overflow-hidden">
         
-        <div className="bg-white rounded-[24px] p-7 max-w-[420px] w-[92%] shadow-[0_10px_40px_rgba(0,0,0,0.1)] relative overflow-hidden flex flex-col max-h-[90vh]">
-          
-          <AnimatePresence mode="wait">
-            {isFinished ? (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center py-10"
-              >
+        <AnimatePresence mode="wait">
+          {isFinished ? (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col h-full w-full absolute inset-0 items-center justify-center p-8 bg-white"
+            >
                 <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-6 relative">
                    <motion.div
                       initial={{ scale: 0 }}
@@ -162,261 +213,304 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="flex flex-col h-full"
+                className="flex flex-col h-full w-full justify-between"
               >
-                {/* Progress Bar & Header */}
-                <div className="text-center mb-6">
-                  <p className="text-[12px] text-[#9CA3AF] mb-1">Etapa {step} de 3</p>
-                  <div className="flex gap-[6px] mb-6">
-                    {[1, 2, 3].map(i => (
+                {/* ── Topo: barra de progresso das etapas ── */}
+                <div>
+                  <p className="text-[12px] text-[#9CA3AF] mb-1 text-center">Etapa {step} de 4</p>
+                  <div className="flex gap-[6px]">
+                    {[1, 2, 3, 4].map(i => (
                       <div 
                         key={i}
                         className={`h-[6px] rounded-[4px] flex-1 ${i === step ? 'bg-[#F5A623]' : i < step ? 'bg-[#F5A623] opacity-60' : 'bg-[#E5E7EB]'}`}
                       />
                     ))}
                   </div>
+                </div>
 
-                  <div className="w-[72px] h-[72px] rounded-full bg-[#FFF3E0] text-[#F5A623] flex items-center justify-center mx-auto mb-4">
-                    {step === 1 && <Scissors size={32} />}
-                    {step === 2 && <Scissors size={32} />}
-                    {step === 3 && <Clock size={32} />}
+                {/* ── Meio: ícone + título + descrição + campos ── */}
+                <div className="flex-1 flex flex-col justify-center gap-3 py-4">
+                  <div className="w-[48px] h-[48px] rounded-full bg-[#FFF3E0] text-[#F5A623] flex items-center justify-center mx-auto mb-1 shrink-0">
+                    {step === 1 && <User size={24} />}
+                    {step === 2 && <Scissors size={24} />}
+                    {step === 3 && <List size={24} />}
+                    {step === 4 && <Clock size={24} />}
                   </div>
 
-                  <h2 className="text-[22px] font-bold text-[#1E1B4B] text-center mb-2">
-                    {step === 1 && "Vamos começar! Como se chama sua barbearia?"}
-                    {step === 2 && "Quais serviços você oferece?"}
-                    {step === 3 && "Quando você atende?"}
+                  <h2 className="text-[22px] font-bold text-[#1E1B4B] text-center">
+                    {step === 1 && "Vamos começar! Como podemos te chamar?"}
+                    {step === 2 && "Agora, sobre sua barbearia"}
+                    {step === 3 && "Quais serviços você oferece?"}
+                    {step === 4 && "Quando você atende?"}
                   </h2>
-                  <p className="text-[14px] text-[#6B7280] text-center mb-6">
-                    {step === 1 && "Essas informações aparecem para seus clientes na hora de agendar."}
-                    {step === 2 && "Você pode editar isso depois. Já deixamos alguns prontos para você!"}
-                    {step === 3 && "Configure os dias e horários. Você pode ajustar isso nas Configurações a qualquer momento."}
+                  <p className="text-[13px] text-[#6B7280] text-center mb-1">
+                    {step === 1 && "Suas informações de contato para seus clientes."}
+                    {step === 2 && "Essas informações aparecem para seus clientes na hora de agendar."}
+                    {step === 3 && "Você pode editar isso depois. Já deixamos alguns prontos para você!"}
+                    {step === 4 && "Configure os dias e horários. Você pode ajustar isso nas Configurações a qualquer momento."}
                   </p>
-                </div>
 
-                {/* Content Area - Scrollable */}
-                <div className="flex-1 overflow-y-auto mb-6 px-1 custom-scrollbar">
-                  {step === 1 && (
-                    <div className="flex flex-col gap-4">
-                      {/* Shop Name */}
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
-                          Nome da barbearia <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <Store className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="text"
-                            placeholder="Ex: Barbearia do João"
-                            value={profileData.shopName}
-                            onChange={(e) => setProfileData({ ...profileData, shopName: e.target.value })}
-                            className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('shopName') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Name */}
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
-                          Seu nome <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="text"
-                            placeholder="Ex: João Silva"
-                            value={profileData.name}
-                            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                            className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('name') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Personal Phone */}
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
-                          WhatsApp pessoal <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="tel"
-                            placeholder="(11) 99999-9999"
-                            value={profileData.personalPhone}
-                            onChange={(e) => setProfileData({ ...profileData, personalPhone: e.target.value })}
-                            className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('personalPhone') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Business Phone */}
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
-                          WhatsApp comercial
-                        </label>
-                        <div className="relative">
-                          <PhoneCall className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="tel"
-                            placeholder="(11) 99999-9999"
-                            value={profileData.businessPhone}
-                            onChange={(e) => setProfileData({ ...profileData, businessPhone: e.target.value })}
-                            className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Address */}
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
-                          Endereço
-                        </label>
-                        <div className="relative">
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="text"
-                            placeholder="Rua, número, bairro"
-                            value={profileData.address}
-                            onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                            className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Instagram */}
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
-                          Instagram
-                        </label>
-                        <div className="relative">
-                          <Instagram className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="text"
-                            placeholder="@suabarbearia"
-                            value={profileData.instagram}
-                            onChange={(e) => setProfileData({ ...profileData, instagram: e.target.value })}
-                            className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {step === 2 && (
-                    <div className="flex flex-col gap-3">
-                      {localServices.map((service, index) => (
-                        <div key={service.id} className="bg-[#FAFAFA] rounded-[12px] border border-[#F3F4F6] p-3 flex flex-row items-center gap-2">
-                          <span className="text-[#D1D5DB] cursor-grab">⠿</span>
-                          <input
-                            type="text"
-                            value={service.name}
-                            onChange={(e) => updateLocalService(service.id, 'name', e.target.value)}
-                            className="flex-1 bg-transparent border-none text-[14px] text-[#1E1B4B] font-medium focus:outline-none min-w-0"
-                            placeholder="Nome"
-                          />
-                          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-md px-2 py-1">
-                            <span className="text-gray-400 text-xs text-nowrap">R$</span>
+                  <div className="flex flex-col flex-1 max-h-full">
+                    {step === 1 && (
+                      <div className="flex flex-col gap-2.5 mt-2">
+                        {/* Name */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            Seu nome <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
-                              type="number"
-                              value={service.price || ''}
-                              onChange={(e) => updateLocalService(service.id, 'price', Number(e.target.value))}
-                              className="w-10 bg-transparent border-none text-right text-[13px] focus:outline-none"
+                              type="text"
+                              placeholder="Ex: João Silva"
+                              value={profileData.name}
+                              onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                              className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('name') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
                             />
                           </div>
-                          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-md px-2 py-1">
+                        </div>
+
+                        {/* Personal Phone */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            WhatsApp pessoal <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
-                              type="number"
-                              value={service.duration || ''}
-                              onChange={(e) => updateLocalService(service.id, 'duration', Number(e.target.value))}
-                              className="w-8 bg-transparent border-none text-right text-[13px] focus:outline-none"
+                              type="tel"
+                              placeholder="(11) 99999-9999"
+                              value={profileData.personalPhone}
+                              onChange={(e) => {
+                                setProfileData({ ...profileData, personalPhone: phoneMask(e.target.value) });
+                                if (errors.includes('personalPhone')) setErrors(errors.filter(err => err !== 'personalPhone'));
+                              }}
+                              className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('personalPhone') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
+                              maxLength={15}
                             />
-                            <span className="text-gray-400 text-xs">min</span>
                           </div>
-                          {localServices.length > 1 && (
-                            <button onClick={() => removeLocalService(service.id)} className="text-[#EF4444] p-1 ml-1 hover:bg-red-50 rounded">
-                              <Trash2 size={16} />
-                            </button>
+                          {errors.includes('personalPhone') && (
+                            <p className="text-red-500 text-[12px] mt-1 ml-1">Informe um telefone válido com DDD. Ex: (11) 99999-9999</p>
                           )}
                         </div>
-                      ))}
 
-                      <button
-                        onClick={addLocalService}
-                        className="w-full mt-2 border-2 border-dashed border-[#F5A623]/50 text-[#F5A623] hover:bg-[#F5A623]/5 rounded-[12px] p-2.5 font-medium text-[14px] flex justify-center items-center gap-2"
-                      >
-                        + Adicionar serviço
-                      </button>
+                        {/* Business Phone */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            WhatsApp comercial
+                          </label>
+                          <div className="relative">
+                            <PhoneCall className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                              type="tel"
+                              placeholder="(11) 99999-9999"
+                              value={profileData.businessPhone}
+                              onChange={(e) => {
+                                setProfileData({ ...profileData, businessPhone: phoneMask(e.target.value) });
+                                if (errors.includes('businessPhone')) setErrors(errors.filter(err => err !== 'businessPhone'));
+                              }}
+                              className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('businessPhone') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
+                              maxLength={15}
+                            />
+                          </div>
+                          {errors.includes('businessPhone') && (
+                            <p className="text-red-500 text-[12px] mt-1 ml-1">Telefone inválido. Deixe em branco ou informe com DDD.</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
-                      <p className="text-[12px] text-[#9CA3AF] mt-4 text-center">
-                        💡 Os preços e duração podem ser ajustados depois nas Configurações.
-                      </p>
-                    </div>
-                  )}
+                    {step === 2 && (
+                      <div className="flex flex-col gap-2.5 mt-2">
+                        {/* Shop Name */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            Nome da barbearia <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Store className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                              type="text"
+                              placeholder="Ex: Barbearia do João"
+                              value={profileData.shopName}
+                              onChange={(e) => setProfileData({ ...profileData, shopName: e.target.value })}
+                              className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all ${errors.includes('shopName') ? 'border-red-500' : 'border-[#E5E7EB]'}`}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Address */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            Endereço
+                          </label>
+                          <div className="relative">
+                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                              type="text"
+                              placeholder="Rua, número, bairro"
+                              value={profileData.address}
+                              onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                              className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all"
+                            />
+                          </div>
+                        </div>
 
-                  {step === 3 && (
-                    <div className="flex flex-col gap-6">
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-2 ml-1 text-center">
-                          Dias de atendimento
-                        </label>
-                        <div className="flex flex-wrap justify-center gap-2">
-                          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((dayName, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => toggleDay(idx)}
-                              className={`rounded-[10px] py-[8px] px-[12px] text-[13px] transition-colors ${
-                                localSchedule.openDays.includes(idx)
-                                  ? 'bg-[#F5A623] text-white font-bold'
-                                  : 'bg-[#F3F4F6] text-[#6B7280]'
-                              }`}
-                            >
-                              {dayName}
-                            </button>
+                        {/* Instagram */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            Instagram
+                          </label>
+                          <div className="relative">
+                            <Instagram className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                              type="text"
+                              placeholder="@suabarbearia"
+                              value={profileData.instagram}
+                              onChange={(e) => setProfileData({ ...profileData, instagram: e.target.value })}
+                              className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[12px] pr-[16px] pl-[44px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {step === 3 && (
+                      <div className="flex flex-col flex-1 min-h-0 mt-2">
+                        <div className="flex flex-row items-center px-2 mb-1 gap-2 shrink-0">
+                          <div className="w-4 shrink-0"></div>
+                          <span className="flex-[3] text-[11px] font-medium text-[#888] text-center">Serviço</span>
+                          <span className="flex-[1.5] text-[11px] font-medium text-[#888] text-center">Preço</span>
+                          <span className="flex-[1.5] text-[11px] font-medium text-[#888] text-center">Duração</span>
+                          <div className="w-8 shrink-0"></div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col pr-1">
+                          {localServices.map((service, index) => (
+                            <div key={service.id} className="bg-[#F5F5F8] rounded-[12px] p-2 flex flex-row items-center gap-2 mb-2 shrink-0">
+                              <span className="text-[#D1D5DB] cursor-grab shrink-0 w-4 text-center">⠿</span>
+                              <input
+                                type="text"
+                                value={service.name}
+                                onChange={(e) => updateLocalService(service.id, 'name', e.target.value)}
+                                className="flex-[3] w-0 bg-white border border-[#E0E0E0] rounded-[8px] px-2 py-2 text-[14px] text-[#333] focus:outline-none placeholder-[#BDBDBD]"
+                                placeholder="Nome do serviço"
+                              />
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={service.price || ''}
+                                onChange={(e) => updateLocalService(service.id, 'price', Number(e.target.value))}
+                                className="flex-[1.5] w-0 bg-white border border-[#E0E0E0] rounded-[8px] px-2 py-2 text-[14px] text-[#333] text-center focus:outline-none placeholder-[#BDBDBD]"
+                                placeholder="R$"
+                              />
+                              <select
+                                value={service.duration || ''}
+                                onChange={(e) => updateLocalService(service.id, 'duration', Number(e.target.value))}
+                                className="flex-[1.5] w-0 bg-white border border-[#E0E0E0] rounded-[8px] pl-1 pr-0 py-2 text-[14px] text-[#333] focus:outline-none placeholder-[#BDBDBD] text-center appearance-none"
+                              >
+                                {generateDurationOptions().map(opt => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                              <button onClick={() => removeLocalService(service.id)} className="w-8 flex items-center justify-center p-1 text-[#F44336] hover:bg-red-50 rounded shrink-0">
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
                           ))}
+                          
+                          <button
+                            onClick={addLocalService}
+                            className="w-full shrink-0 mt-1 mb-2 border-2 border-dashed border-[#F5A623]/50 text-[#F5A623] hover:bg-[#F5A623]/5 rounded-[12px] p-2 font-medium text-[14px] flex justify-center items-center gap-2"
+                          >
+                            + Adicionar serviço
+                          </button>
                         </div>
                       </div>
+                    )}
 
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-2 ml-1 text-center">
-                          Horário de atendimento
-                        </label>
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <label className="block text-[12px] text-gray-500 mb-1">Abertura</label>
-                            <input
-                              type="time"
-                              value={localSchedule.startTime}
-                              onChange={(e) => setLocalSchedule({ ...localSchedule, startTime: e.target.value })}
-                              className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[10px] px-[12px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all text-center"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-[12px] text-gray-500 mb-1">Fechamento</label>
-                            <input
-                              type="time"
-                              value={localSchedule.endTime}
-                              onChange={(e) => setLocalSchedule({ ...localSchedule, endTime: e.target.value })}
-                              className="w-full bg-[#F9FAFB] border-[1.5px] border-[#E5E7EB] rounded-[12px] py-[10px] px-[12px] text-[15px] text-[#1E1B4B] focus:outline-none focus:border-[#F5A623] focus:ring-[3px] focus:ring-[#F5A623]/15 transition-all text-center"
-                            />
-                          </div>
+                    {step === 4 && (
+                      <div className="flex flex-col gap-2 mt-2 w-full">
+                        <div className="flex flex-row px-1 mb-1">
+                          <span className="w-9"></span>
+                          <span className="flex-[2] text-[11px] font-medium text-[#9CA3AF] text-center">Horário</span>
+                          <span className="flex-[2] text-[11px] font-medium text-[#9CA3AF] text-center">Pausa</span>
+                          <span className="w-[34px]"></span>
                         </div>
+                        {['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'].map((dayKey) => {
+                          const sched = schedule[dayKey];
+                          return (
+                            <div key={dayKey} className={`flex flex-row items-center gap-1.5 transition-opacity ${sched.enabled ? '' : 'opacity-40'}`}>
+                              <span className="w-9 text-[12px] font-bold text-[#555]">{dayKey}</span>
+                              <div className="flex-[2] flex flex-row gap-1">
+                                <input
+                                  type="time"
+                                  value={sched.open}
+                                  disabled={!sched.enabled}
+                                  onChange={(e) => updateScheduleDay(dayKey, 'open', e.target.value)}
+                                  className={`flex-1 w-0 border border-[#E0E0E0] rounded-[8px] p-1 text-[13px] text-center focus:outline-none [&::-webkit-calendar-picker-indicator]:hidden ${sched.enabled ? 'bg-white text-[#333]' : 'bg-[#F5F5F5] text-[#BDBDBD]'}`}
+                                />
+                                <input
+                                  type="time"
+                                  value={sched.close}
+                                  disabled={!sched.enabled}
+                                  onChange={(e) => updateScheduleDay(dayKey, 'close', e.target.value)}
+                                  className={`flex-1 w-0 border border-[#E0E0E0] rounded-[8px] p-1 text-[13px] text-center focus:outline-none [&::-webkit-calendar-picker-indicator]:hidden ${sched.enabled ? 'bg-white text-[#333]' : 'bg-[#F5F5F5] text-[#BDBDBD]'}`}
+                                />
+                              </div>
+                              <div className="flex-[2] flex flex-row gap-1">
+                                <input
+                                  type="time"
+                                  value={sched.enabled ? (sched.breakStart || '') : ''}
+                                  disabled={!sched.enabled}
+                                  onChange={(e) => updateScheduleDay(dayKey, 'breakStart', e.target.value || null)}
+                                  className={`flex-1 w-0 border border-[#E0E0E0] rounded-[8px] p-1 text-[13px] text-center focus:outline-none [&::-webkit-calendar-picker-indicator]:hidden ${sched.enabled ? 'bg-white text-[#333]' : 'bg-[#F5F5F5] text-[#BDBDBD]'}`}
+                                />
+                                <input
+                                  type="time"
+                                  value={sched.enabled ? (sched.breakEnd || '') : ''}
+                                  disabled={!sched.enabled}
+                                  onChange={(e) => updateScheduleDay(dayKey, 'breakEnd', e.target.value || null)}
+                                  className={`flex-1 w-0 border border-[#E0E0E0] rounded-[8px] p-1 text-[13px] text-center focus:outline-none [&::-webkit-calendar-picker-indicator]:hidden ${sched.enabled ? 'bg-white text-[#333]' : 'bg-[#F5F5F5] text-[#BDBDBD]'}`}
+                                />
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const newEnabled = !sched.enabled;
+                                  updateScheduleDay(dayKey, 'enabled', newEnabled);
+                                  if (!newEnabled) {
+                                    updateScheduleDay(dayKey, 'breakStart', null);
+                                    updateScheduleDay(dayKey, 'breakEnd', null);
+                                  }
+                                }}
+                                className="w-[34px] flex justify-center shrink-0"
+                              >
+                                <div className={`w-[34px] h-[20px] rounded-full p-[2px] transition-colors relative ${sched.enabled ? 'bg-[#F5A623]' : 'bg-[#E0E0E0]'}`}>
+                                  <motion.div 
+                                      animate={{ x: sched.enabled ? 14 : 0 }}
+                                      className="w-[16px] h-[16px] bg-white rounded-full shadow-sm"
+                                  />
+                                </div>
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
-                    </div>
-                  )}
-
+                    )}
+                  </div>
                 </div>
 
-                {/* Actions */}
+                {/* ── Baixo: botão principal + Voltar ── */}
                 <div className="flex flex-col gap-2 mt-auto">
                   <button
                     onClick={handleNext}
-                    disabled={step === 1 && !isStep1Valid}
-                    className={`w-full bg-[#F5A623] text-white h-[50px] rounded-[14px] font-bold text-[16px] transition-all flex items-center justify-center gap-2 ${(step === 1 && !isStep1Valid) || isFinishing ? 'opacity-40' : 'hover:bg-[#E0901A]'}`}
+                    disabled={(step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid)}
+                    className={`w-full bg-[#F5A623] text-white h-[48px] rounded-[12px] font-bold text-[16px] transition-all flex items-center justify-center gap-2 ${((step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid)) || isFinishing ? 'opacity-40' : 'hover:bg-[#E0901A]'}`}
                   >
                     {isFinishing ? (
                       <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                     ) : (
-                      step === 3 ? "Concluir Configuração 🎉" : "Próximo"
+                      step === 4 ? "Concluir Configuração 🎉" : "Próximo"
                     )}
                   </button>
                   
@@ -424,7 +518,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                     <button
                       onClick={() => setStep(step - 1)}
                       disabled={isFinishing}
-                      className="w-full h-[40px] text-[#9CA3AF] font-medium text-[14px] flex justify-center items-center mt-1"
+                      className="w-full h-[40px] text-[#9CA3AF] font-medium text-[14px] flex justify-center items-center"
                     >
                       Voltar
                     </button>
@@ -433,7 +527,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+
       </div>
     </div>
   );

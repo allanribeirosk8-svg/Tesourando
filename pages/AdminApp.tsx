@@ -449,6 +449,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
         const { error: signUpErr } = await supabase.auth.signUp({ email, password });
         if (signUpErr) throw signUpErr;
         
+        localStorage.setItem('tesourando_new_user', 'true');
         setSuccessMsg('Conta criada! Verifique seu e-mail para confirmar.');
         setTimeout(() => {
           setView('login');
@@ -650,8 +651,6 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
   );
 };
 
-let hasCompletedSetup = false;
-
 export const AdminApp: React.FC = () => {
   const { barberProfile, appointments, session, isLoading } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -672,20 +671,17 @@ export const AdminApp: React.FC = () => {
   const [showSetup, setShowSetup] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  const isNewUser = 
-    !hasCompletedSetup &&
-    !isLoading &&
-    session !== null &&
-    barberProfile.shopName === 'Meu Corte' &&
-    barberProfile.name === 'Barbeiro' &&
-    barberProfile.personalPhone === '';
-
   useEffect(() => {
-    if (isNewUser) setShowSetup(true);
-  }, [isLoading, isNewUser]);
+    if (isAuthenticated && !isLoading) {
+      const isNewUserFlag = localStorage.getItem('tesourando_new_user');
+      if (isNewUserFlag === 'true') {
+        setShowSetup(true);
+        localStorage.removeItem('tesourando_new_user');
+      }
+    }
+  }, [isAuthenticated, isLoading]);
 
   const handleCompleteSetup = () => {
-    hasCompletedSetup = true;
     setShowSetup(false);
   };
 
