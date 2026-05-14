@@ -832,7 +832,7 @@ export const AdminApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F8] relative">
+    <div className="h-[100dvh] flex flex-col bg-[#F5F5F8] relative overflow-hidden">
       <motion.header 
         className="sticky top-0 z-[100] h-20 bg-[#1E1B4B] px-6 flex items-center justify-between"
         initial={false}
@@ -897,7 +897,7 @@ export const AdminApp: React.FC = () => {
         
       </motion.header>
 
-      <main className="pb-[92px] relative flex-1 flex flex-col bg-[#F5F5F8]">
+      <main className={`relative flex-1 flex flex-col min-h-0 bg-[#F5F5F8] ${activeTab === 'agenda' ? 'overflow-hidden z-0' : 'overflow-y-auto pb-[92px]'}`}>
         {activeTab === 'agenda' && (
             <AgendaView 
                 selectedDate={selectedDate}
@@ -1370,7 +1370,7 @@ const AgendaView: React.FC<{
   }, [currentDayAppointments]);
 
   return (
-    <div className="flex-1 flex flex-col relative z-0 bg-[#363062]">
+    <div className="flex-1 flex flex-col relative z-0 bg-[#363062] min-h-0">
       <div className="bg-[#1E1B4B] pt-2 pb-5 px-4 relative z-10 w-full shrink-0">
         <div {...agendaSwipeHandlers} className="overflow-hidden">
         {/* Integrated Calendar Header */}
@@ -1661,7 +1661,7 @@ const AgendaView: React.FC<{
       </div>
       </div>
 
-      <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[10px] pt-0 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-8 relative z-10 h-[700px]">
+      <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[10px] pt-0 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-28 relative z-10 min-h-0 overflow-y-auto">
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
         <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
 
