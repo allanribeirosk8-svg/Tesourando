@@ -897,7 +897,7 @@ export const AdminApp: React.FC = () => {
         
       </motion.header>
 
-      <main className="pb-[92px] relative flex-1 flex flex-col">
+      <main className="pb-[92px] relative flex-1 flex flex-col bg-[#F5F5F8]">
         {activeTab === 'agenda' && (
             <AgendaView 
                 selectedDate={selectedDate}
@@ -1370,8 +1370,8 @@ const AgendaView: React.FC<{
   }, [currentDayAppointments]);
 
   return (
-    <div className="flex-1 flex flex-col relative z-0">
-      <div className="bg-[#1E1B4B] pt-2 pb-4 px-4 relative z-10 w-full shrink-0">
+    <div className="flex-1 flex flex-col relative z-0 bg-[#363062]">
+      <div className="bg-[#1E1B4B] pt-2 pb-5 px-4 relative z-10 w-full shrink-0">
         <div {...agendaSwipeHandlers} className="overflow-hidden">
         {/* Integrated Calendar Header */}
         <div className="flex flex-col items-center relative">
@@ -1630,9 +1630,9 @@ const AgendaView: React.FC<{
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0 h-[80px]">
+      <div className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0">
         <div 
-          className="rounded-2xl p-4 flex flex-col justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group"
+          className="rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group"
         >
           {/* Decoração — círculo grande translúcido */}
           <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
@@ -1642,26 +1642,26 @@ const AgendaView: React.FC<{
             style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
           />
           
-          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-1 relative z-10">{stats.dayLabel}</span>
+          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.dayLabel}</span>
           <div className="flex flex-col relative z-10">
-            <span className="text-[26px] font-extrabold text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
-            <span className="text-[12px] text-white/75 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            <span className="text-[22px] font-extrabold text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
+            <span className="text-[11px] text-white/75 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
           </div>
           <DollarSign size={48} className="text-white/10 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
 
-        <div className="bg-[#1E1B4B] rounded-2xl p-4 flex flex-col justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group">
-          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-1 relative z-10">{stats.weekLabel}</span>
+        <div className="bg-white/[0.08] rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group">
+          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.weekLabel}</span>
           <div className="flex flex-col relative z-10">
-            <span className="text-[26px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
-            <span className="text-[12px] font-normal text-white/75 leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            <span className="text-[22px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
+            <span className="text-[11px] font-normal text-white/75 leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
           </div>
           <DollarSign size={48} className="text-secondary/5 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
       </div>
       </div>
 
-      <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[20px] pt-5 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-8 relative z-10">
+      <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[10px] pt-0 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-8 relative z-10 h-[700px]">
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
         <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
 
@@ -1773,10 +1773,10 @@ const AgendaView: React.FC<{
 
                     if (!apt) {
                         return (
-                            <div key={slot} className="relative group">
+                            <div key={slot} className={`relative mb-2 h-[56px] rounded-xl overflow-hidden shadow-[0_2px_6px_rgba(30,27,75,0.06)] flex flex-row items-stretch ${past ? 'opacity-40 grayscale pointer-events-none' : 'cursor-pointer group'}`}>
                                 <div 
                                     onClick={() => setActiveSlotMenu(isQuickActionOpen ? null : slot)} 
-                                    className={`slot-trigger py-[14px] px-4 rounded-xl mb-2 flex flex-row items-center transition-colors group ${past ? 'bg-white/30 opacity-40 grayscale pointer-events-none' : 'bg-white hover:bg-gray-50 cursor-pointer shadow-[0_2px_6px_rgba(30,27,75,0.06)]'}`}
+                                    className="slot-trigger flex-1 flex flex-row items-center px-4 bg-white hover:bg-gray-50 transition-colors outline-none focus:outline-none active:outline-none"
                                 >
                                     <div className="text-[16px] font-bold text-[#1E1B4B] w-14 shrink-0">{slot}</div>
                                     <div className="flex items-center gap-2 text-[#1E1B4B]/35 font-normal text-[13px] ml-2.5 transition-colors group-hover:text-[#1E1B4B]/50">
@@ -1790,30 +1790,28 @@ const AgendaView: React.FC<{
                                 <AnimatePresence>
                                     {isQuickActionOpen && (
                                         <motion.div 
-                                            initial={{ x: -10, opacity: 0 }}
+                                            initial={{ x: 10, opacity: 0 }}
                                             animate={{ x: 0, opacity: 1 }}
-                                            exit={{ x: -10, opacity: 0 }}
-                                            className="menu-container absolute top-0 bottom-0 right-0 left-[calc(3.5rem+1rem+0.75rem)] bg-surface/90 backdrop-blur-md shadow-lg rounded-r-2xl flex items-center z-50 overflow-hidden border-y-2 border-r-2 border-title/30"
+                                            exit={{ x: 10, opacity: 0 }}
+                                            className="menu-container absolute top-0 bottom-0 right-0 left-[calc(3.5rem+1rem)] bg-surface/90 backdrop-blur-md shadow-lg rounded-r-2xl flex items-stretch z-50 overflow-hidden border-y-2 border-r-2 border-title/30"
                                         >
-                                            <div className="flex-1 h-full flex items-stretch">
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); toggleSlotAvailability(selectedDate, slot); setActiveSlotMenu(null); }}
-                                                    className="flex-[0.75] flex flex-col items-center justify-center gap-1 bg-red-400 hover:bg-red-500 text-white/90 transition-colors"
-                                                >
-                                                    <Ban size={16} />
-                                                    <span className="text-[8px] font-black uppercase tracking-widest">Bloquear</span>
-                                                </button>
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); onAddInSlot(selectedDate, slot); setActiveSlotMenu(null); }}
-                                                    className="flex-[1.25] flex flex-col items-center justify-center gap-1 bg-secondary hover:bg-secondary text-white transition-colors"
-                                                >
-                                                    <Calendar size={18} />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">Agendar</span>
-                                                </button>
-                                            </div>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); toggleSlotAvailability(selectedDate, slot); setActiveSlotMenu(null); }}
+                                                className="flex-[0.75] flex flex-col items-center justify-center gap-1 bg-[#E53935] hover:bg-[#D32F2F] text-white transition-colors"
+                                            >
+                                                <Ban size={16} />
+                                                <span className="text-[10px] font-bold uppercase">Bloquear</span>
+                                            </button>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); onAddInSlot(selectedDate, slot); setActiveSlotMenu(null); }}
+                                                className="flex-[1.25] flex flex-col items-center justify-center gap-1 bg-[#F5A623] hover:bg-[#E89B20] text-white transition-colors"
+                                            >
+                                                <Calendar size={16} />
+                                                <span className="text-[10px] font-bold uppercase">Agendar</span>
+                                            </button>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); setActiveSlotMenu(null); }}
-                                                className="w-10 h-full flex items-center justify-center text-title hover:text-white bg-primary/40/50 border-l border-title/30"
+                                                className="w-10 flex items-center justify-center text-white bg-[#1E1B4B] hover:bg-[#2A265E] transition-colors"
                                             >
                                                 <X size={20} />
                                             </button>
