@@ -1,6 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { useStore, DEFAULT_DAY_CONFIG } from '../context/Store';
-import { DebugPanel } from '../components/DebugPanel';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { supabaseService } from '../services/supabaseService';
 import { Button } from '../components/ui/Button';
@@ -104,31 +103,23 @@ interface SectionHeaderProps {
 }
 
 const SectionHeader = ({ title, count, accent = 'blue' }: SectionHeaderProps) => {
-  const accentColor = {
-    blue:  'bg-secondary',
-    green: 'bg-green-500',
-    gray:  'bg-[#8A98A8]',
-  }[accent];
-
-  const badgeColor = {
-    blue:  'bg-surface/80 text-secondary  ',
-    green: 'bg-green-50 text-green-600  ',
-    gray:  'bg-primary/40 text-title  ',
-  }[accent];
+  const isGreen = accent === 'green';
+  const barColor = isGreen ? 'bg-[#48C78E]' : 'bg-[#F5A623]';
+  const badgeColor = isGreen ? 'bg-[#48C78E] text-[#FFFFFF]' : 'bg-[#F5A623] text-[#FFFFFF]';
 
   return (
-    <div className="flex items-center gap-2 mb-3 mt-5 px-4">
-      {/* Barra lateral colorida — igual para todos */}
-      <div className={`w-1 h-4 rounded-full flex-shrink-0 ${accentColor}`} />
+    <div className="flex flex-row items-center mt-5 mb-2">
+      {/* Barra lateral */}
+      <div className={`w-1 h-[18px] rounded-sm ${barColor} mr-2`} />
 
       {/* Título */}
-      <span className="text-xs font-black uppercase tracking-widest text-title ">
+      <span className={`text-[13px] font-bold tracking-[0.8px] uppercase ${isGreen ? 'text-[#48C78E]' : 'text-[#1E1B4B]'}`}>
         {title}
       </span>
 
-      {/* Badge de contagem — só aparece se count foi passado */}
+      {/* Badge de contagem */}
       {count !== undefined && (
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>
+        <span className={`${badgeColor} text-[11px] font-bold rounded-[10px] px-[7px] py-[2px] ml-2 leading-none`}>
           {count}
         </span>
       )}
@@ -841,9 +832,9 @@ export const AdminApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-primary/40  relative">
+    <div className="min-h-screen bg-[#F5F5F8] relative">
       <motion.header 
-        className="sticky top-0 z-[100] h-20 bg-surface  backdrop-blur-md border-b border-title/30  px-6 flex items-center justify-between"
+        className="sticky top-0 z-[100] h-20 bg-[#1E1B4B] px-6 flex items-center justify-between"
         initial={false}
         animate={{ 
           y: footerVisible ? 0 : -100,
@@ -875,10 +866,10 @@ export const AdminApp: React.FC = () => {
               </button>
               {/* Texto em 2 linhas */}
               <div className="flex flex-col leading-tight">
-                <span className="text-[11px] font-medium text-title  uppercase tracking-wider">
+                <span className="text-[12px] font-normal text-white/65 uppercase tracking-[1.2px]">
                   {getGreetingOnly()}
                 </span>
-                <span className="text-base font-bold text-white  leading-snug">
+                <span className="text-[20px] font-bold text-white leading-snug">
                   {barberProfile.name || 'Barbeiro'} {getGreetingEmoji()}
                 </span>
               </div>
@@ -886,7 +877,7 @@ export const AdminApp: React.FC = () => {
           ) : (
             <button 
               onClick={() => setActiveTab('agenda')}
-              className="w-10 h-10 rounded-full bg-surface  text-white  flex items-center justify-center hover:bg-primary/40 border border-title/30  transition-colors shadow-sm"
+              className="w-10 h-10 rounded-full bg-surface  text-white  flex items-center justify-center hover:bg-primary/40  transition-colors shadow-sm"
               title="Voltar para Agenda"
             >
               <ArrowLeft size={20} />
@@ -906,7 +897,7 @@ export const AdminApp: React.FC = () => {
         
       </motion.header>
 
-      <main className="px-4 pt-3 pb-20 relative bg-[#f7f7f7]">
+      <main className="pb-[92px] relative flex-1 flex flex-col">
         {activeTab === 'agenda' && (
             <AgendaView 
                 selectedDate={selectedDate}
@@ -1047,7 +1038,7 @@ export const AdminApp: React.FC = () => {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-          <nav className="bg-surface/90 backdrop-blur-[12px] border-t border-white/10 pb-safe flex justify-between items-center h-[64px] pointer-events-auto px-2 relative z-50">
+          <nav className="bg-[#FFFFFF] border-t-0 pt-[8px] pb-[max(10px,env(safe-area-inset-bottom))] flex justify-between items-center h-[64px] pointer-events-auto px-2 relative z-50 shadow-[0_-3px_12px_rgba(30,27,75,0.08)]">
             {[
               { id: 'clientes', label: 'Clientes', icon: Users, ariaLabel: 'Ir para Clientes' },
               { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
@@ -1135,7 +1126,6 @@ export const AdminApp: React.FC = () => {
           />
         )}
       </AnimatePresence>
-      {process.env.NODE_ENV === 'development' && <DebugPanel />}
     </div>
   );
 };
@@ -1380,10 +1370,11 @@ const AgendaView: React.FC<{
   }, [currentDayAppointments]);
 
   return (
-    <div className="space-y-4">
-      <div {...agendaSwipeHandlers} className="bg-surface rounded-2xl shadow-[0_3px_12px_rgba(0,0,0,0.3)] overflow-hidden mx-2">
+    <div className="flex-1 flex flex-col relative z-0">
+      <div className="bg-[#1E1B4B] pt-2 pb-4 px-4 relative z-10 w-full shrink-0">
+        <div {...agendaSwipeHandlers} className="overflow-hidden">
         {/* Integrated Calendar Header */}
-        <div className="pt-3 pb-1 flex flex-col items-center relative">
+        <div className="flex flex-col items-center relative">
           <div className="flex items-center justify-center w-full relative h-8">
             {/* Left aligned previous month button (when expanded) */}
             <div className="absolute left-4">
@@ -1582,10 +1573,10 @@ const AgendaView: React.FC<{
 
         {/* Weekly Selector */}
         {!isCalendarExpanded && (
-          <div className="px-2 pb-2 h-[60px] flex items-center gap-1">
+          <div className="flex items-center mx-0 mt-2 py-[10px] px-2 rounded-2xl bg-white/[0.08]">
             <button 
               onClick={() => navigateWeek('prev')}
-              className="w-8 h-10 flex items-center justify-center text-title hover:text-secondary transition-colors"
+              className="w-8 h-10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
@@ -1607,19 +1598,19 @@ const AgendaView: React.FC<{
                         : isToday 
                           ? 'bg-secondary text-white' 
                           : isClosed
-                            ? 'text-muted line-through '
-                            : 'hover:bg-primary/40 :bg-surface text-title'}`}
+                            ? 'text-white/30 line-through '
+                            : 'hover:bg-white/5 text-white/80'}`}
                   >
                     <span className={`text-[9px] font-bold uppercase tracking-tighter 
-                      ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-title'}`}>
+                      ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-white/60'}`}>
                       {day.dayLabel}
                     </span>
                     <span className={`text-sm font-black 
-                      ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-muted ' : 'text-white '}`}>
+                      ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-white/30 ' : 'text-white '}`}>
                       {day.dayNum}
                     </span>
                     {count > 0 && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-secondary text-white border-white ">
+                      <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-secondary text-white border-transparent ">
                         {count > 9 ? '9+' : count}
                       </div>
                     )}
@@ -1630,7 +1621,7 @@ const AgendaView: React.FC<{
 
             <button 
               onClick={() => navigateWeek('next')}
-              className="w-8 h-10 flex items-center justify-center text-title hover:text-secondary transition-colors"
+              className="w-8 h-10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
             >
               <ChevronRight size={20} />
             </button>
@@ -1639,12 +1630,9 @@ const AgendaView: React.FC<{
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 px-2 h-[80px]">
+      <div className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0 h-[80px]">
         <div 
-          className="rounded-2xl p-3 flex flex-col justify-center shadow-[0_3px_12px_rgba(0,0,0,0.3)] relative overflow-hidden group"
-          style={{
-            background: 'linear-gradient(135deg, #FFB75E 0%, #F99417 100%)'
-          }}
+          className="rounded-2xl p-4 flex flex-col justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group"
         >
           {/* Decoração — círculo grande translúcido */}
           <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
@@ -1654,25 +1642,27 @@ const AgendaView: React.FC<{
             style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
           />
           
-          <span className="text-[10px] font-black text-white/60 uppercase tracking-widest leading-none mb-1 relative z-10">{stats.dayLabel}</span>
+          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-1 relative z-10">{stats.dayLabel}</span>
           <div className="flex flex-col relative z-10">
-            <span className="text-2xl font-black text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
-            <span className="text-xs text-white/70 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            <span className="text-[26px] font-extrabold text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
+            <span className="text-[12px] text-white/75 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
           </div>
           <DollarSign size={48} className="text-white/10 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
 
-        <div className="bg-surface rounded-2xl p-3 flex flex-col justify-center shadow-[0_3px_12px_rgba(0,0,0,0.3)] relative overflow-hidden group">
-          <span className="text-[9px] font-black text-title  uppercase tracking-widest leading-none mb-1 relative z-10">{stats.weekLabel}</span>
+        <div className="bg-[#1E1B4B] rounded-2xl p-4 flex flex-col justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group">
+          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-1 relative z-10">{stats.weekLabel}</span>
           <div className="flex flex-col relative z-10">
-            <span className="text-[20px] font-black text-secondary leading-tight">{formatCurrency(stats.weekRevenue)}</span>
-            <span className="text-[11px] font-medium text-title  leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            <span className="text-[26px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
+            <span className="text-[12px] font-normal text-white/75 leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
           </div>
           <DollarSign size={48} className="text-secondary/5 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
       </div>
+      </div>
 
-      <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[20px] pt-5 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-8 relative z-10">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
         <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
 
         {(!dayConfig?.isOpen && currentDayAppointments.length === 0) ? (
@@ -1786,12 +1776,14 @@ const AgendaView: React.FC<{
                             <div key={slot} className="relative group">
                                 <div 
                                     onClick={() => setActiveSlotMenu(isQuickActionOpen ? null : slot)} 
-                                    className={`slot-trigger min-h-[44px] p-3 rounded-2xl flex items-center gap-4 transition-colors group ${past ? 'bg-white/30 opacity-40 grayscale pointer-events-none' : 'bg-white hover:bg-gray-50 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.25)]'}`}
+                                    className={`slot-trigger py-[14px] px-4 rounded-xl mb-2 flex flex-row items-center transition-colors group ${past ? 'bg-white/30 opacity-40 grayscale pointer-events-none' : 'bg-white hover:bg-gray-50 cursor-pointer shadow-[0_2px_6px_rgba(30,27,75,0.06)]'}`}
                                 >
-                                    <div className="text-lg font-bold text-[#363062] w-14 shrink-0">{slot}</div>
-                                    <div className="flex items-center gap-2 text-[#363062]/60 font-black text-[10px] uppercase tracking-widest group-hover:text-[#363062] transition-colors">
-                                        <Plus size={16} strokeWidth={3} />
-                                        DISPONÍVEL
+                                    <div className="text-[16px] font-bold text-[#1E1B4B] w-14 shrink-0">{slot}</div>
+                                    <div className="flex items-center gap-2 text-[#1E1B4B]/35 font-normal text-[13px] ml-2.5 transition-colors group-hover:text-[#1E1B4B]/50">
+                                        <div className="w-5 h-5 rounded-full border border-dashed border-[#1E1B4B]/35 flex items-center justify-center">
+                                            <Plus size={12} strokeWidth={2} />
+                                        </div>
+                                        Livre
                                     </div>
                                 </div>
                                 
@@ -2092,15 +2084,16 @@ const AgendaView: React.FC<{
         )}
 
         {/* Exceptional Slot - Compact Style */}
-        <div className="mt-6">
+        <div className="my-3">
             <div 
                 onClick={() => onAddInSlot(selectedDate, '', true)}
-                className="bg-amber-50  border-2 border-dashed border-amber-500/40 h-[52px] px-4 rounded-2xl flex items-center gap-3 transition-all hover:opacity-80 cursor-pointer group"
+                className="border-[1.5px] border-dashed border-[#F5A623] rounded-xl bg-[#F5A623]/[0.08] py-[14px] px-4 flex flex-row items-center cursor-pointer hover:opacity-80 transition-opacity"
             >
-                <Zap size={18} className="text-amber-500 fill-amber-500 shrink-0" />
-                <div className="text-amber-600  font-black text-[11px] uppercase tracking-widest">
-                    AGENDAR FORA DO EXPEDIENTE
+                <Zap size={18} className="text-[#F5A623] fill-[#F5A623] mr-2.5 shrink-0" />
+                <div className="text-[13px] font-semibold text-[#B7620A] tracking-[0.5px]">
+                    Agendar Fora do Expediente
                 </div>
+                <ChevronRight size={16} className="text-[#B7620A] ml-auto shrink-0" />
             </div>
         </div>
 
@@ -2118,39 +2111,39 @@ const AgendaView: React.FC<{
                         return (
                             <div 
                                 key={apt.id}
-                                className={`rounded-[12px] shadow-[0_3px_12px_rgba(0,0,0,0.35)] overflow-hidden transition-all duration-300 border-l-[4px] ${
+                                className={`rounded-[12px] shadow-[0_2px_6px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-300 border-l-[4px] ${
                                     isNoShow
-                                        ? 'bg-amber-500/10 border-amber-400/20 border-l-amber-400 opacity-65'
-                                        : 'bg-green-500/10 border-green-400/20 border-l-green-400 opacity-75'
+                                        ? 'bg-[#F5A623]/[0.06] border-[#F5A623]'
+                                        : 'bg-[#48C78E]/[0.06] border-[#48C78E]'
                                 }`}
                             >
                                 {/* Accordion Header */}
                                 <div 
                                     onClick={() => setExpandedCompletedId(isExpanded ? null : apt.id)}
-                                    className="h-[48px] px-4 flex items-center justify-between cursor-pointer hover:bg-primary/40/30 :bg-surface/30 transition-colors"
+                                    className="p-[14px] flex items-center justify-between cursor-pointer hover:bg-black/5 transition-colors"
                                 >
                                     <div className="flex items-center gap-2.5 min-w-0">
-                                        <span className={`text-xs font-bold line-through shrink-0 opacity-70 ${isNoShow ? 'text-amber-300' : 'text-green-300'}`}>
+                                        <span className={`text-[14px] font-bold shrink-0 ${isNoShow ? 'text-[#B7620A]' : 'text-[#1E1B4B]'}`}>
                                             {apt.time}
                                         </span>
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className={`text-sm font-semibold truncate opacity-70 ${isNoShow ? 'text-amber-300' : 'text-green-300'}`}>
+                                            <span className={`text-[14px] font-semibold truncate ${isNoShow ? 'text-[#B7620A]' : 'text-[#1E1B4B]'}`}>
                                                 {capitalizeName(apt.clientName)}
-                                                <span className={`text-xs font-normal line-through ml-1 ${isNoShow ? 'text-amber-400/70' : 'text-green-400/70'}`}>
+                                                <span className={`text-[12px] font-normal ml-1 ${isNoShow ? 'text-[#B7620A]/70' : 'text-[#1E1B4B]/70'}`}>
                                                     ({apt.service})
                                                 </span>
                                             </span>
-                                            {!isNoShow && <Check size={14} className="text-green-500 shrink-0" />}
+                                            {!isNoShow && <Check size={16} className="text-[#48C78E] shrink-0" />}
                                         </div>
                                         {isNoShow && (
-                                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 uppercase tracking-widest shrink-0">
+                                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#F5A623]/20 text-[#B7620A] uppercase tracking-widest shrink-0">
                                                 FALTA
                                             </span>
                                         )}
                                     </div>
                                     <ChevronRight 
-                                        size={16} 
-                                        className={`text-[#10B981] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} 
+                                        size={18} 
+                                        className={`text-[#1E1B4B]/30 transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} 
                                     />
                                 </div>
 
@@ -2163,35 +2156,31 @@ const AgendaView: React.FC<{
                                             exit={{ height: 0, opacity: 0 }}
                                             transition={{ duration: 0.3, ease: 'easeInOut' }}
                                         >
-                                            <div className="px-4 pb-3 pt-1.5 border-t border-title/20  relative">
-                                                <div className="flex items-center justify-between bg-primary/40  p-2 rounded-xl border border-title/30  w-full">
-                                                    <div className="flex gap-4">
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <button 
-                                                                disabled={isNoShow}
-                                                                onClick={(e) => { e.stopPropagation(); handleCameraClick(apt.phone); }}
-                                                                className={`w-8 h-8 flex items-center justify-center transition-colors rounded-xl ${isNoShow ? 'text-muted opacity-20 grayscale' : 'text-secondary hover:bg-amber-50'}`}
-                                                            >
-                                                                <Camera size={16} />
-                                                            </button>
-                                                            <span className="text-[10px] font-medium text-title">Foto</span>
-                                                        </div>
+                                            <div className="px-4 pb-3 pt-1.5 border-t border-title/10 relative">
+                                                <div className="flex items-center justify-between bg-transparent py-2 w-full">
+                                                    <div className="flex gap-3">
+                                                        <button 
+                                                            disabled={isNoShow}
+                                                            onClick={(e) => { e.stopPropagation(); handleCameraClick(apt.phone); }}
+                                                            className={`w-10 h-10 flex items-center justify-center transition-colors rounded-full ${isNoShow ? 'bg-[#1E1B4B]/[0.04] text-[#1E1B4B]/20 grayscale' : 'bg-[#1E1B4B]/[0.08] text-[#1E1B4B]/50 hover:bg-[#1E1B4B]/[0.12]'}`}
+                                                            title="Foto"
+                                                        >
+                                                            <Camera size={18} />
+                                                        </button>
 
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <button 
-                                                                onClick={(e) => { e.stopPropagation(); onOpenCustomer(apt.phone); }}
-                                                                className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors text-[#3B82F6] hover:bg-blue-50"
-                                                            >
-                                                                <User size={16} />
-                                                            </button>
-                                                            <span className="text-[10px] font-medium text-title">Cliente</span>
-                                                        </div>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); onOpenCustomer(apt.phone); }}
+                                                            className="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-[#1E1B4B]/[0.08] text-[#1E1B4B]/50 hover:bg-[#1E1B4B]/[0.12]"
+                                                            title="Cliente"
+                                                        >
+                                                            <User size={18} />
+                                                        </button>
                                                     </div>
 
                                                     <div className="flex-1 flex justify-end">
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); setActiveRevertMenu(apt.id); }}
-                                                            className="flex items-center gap-1.5 py-1 px-3 rounded text-[11px] font-bold uppercase tracking-tight transition-colors bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25"
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors bg-[#1E1B4B] text-[#FFFFFF] hover:bg-[#1E1B4B]/90"
                                                         >
                                                             <RotateCcw size={14} />
                                                             <span>Retornar</span>
@@ -2241,7 +2230,7 @@ const AgendaView: React.FC<{
             </div>
         )}
       </div>
-
+      </div>
 
       {/* Decision Modal for Weekly Unlock */}
       <AnimatePresence>
