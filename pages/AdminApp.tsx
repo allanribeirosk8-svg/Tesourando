@@ -833,7 +833,7 @@ export const AdminApp: React.FC = () => {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-[#F5F5F8] relative overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-[#1E1B4B] relative overflow-hidden">
       <motion.header 
         className="sticky top-0 z-[100] h-20 bg-[#1E1B4B] px-6 flex items-center justify-between"
         initial={false}
@@ -898,7 +898,7 @@ export const AdminApp: React.FC = () => {
         
       </motion.header>
 
-      <main className={`relative flex-1 flex flex-col min-h-0 bg-[#F5F5F8] ${activeTab === 'agenda' ? 'overflow-hidden z-0' : 'overflow-y-auto pb-[92px]'}`}>
+      <main className={`relative flex-1 flex flex-col min-h-0 bg-[#1E1B4B] ${activeTab === 'agenda' ? 'overflow-hidden z-0' : 'overflow-y-auto pb-[92px]'}`}>
         {activeTab === 'agenda' && (
             <AgendaView 
                 selectedDate={selectedDate}
