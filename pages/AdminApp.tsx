@@ -1942,9 +1942,9 @@ const AgendaView: React.FC<{
                                 </div>
 
                             {/* Rodapé - Barra de Ferramentas */}
-                            <div className="px-4 pt-0 pb-3 flex items-center justify-between bg-transparent">
+                            <div className="px-4 pt-0.5 pb-2 mt-0 flex items-center justify-between bg-transparent">
                                 <div className="flex items-center gap-4">
-                                    <div className="flex flex-col items-center gap-1">
+                                    <div className="flex flex-col items-center gap-1 w-[40px] h-[47px]">
                                         <button 
                                             disabled={isNoShow}
                                             onClick={() => handleCameraClick(apt.phone)}
@@ -1955,7 +1955,7 @@ const AgendaView: React.FC<{
                                         <span className="text-[10px] text-title">Foto</span>
                                     </div>
 
-                                    <div className="flex flex-col items-center gap-1">
+                                    <div className="flex flex-col items-center gap-1 w-[40px] h-[47px]">
                                         <button 
                                             onClick={() => onOpenCustomer(apt.phone)}
                                             className="w-10 h-10 flex items-center justify-center rounded-xl transition-colors text-sky-400 hover:bg-sky-400/15"
@@ -1965,7 +1965,7 @@ const AgendaView: React.FC<{
                                         <span className="text-[10px] text-title">Cliente</span>
                                     </div>
 
-                                    <div className="flex flex-col items-center gap-1">
+                                    <div className="flex flex-col items-center gap-1 w-[40px] h-[47px]">
                                         <button 
                                             disabled={isActuallyCompleted || isNoShow}
                                             onClick={() => onReschedule(apt)}
@@ -1976,7 +1976,7 @@ const AgendaView: React.FC<{
                                         <span className="text-[10px] text-title">Editar</span>
                                     </div>
 
-                                    <div className="flex flex-col items-center gap-1">
+                                    <div className="flex flex-col items-center gap-1 w-[40px] h-[47px]">
                                         <button 
                                             disabled={isActuallyCompleted || isNoShow}
                                             onClick={() => setActiveNoShowMenu(apt.id)}
@@ -3447,7 +3447,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
   };
 
   return (
-    <div className="space-y-6">
+    <div className="px-4 pt-5 pb-24 space-y-6">
       <div className="bg-surface p-4 rounded-3xl space-y-3">
         <h2 className="font-semibold text-sm text-white  uppercase tracking-widest">Novo Serviço</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -3799,7 +3799,7 @@ const CustomersView: React.FC<{
   });
 
   return (
-    <div className="flex flex-col gap-3 px-4 pb-24 relative">
+    <div className="px-4 pt-5 pb-24 space-y-4 relative">
       <div className="space-y-2">
         <Input label="Buscar Cliente" placeholder="Nome ou telefone..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} inputClassName="bg-surface border-white/10 text-white placeholder:text-muted shadow-[0_2px_8px_rgba(0,0,0,0.3)]" />
         <p className="text-[10px] text-title uppercase tracking-widest font-bold px-1 mb-1">
@@ -4838,7 +4838,7 @@ const ReportsView: React.FC = () => {
   const isCurrentDateSelected = getRange(period, currentDate).start === getRange(period, new Date()).start;
 
   return (
-    <div className="space-y-6 pb-24 max-w-full overflow-x-hidden">
+    <div className="px-4 pt-5 pb-24 space-y-4">
       {/* Chips de período — sempre 4, sempre visíveis */}
       <div className="sticky top-0 bg-primary/40  z-10 pt-2 pb-3 relative">
         <div className="grid grid-cols-4 gap-1 w-full relative z-20 bg-surface/50 p-1 rounded-2xl ">
