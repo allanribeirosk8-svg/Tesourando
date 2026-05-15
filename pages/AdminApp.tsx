@@ -67,6 +67,7 @@ import {
   Mail,
   Eye,
   EyeOff,
+  Filter,
   Info
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -108,7 +109,7 @@ const SectionHeader = ({ title, count, accent = 'blue' }: SectionHeaderProps) =>
   const badgeColor = isGreen ? 'bg-[#48C78E] text-[#FFFFFF]' : 'bg-[#F5A623] text-[#FFFFFF]';
 
   return (
-    <div className="flex flex-row items-center mt-5 mb-2">
+    <div className="flex flex-row items-center">
       {/* Barra lateral */}
       <div className={`w-1 h-[18px] rounded-sm ${barColor} mr-2`} />
 
@@ -1163,6 +1164,8 @@ const AgendaView: React.FC<{
   const [viewDate, setViewDate] = useState(new Date(selectedDate + 'T12:00:00'));
   const [viewMode, setViewMode] = useState<'days' | 'years'>('days');
   const [slideDirection, setSlideDirection] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<'todos' | 'agendados' | 'livres' | 'concluidos'>('todos');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   const getAppointmentsCount = (dateStr: string) => {
     return appointments.filter(a => a.date === dateStr && a.status === 'pending').length;
@@ -1632,7 +1635,7 @@ const AgendaView: React.FC<{
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0">
         <div 
-          className="rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group"
+          className="w-[160.5px] h-[74.5px] -ml-[6px] rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group"
         >
           {/* Decoração — círculo grande translúcido */}
           <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
@@ -1650,7 +1653,7 @@ const AgendaView: React.FC<{
           <DollarSign size={48} className="text-white/10 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
         </div>
 
-        <div className="bg-white/[0.08] rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group">
+        <div className="w-[160.5px] ml-[6px] bg-white/[0.08] rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group">
           <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.weekLabel}</span>
           <div className="flex flex-col relative z-10">
             <span className="text-[22px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
@@ -1663,7 +1666,59 @@ const AgendaView: React.FC<{
 
       <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[10px] pt-0 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-28 relative z-10 min-h-0 overflow-y-auto">
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-        <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
+        <div className={`flex items-center mt-5 mb-2 relative ${activeFilter === 'concluidos' ? 'justify-end' : 'justify-between'}`}>
+          {activeFilter !== 'concluidos' && (
+            <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
+          )}
+          
+          <button
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className={`flex items-center gap-1.5 px-3 h-7 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${
+              activeFilter === 'agendados' ? 'bg-[#1E1B4B] text-white shadow-md' :
+              activeFilter === 'livres' ? 'bg-white text-[#1E1B4B] border border-[#1E1B4B] shadow-md' :
+              activeFilter === 'concluidos' ? 'bg-[#48C78E] text-white shadow-md' :
+              'bg-[#1E1B4B]/10 text-[#1E1B4B]/50'
+            }`}
+          >
+            <Filter size={12} />
+            {activeFilter === 'todos' ? 'Filtrar' : activeFilter === 'agendados' ? 'Agendados' : activeFilter === 'livres' ? 'Horários Livres' : 'Concluídos'}
+            {activeFilter !== 'todos' && <X size={11} onClick={(e) => { e.stopPropagation(); setActiveFilter('todos'); }} />}
+          </button>
+          
+          {showFilterMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowFilterMenu(false)} />
+              <div className="absolute right-0 top-10 z-20 bg-white rounded-2xl shadow-xl overflow-hidden border border-[#1E1B4B]/10 w-44">
+                {[
+                  { value: 'todos', label: 'Todos' },
+                  { value: 'agendados', label: 'Agendados' },
+                  { value: 'livres', label: 'Horários Livres' },
+                  { value: 'concluidos', label: 'Concluídos' }
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setActiveFilter(opt.value as any); setShowFilterMenu(false); }}
+                    className="w-full px-4 py-3 text-left text-[13px] font-semibold text-[#1E1B4B] hover:bg-[#F5F5F8] flex items-center justify-between"
+                  >
+                    {opt.label}
+                    {activeFilter === opt.value && <Check size={14} className="text-[#F99417]" />}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {activeFilter !== 'todos' && (
+          <div className="flex items-center justify-between bg-[#F99417]/10 rounded-xl px-3 py-2 mb-2">
+            <span className="text-[11px] font-bold text-[#B7620A] uppercase tracking-widest">
+              ⚠ Exibindo apenas: {activeFilter === 'agendados' ? 'Agendados' : activeFilter === 'livres' ? 'Horários Livres' : 'Concluídos'}
+            </span>
+            <button onClick={() => setActiveFilter('todos')} className="text-[11px] font-black text-[#F99417] underline">
+              Limpar
+            </button>
+          </div>
+        )}
 
         {(!dayConfig?.isOpen && currentDayAppointments.length === 0) ? (
             <div className="bg-surface  p-12 rounded-[2rem] border-2 border-dashed border-title/30  text-center space-y-3 ">
@@ -1674,11 +1729,14 @@ const AgendaView: React.FC<{
             </div>
         ) : (
             <div className="grid grid-cols-1 gap-3">
-                {activeSlots.map(({ slot, apt, isStartSlot }) => {
+                {activeFilter !== 'concluidos' && activeSlots.map(({ slot, apt, isStartSlot }) => {
                     const isManualBlocked = dateBlockedSlots.some(s => normalizeTime(s) === slot);
                     const isManualUnblocked = (unblockedSlots[selectedDate] || []).some(s => normalizeTime(s) === slot);
                     const isWeeklyBreak = dayConfig.breaks.some(b => normalizeTime(b) === slot);
                     const isBlocked = (isWeeklyBreak && !isManualUnblocked) || isManualBlocked;
+                    
+                    if (activeFilter === 'agendados' && !apt) return null;
+                    if (activeFilter === 'livres' && (apt || isBlocked)) return null;
                     
                     // If it's occupied by a duration but not the start slot
                     if (apt && !isStartSlot) {
@@ -1884,7 +1942,7 @@ const AgendaView: React.FC<{
                                 </div>
 
                             {/* Rodapé - Barra de Ferramentas */}
-                            <div className="px-4 py-3 flex items-center justify-between bg-transparent">
+                            <div className="px-4 pt-0 pb-3 flex items-center justify-between bg-transparent">
                                 <div className="flex items-center gap-4">
                                     <div className="flex flex-col items-center gap-1">
                                         <button 
@@ -2082,21 +2140,23 @@ const AgendaView: React.FC<{
         )}
 
         {/* Exceptional Slot - Compact Style */}
-        <div className="my-3">
-            <div 
-                onClick={() => onAddInSlot(selectedDate, '', true)}
-                className="border-[1.5px] border-dashed border-[#F5A623] rounded-xl bg-[#F5A623]/[0.08] py-[14px] px-4 flex flex-row items-center cursor-pointer hover:opacity-80 transition-opacity"
-            >
-                <Zap size={18} className="text-[#F5A623] fill-[#F5A623] mr-2.5 shrink-0" />
-                <div className="text-[13px] font-semibold text-[#B7620A] tracking-[0.5px]">
-                    Agendar Fora do Expediente
-                </div>
-                <ChevronRight size={16} className="text-[#B7620A] ml-auto shrink-0" />
-            </div>
-        </div>
+        {activeFilter !== 'concluidos' && (
+          <div className="my-3">
+              <div 
+                  onClick={() => onAddInSlot(selectedDate, '', true)}
+                  className="border-[1.5px] border-dashed border-[#F5A623] rounded-xl bg-[#F5A623]/[0.08] py-[14px] px-4 flex flex-row items-center cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                  <Zap size={18} className="text-[#F5A623] fill-[#F5A623] mr-2.5 shrink-0" />
+                  <div className="text-[13px] font-semibold text-[#B7620A] tracking-[0.5px]">
+                      Agendar Fora do Expediente
+                  </div>
+                  <ChevronRight size={16} className="text-[#B7620A] ml-auto shrink-0" />
+              </div>
+          </div>
+        )}
 
         {/* Completed Section */}
-        {completedAppointments.length > 0 && (
+        {(activeFilter === 'todos' || activeFilter === 'concluidos') && completedAppointments.length > 0 && (
             <div className="mt-8 space-y-4">
                 <SectionHeader title="Concluídos" count={completedAppointments.length} accent="green" />
 
