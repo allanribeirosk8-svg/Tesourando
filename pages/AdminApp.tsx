@@ -4746,8 +4746,8 @@ const ReportsView: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             <div className="grid grid-cols-7 gap-1">
-              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-                <div key={d} className="h-8 flex items-center justify-center text-[9px] font-black text-title uppercase">{d}</div>
+              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+                <div key={i} className="h-8 flex items-center justify-center text-[9px] font-black text-title uppercase">{d}</div>
               ))}
               {days}
             </div>

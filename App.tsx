@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/Store';
 import { ClientApp } from './pages/ClientApp';
 import { AdminApp } from './pages/AdminApp';
@@ -9,7 +9,7 @@ const App: React.FC = () => {
     <AppProvider>
       <HashRouter>
         <Routes>
-          <Route path="/" element={<ClientApp />} />
+          <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/admin" element={<AdminApp />} />
         </Routes>
       </HashRouter>
