@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { Appointment, AppState, BarberProfile, Customer, DayConfig, ServiceItem } from '../types';
+import { Appointment, AppState, BarberProfile, Customer, DayConfig, ServiceItem, Transaction } from '../types';
 import { normalizePhone } from '../utils/helpers';
 import { supabaseService } from '../services/supabaseService';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -55,6 +55,7 @@ const DEFAULT_PROFILE: BarberProfile = {
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Record<string, Customer>>({});
   const [blockedSlots, setBlockedSlots] = useState<Record<string, string[]>>({});
@@ -368,6 +369,66 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     syncLocal();
   }, [appointments, customers, blockedSlots, unblockedSlots, weeklySchedule, services, barberProfile, isLoading]);
 
+  const loadTransactions = async (startDate: string, endDate: string) => {
+    const currentSession = sessionRef.current;
+    if (!currentSession) return;
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', currentSession.user.id)
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: false });
+    if (!error && data) {
+      setTransactions(data.map(t => ({
+        id: t.id,
+        type: t.type,
+        amount: Number(t.amount),
+        description: t.description,
+        category: t.category,
+        date: t.date,
+        linkedAppointmentId: t.linked_appointment_id,
+        paymentMethod: t.payment_method,
+        createdAt: new Date(t.created_at).getTime(),
+      })));
+    }
+  };
+
+  const addTransaction = async (t: Omit<Transaction, 'id' | 'createdAt'>) => {
+    const currentSession = sessionRef.current;
+    if (!currentSession) return;
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: currentSession.user.id,
+        type: t.type,
+        amount: t.amount,
+        description: t.description ?? null,
+        category: t.category,
+        date: t.date,
+        linked_appointment_id: t.linkedAppointmentId ?? null,
+        payment_method: t.paymentMethod ?? null,
+      })
+      .select()
+      .single();
+    if (!error && data) {
+      setTransactions(state => [{ ...t, id: data.id, createdAt: Date.now() }, ...state]);
+    }
+  };
+
+  const deleteTransaction = async (id: string) => {
+    const currentSession = sessionRef.current;
+    if (!currentSession) return;
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', currentSession.user.id);
+    if (!error) {
+      setTransactions(state => state.filter(t => t.id !== id));
+    }
+  };
+
   const addAppointment = useCallback(async (apt: Appointment, isExceptional?: boolean) => {
     console.log("1. Iniciando criação do agendamento");
     
@@ -533,6 +594,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const savedApt = await supabaseService.saveAppointment(updatedApt);
           setAppointments(prev => prev.map(a => a.id === id ? normalizeAppointment(savedApt) : a));
           supabaseService.saveCustomer(updatedCust).catch(console.error);
+
+          const { data: existingTx } = await supabase
+            .from('transactions')
+            .select('id')
+            .eq('linked_appointment_id', apt.id)
+            .maybeSingle();
+
+          if (!existingTx) {
+            addTransaction({
+              type: 'income',
+              category: 'walk_in',
+              amount: apt.price,
+              description: `${apt.service} — ${apt.clientName}`,
+              date: apt.date,
+              linkedAppointmentId: apt.id,
+            });
+          }
         }
       };
       sync();
@@ -948,6 +1026,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   return (
     <AppContext.Provider value={{ 
+      transactions,
       appointments, 
       customers, 
       blockedSlots, 
@@ -975,7 +1054,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       updateBarberProfile,
       addCustomer,
       reorderServices,
-      fetchAppointmentsByDate
+      fetchAppointmentsByDate,
+      loadTransactions,
+      addTransaction,
+      deleteTransaction
     }}>
       {children}
     </AppContext.Provider>

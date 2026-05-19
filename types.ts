@@ -62,7 +62,20 @@ export interface BarberProfile {
   onboarding_seen?: boolean;
 }
 
+export interface Transaction {
+  id: string;
+  type: 'income' | 'expense';
+  amount: number;
+  description?: string;
+  category: 'tip' | 'product' | 'walk_in' | 'rent' | 'supply' | 'equipment' | 'fee' | 'other';
+  date: string; // YYYY-MM-DD
+  linkedAppointmentId?: string;
+  paymentMethod?: 'cash' | 'pix' | 'credit' | 'debit';
+  createdAt: number;
+}
+
 export interface AppState {
+  transactions: Transaction[];
   appointments: Appointment[];
   customers: Record<string, Customer>;
   blockedSlots: Record<string, string[]>; // date -> [times] manually blocked for a specific date
@@ -89,4 +102,7 @@ export interface AppState {
   updateBarberProfile: (profile: BarberProfile) => void;
   addCustomer: (customer: Customer) => void;
   reorderServices: (services: ServiceItem[]) => void;
+  addTransaction: (t: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  loadTransactions: (startDate: string, endDate: string) => Promise<void>;
 }

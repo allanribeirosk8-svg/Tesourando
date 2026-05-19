@@ -68,9 +68,11 @@ import {
   Eye,
   EyeOff,
   Filter,
-  Info
+  Info,
+  Wallet
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
+import { CaixaView } from './CaixaView';
 import { 
   BarChart, 
   Bar, 
@@ -646,7 +648,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
 export const AdminApp: React.FC = () => {
   const { barberProfile, appointments, session, isLoading, updateBarberProfile } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'relatorios' | 'configuracoes'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'caixa' | 'configuracoes'>('agenda');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
@@ -927,7 +929,7 @@ export const AdminApp: React.FC = () => {
             }}
           />
         )}
-        {activeTab === 'relatorios' && <ReportsView />}
+        {activeTab === 'caixa' && <CaixaView />}
         {activeTab === 'configuracoes' && (
           <ConfiguracoesScreen 
             onOpenProfile={() => setShowProfileModal(true)} 
@@ -1044,7 +1046,7 @@ export const AdminApp: React.FC = () => {
               { id: 'clientes', label: 'Clientes', icon: Users, ariaLabel: 'Ir para Clientes' },
               { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
               { id: 'agenda', label: 'Agenda', icon: Calendar, ariaLabel: 'Ir para Agenda', isCenter: true },
-              { id: 'relatorios', label: 'Relatórios', icon: BarChart3, ariaLabel: 'Ir para Relatórios' },
+              { id: 'caixa', label: 'Caixa', icon: Wallet, ariaLabel: 'Ir para Caixa' },
               { id: 'configuracoes', label: 'Configurações', icon: Settings, ariaLabel: 'Ir para Configurações' },
             ].map((item) => {
               const isActive = activeTab === item.id;
