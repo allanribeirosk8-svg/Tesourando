@@ -8,6 +8,7 @@ interface LancamentoModalProps {
   isOpen: boolean;
   onClose: () => void;
   isDarkMode: boolean;
+  defaultType?: 'income' | 'expense';
 }
 
 const INCOME_CATEGORIES = [
@@ -25,12 +26,12 @@ const EXPENSE_CATEGORIES = [
   { id: 'other', label: 'Outro' }
 ] as const;
 
-export const LancamentoModal: React.FC<LancamentoModalProps> = ({ isOpen, onClose, isDarkMode }) => {
+export const LancamentoModal: React.FC<LancamentoModalProps> = ({ isOpen, onClose, isDarkMode, defaultType = 'income' }) => {
   const { addTransaction } = useStore();
   
-  const [type, setType] = useState<'income' | 'expense'>('income');
+  const [type, setType] = useState<'income' | 'expense'>(defaultType);
   const [rawValue, setRawValue] = useState('0');
-  const [category, setCategory] = useState<Transaction['category']>('tip');
+  const [category, setCategory] = useState<Transaction['category']>(defaultType === 'income' ? 'tip' : 'rent');
   const [description, setDescription] = useState('');
   
   const [date, setDate] = useState(() => {
@@ -43,15 +44,15 @@ export const LancamentoModal: React.FC<LancamentoModalProps> = ({ isOpen, onClos
   // Reset state when opening/closing
   useEffect(() => {
     if (isOpen) {
-      setType('income');
+      setType(defaultType);
       setRawValue('0');
-      setCategory('tip');
+      setCategory(defaultType === 'income' ? 'tip' : 'rent');
       setDescription('');
       const today = new Date();
       setDate(today.toISOString().split('T')[0]);
       setIsSuccess(false);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultType]);
 
   const handleTypeChange = (newType: 'income' | 'expense') => {
     setType(newType);
