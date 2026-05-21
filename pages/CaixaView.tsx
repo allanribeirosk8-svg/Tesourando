@@ -83,11 +83,17 @@ export const CaixaView: React.FC = () => {
       end.setMonth(11, 31);
       end.setHours(23, 59, 59, 999);
     }
+
+    console.log('[DATE_RANGE] periodo:', periodo);
+    console.log('[DATE_RANGE] selectedDate.toString():', selectedDate.toString());
+    console.log('[DATE_RANGE] start calculado:', start.toString());
+    console.log('[DATE_RANGE] end calculado:', end.toString());
+    console.log('[DATE_RANGE] start.toISOString():', start.toISOString());
+    console.log('[DATE_RANGE] end.toISOString():', end.toISOString());
     
-    return { 
-      start: start.toISOString().split('T')[0], 
-      end: end.toISOString().split('T')[0] 
-    };
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return { start: fmt(start), end: fmt(end) };
   }, [periodo, selectedDate]);
 
   useEffect(() => {

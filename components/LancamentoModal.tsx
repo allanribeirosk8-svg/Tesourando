@@ -80,6 +80,10 @@ export const LancamentoModal: React.FC<LancamentoModalProps> = ({ isOpen, onClos
   const handleConfirm = async () => {
     if (amount === 0) return;
     
+    console.log('[LANCAMENTO] date enviada ao addTransaction:', date);
+    console.log('[LANCAMENTO] new Date() local:', new Date().toString());
+    console.log('[LANCAMENTO] new Date().toISOString():', new Date().toISOString());
+
     await addTransaction({
       type,
       amount,

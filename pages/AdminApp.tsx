@@ -3449,7 +3449,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
   };
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-6">
+    <div className="min-h-full bg-[#F5F5F8] rounded-t-[28px] px-4 pt-5 pb-28 space-y-6">
       <div className="bg-surface p-4 rounded-3xl space-y-3">
         <h2 className="font-semibold text-sm text-white  uppercase tracking-widest">Novo Serviço</h2>
         <form onSubmit={handleSubmit} className="space-y-3">

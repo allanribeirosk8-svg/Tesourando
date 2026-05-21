@@ -55,6 +55,7 @@ const DEFAULT_PROFILE: BarberProfile = {
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const finishingRef = useRef<Set<string>>(new Set());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Record<string, Customer>>({});
@@ -372,15 +373,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const loadTransactions = async (startDate: string, endDate: string) => {
     const currentSession = sessionRef.current;
     if (!currentSession) return;
+    
+    console.log('[LOAD_TRANSACTIONS] startDate:', startDate, '| endDate:', endDate);
+    
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
       .eq('user_id', currentSession.user.id)
-      .gte('date', startDate)
-      .lte('date', endDate)
+      .gte('date', `${startDate}T00:00:00`)
+      .lte('date', `${endDate}T23:59:59`)
       .order('date', { ascending: false });
     if (!error && data) {
-      setTransactions(data.map(t => ({
+      console.log('[LOAD_TRANSACTIONS] registros retornados:', data?.map((t: any) => ({ id: t.id, date: t.date, description: t.description })));
+      setTransactions(data.map((t: any) => ({
         id: t.id,
         type: t.type,
         amount: Number(t.amount),
@@ -397,6 +402,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addTransaction = async (t: Omit<Transaction, 'id' | 'createdAt'>) => {
     const currentSession = sessionRef.current;
     if (!currentSession) return;
+
+    console.log('[ADD_TRANSACTION] date recebida:', t.date);
+    console.log('[ADD_TRANSACTION] payload enviado ao Supabase:', {
+      date: t.date,
+      type: t.type,
+      amount: t.amount,
+      description: t.description,
+    });
+
     const { data, error } = await supabase
       .from('transactions')
       .insert({
@@ -405,7 +419,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         amount: t.amount,
         description: t.description ?? null,
         category: t.category,
-        date: t.date,
+        date: typeof t.date === 'string' ? t.date.substring(0, 10) : t.date,
         linked_appointment_id: t.linkedAppointmentId ?? null,
         payment_method: t.paymentMethod ?? null,
       })
@@ -571,8 +585,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   const finishAppointment = useCallback(async (id: string) => {
+    if (finishingRef.current.has(id)) return;
+    finishingRef.current.add(id);
+
     const apt = appointmentsRef.current.find(a => a.id === id);
-    if (!apt || apt.status === 'completed') return;
+    if (!apt || apt.status === 'completed') {
+      finishingRef.current.delete(id);
+      return;
+    }
 
     const updatedApt = { ...apt, status: 'completed' as const };
     setAppointments(prevApts => 
@@ -589,28 +609,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
       
       const sync = async () => {
-        const currentSession = sessionRef.current;
-        if (currentSession) {
-          const savedApt = await supabaseService.saveAppointment(updatedApt);
-          setAppointments(prev => prev.map(a => a.id === id ? normalizeAppointment(savedApt) : a));
-          supabaseService.saveCustomer(updatedCust).catch(console.error);
+        try {
+          const currentSession = sessionRef.current;
+          if (currentSession) {
+            const savedApt = await supabaseService.saveAppointment(updatedApt);
+            setAppointments(prev => prev.map(a => a.id === id ? normalizeAppointment(savedApt) : a));
+            supabaseService.saveCustomer(updatedCust).catch(console.error);
 
-          const { data: existingTx } = await supabase
-            .from('transactions')
-            .select('id')
-            .eq('linked_appointment_id', apt.id)
-            .maybeSingle();
+            const { data: existingTx } = await supabase
+              .from('transactions')
+              .select('id')
+              .eq('linked_appointment_id', apt.id)
+              .maybeSingle();
 
-          if (!existingTx) {
-            addTransaction({
-              type: 'income',
-              category: 'walk_in',
-              amount: apt.price,
-              description: `${apt.service} — ${apt.clientName}`,
-              date: apt.date,
-              linkedAppointmentId: apt.id,
-            });
+            if (!existingTx) {
+              console.log('[FINISH_APPOINTMENT] apt.date:', apt.date);
+              console.log('[FINISH_APPOINTMENT] date que será usada na transação:', apt.date);
+              
+              addTransaction({
+                type: 'income',
+                category: 'walk_in',
+                amount: apt.price,
+                description: `${apt.service} — ${apt.clientName}`,
+                date: `${apt.date}T12:00:00`,
+                linkedAppointmentId: apt.id,
+              });
+            }
           }
+        } finally {
+          finishingRef.current.delete(id);
         }
       };
       sync();
