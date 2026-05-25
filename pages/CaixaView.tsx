@@ -12,6 +12,7 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Trash2,
   Users,
   ArrowUpCircle,
@@ -748,51 +749,60 @@ export const CaixaView: React.FC = () => {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#1E1B4B]">
-      {/* Period Chips & Navigator */}
-      <div className="px-4 py-4 sticky top-0 bg-[#1E1B4B] z-30 space-y-3">
-        <div className="flex gap-2 w-full">
-          {(['dia', 'semana', 'mes', 'ano'] as const).map(p => (
-            <button
-              key={p}
-              onClick={() => setPeriodo(p)}
-              className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors ${
-                periodo === p ? 'bg-secondary text-white shadow-md' : 'bg-surface text-title'
-              }`}
+      {/* Period Selector & Navigator */}
+      <div className="px-4 py-4 sticky top-0 bg-[#1E1B4B] z-30">
+        <div className="flex gap-2 items-center">
+          {/* Dropdown de período */}
+          <div className="relative">
+            <select
+              value={periodo}
+              onChange={e => setPeriodo(e.target.value as 'dia' | 'semana' | 'mes' | 'ano')}
+              className="appearance-none bg-surface border border-title/30 rounded-2xl pl-3 pr-7 h-10 text-[10px] font-black uppercase tracking-wider text-white shadow-[0_4px_16px_rgba(0,0,0,0.3)] focus:outline-none cursor-pointer"
             >
-              {p}
+              <option value="dia">Dia</option>
+              <option value="semana">Semana</option>
+              <option value="mes">Mês</option>
+              <option value="ano">Ano</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-title pointer-events-none" />
+          </div>
+
+          {/* Navegador de data */}
+          <div className="flex-1 flex items-center justify-between bg-surface rounded-2xl px-2 h-10 shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-title/30 flex-shrink min-w-0">
+            <button onClick={handlePrev} className="p-1 text-title hover:text-secondary flex-shrink-0">
+              <ChevronLeft size={16} />
             </button>
-          ))}
-        </div>
-        <div className="flex items-center justify-between bg-surface rounded-2xl p-2 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-title/30">
-          <button onClick={handlePrev} className="p-1 text-title hover:text-secondary">
-            <ChevronLeft size={20} />
-          </button>
-          <span className="text-xs font-bold text-white uppercase">{getPeriodLabel()}</span>
-          <button onClick={handleNext} className="p-1 text-title hover:text-secondary">
-            <ChevronRight size={20} />
-          </button>
+            <span className="text-[10px] font-bold text-white uppercase min-w-0 truncate text-center">{getPeriodLabel()}</span>
+            <button onClick={handleNext} className="p-1 text-title hover:text-secondary flex-shrink-0">
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="px-4 pb-4 sticky top-[108px] bg-[#1E1B4B] z-30">
-        <div className="flex overflow-x-auto gap-2 hide-scrollbar pb-1">
+      <div className="px-4 pb-3 sticky top-[64px] bg-[#1E1B4B] z-30">
+        <div className="flex gap-2 w-full">
           {(['resumo','extrato','clientes','servicos','agenda'] as const).map(t => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
-                activeTab === t ? 'bg-secondary/10 text-secondary' : 'text-title'
+              className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors ${
+                activeTab === t ? 'bg-secondary text-white shadow-md' : 'bg-surface text-title'
               }`}
             >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === 'resumo' ? 'Resumo'
+                : t === 'extrato' ? 'Extrato'
+                : t === 'clientes' ? 'Clientes'
+                : t === 'servicos' ? 'Serviços'
+                : 'Agenda'}
             </button>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 w-full max-w-full overflow-x-hidden pt-2 pb-[100px]">
+      <div className="flex-1 overflow-y-auto px-4 w-full max-w-full overflow-x-hidden pt-2 pb-[160px]">
         {activeTab === 'resumo' && renderResumo()}
         {activeTab === 'extrato' && renderExtrato()}
         {activeTab === 'clientes' && renderClientes()}
@@ -800,38 +810,42 @@ export const CaixaView: React.FC = () => {
         {activeTab === 'agenda' && renderAgenda()}
       </div>
 
-      <div className="fixed bottom-[80px] right-4 z-30 flex flex-col-reverse items-end gap-3">
-        <AnimatePresence>
-          {fabOpen && (
-            <>
-              {/* Botão Saída */}
-              <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}}
-                transition={{delay:0.05}} className="flex items-center gap-2">
-                <span className="bg-surface text-xs font-bold px-2 py-1 rounded-full shadow text-white">Saída</span>
-                <button onClick={()=>{setFabOpen(false);setShowLancamento('expense')}}
-                  className="w-12 h-12 rounded-full bg-[#F87171] text-white flex items-center justify-center shadow-lg">
-                  <ArrowDownCircle size={22}/>
-                </button>
-              </motion.div>
-              {/* Botão Entrada */}
-              <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}}
-                className="flex items-center gap-2">
-                <span className="bg-surface text-xs font-bold px-2 py-1 rounded-full shadow text-white">Entrada</span>
-                <button onClick={()=>{setFabOpen(false);setShowLancamento('income')}}
-                  className="w-12 h-12 rounded-full bg-[#34D399] text-white flex items-center justify-center shadow-lg">
-                  <ArrowUpCircle size={22}/>
-                </button>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-        {/* Botão principal */}
-        <motion.button animate={{rotate: fabOpen ? 45 : 0}} transition={{duration:0.2}}
-          onClick={()=>setFabOpen(v=>!v)}
-          className="w-14 h-14 rounded-full bg-secondary text-white flex items-center justify-center shadow-xl">
-          <Plus size={26}/>
-        </motion.button>
-      </div>
+      {(activeTab === 'resumo' || activeTab === 'extrato') && (
+        <div className={`fixed right-4 z-30 flex flex-col-reverse items-end gap-3 ${
+          activeTab === 'resumo' ? 'bottom-[80px]' : 'bottom-[140px]'
+        }`}>
+          <AnimatePresence>
+            {fabOpen && (
+              <>
+                {/* Botão Saída */}
+                <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}}
+                  transition={{delay:0.05}} className="flex items-center gap-2">
+                  <span className="bg-white dark:bg-[#162032] text-xs font-bold px-2 py-1 rounded-full shadow text-[#1A2332] dark:text-[#E2EAF4]">Saída</span>
+                  <button onClick={()=>{setFabOpen(false);setShowLancamento('expense')}}
+                    className="w-12 h-12 rounded-full bg-[#F87171] text-white flex items-center justify-center shadow-lg opacity-80">
+                    <ArrowDownCircle size={22}/>
+                  </button>
+                </motion.div>
+                {/* Botão Entrada */}
+                <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}}
+                  className="flex items-center gap-2">
+                  <span className="bg-white dark:bg-[#162032] text-xs font-bold px-2 py-1 rounded-full shadow text-[#1A2332] dark:text-[#E2EAF4]">Entrada</span>
+                  <button onClick={()=>{setFabOpen(false);setShowLancamento('income')}}
+                    className="w-12 h-12 rounded-full bg-[#34D399] text-white flex items-center justify-center shadow-lg opacity-80">
+                    <ArrowUpCircle size={22}/>
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+          {/* Botão principal */}
+          <motion.button animate={{rotate: fabOpen ? 45 : 0}} transition={{duration:0.2}}
+            onClick={()=>setFabOpen(v=>!v)}
+            className="w-14 h-14 rounded-full bg-[#F97316] text-white flex items-center justify-center shadow-xl opacity-80">
+            <Plus size={26}/>
+          </motion.button>
+        </div>
+      )}
 
       {/* Modal */}
       <LancamentoModal 
