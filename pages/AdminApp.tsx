@@ -892,7 +892,7 @@ export const AdminApp: React.FC = () => {
         {activeTab !== 'agenda' && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
             <h2 className="text-lg font-bold uppercase tracking-tight text-white ">
-              {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : activeTab === 'configuracoes' ? 'Configurações' : 'Relatórios'}
+              {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : activeTab === 'configuracoes' ? 'Configurações' : activeTab === 'caixa' ? 'Financeiro' : 'Financeiro'}
             </h2>
           </div>
         )}
@@ -1046,7 +1046,7 @@ export const AdminApp: React.FC = () => {
               { id: 'clientes', label: 'Clientes', icon: Users, ariaLabel: 'Ir para Clientes' },
               { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
               { id: 'agenda', label: 'Agenda', icon: Calendar, ariaLabel: 'Ir para Agenda', isCenter: true },
-              { id: 'caixa', label: 'Caixa', icon: Wallet, ariaLabel: 'Ir para Caixa' },
+              { id: 'caixa', label: 'Financeiro', icon: Wallet, ariaLabel: 'Ir para Financeiro' },
               { id: 'configuracoes', label: 'Configurações', icon: Settings, ariaLabel: 'Ir para Configurações' },
             ].map((item) => {
               const isActive = activeTab === item.id;
@@ -3449,7 +3449,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
   };
 
   return (
-    <div className="min-h-full bg-[#F5F5F8] rounded-t-[28px] px-4 pt-5 pb-28 space-y-6">
+    <div className="min-h-full bg-transparent px-4 pt-5 pb-28 space-y-6">
       <div className="bg-surface p-4 rounded-3xl space-y-3">
         <h2 className="font-semibold text-sm text-white  uppercase tracking-widest">Novo Serviço</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
