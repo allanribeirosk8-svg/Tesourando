@@ -757,7 +757,7 @@ export const CaixaView: React.FC = () => {
             <select
               value={periodo}
               onChange={e => setPeriodo(e.target.value as 'dia' | 'semana' | 'mes' | 'ano')}
-              className="appearance-none bg-surface border border-title/30 rounded-2xl pl-3 pr-7 h-10 text-[10px] font-black uppercase tracking-wider text-white shadow-[0_4px_16px_rgba(0,0,0,0.3)] focus:outline-none cursor-pointer"
+              className="appearance-none bg-surface border border-title/30 rounded-2xl pl-3 pr-7 h-10 text-[10px] font-black uppercase tracking-wider text-white shadow-[0_4px_16px_rgba(0,0,0,0.3)] focus:outline-none cursor-pointer text-center"
             >
               <option value="dia">Dia</option>
               <option value="semana">Semana</option>
@@ -802,7 +802,7 @@ export const CaixaView: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 w-full max-w-full overflow-x-hidden pt-2 pb-[160px]">
+      <div className="flex-1 overflow-y-auto px-4 w-full max-w-full overflow-x-hidden pt-2 pb-[160px] min-h-full bg-[#1E1B4B]">
         {activeTab === 'resumo' && renderResumo()}
         {activeTab === 'extrato' && renderExtrato()}
         {activeTab === 'clientes' && renderClientes()}
@@ -841,7 +841,7 @@ export const CaixaView: React.FC = () => {
           {/* Botão principal */}
           <motion.button animate={{rotate: fabOpen ? 45 : 0}} transition={{duration:0.2}}
             onClick={()=>setFabOpen(v=>!v)}
-            className="w-14 h-14 rounded-full bg-[#F97316] text-white flex items-center justify-center shadow-xl opacity-80">
+            className="w-14 h-14 rounded-full bg-secondary text-white flex items-center justify-center shadow-xl opacity-[0.85]">
             <Plus size={26}/>
           </motion.button>
         </div>

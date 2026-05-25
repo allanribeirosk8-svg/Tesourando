@@ -1041,7 +1041,7 @@ export const AdminApp: React.FC = () => {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-          <nav className="bg-[#FFFFFF] border-t-0 pt-[8px] pb-[max(10px,env(safe-area-inset-bottom))] flex justify-between items-center h-[64px] pointer-events-auto px-2 relative z-50 shadow-[0_-3px_12px_rgba(30,27,75,0.08)]">
+          <nav className="bg-[#1E1B4B]/95 backdrop-blur-xl border-t border-white/10 pt-[8px] pb-[max(10px,env(safe-area-inset-bottom))] flex justify-between items-center h-[64px] pointer-events-auto px-2 relative z-50">
             {[
               { id: 'clientes', label: 'Clientes', icon: Users, ariaLabel: 'Ir para Clientes' },
               { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
@@ -1070,7 +1070,7 @@ export const AdminApp: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <span className="text-secondary font-semibold text-[12px] -mt-1 transition-all duration-[180ms]">
+                    <span className="text-white font-semibold text-[12px] -mt-1 transition-all duration-[180ms]">
                       {item.label}
                     </span>
                   </button>
@@ -1090,9 +1090,9 @@ export const AdminApp: React.FC = () => {
                 >
                   <div className="relative mb-0.5 flex flex-col items-center justify-center pt-1">
                     <div className={`w-1 h-1 rounded-full bg-secondary transition-opacity duration-[180ms] ease-in-out absolute -top-1.5 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
-                    <item.icon size={22} className={`transition-colors duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isActive ? 'text-secondary' : 'text-muted'}`} />
+                    <item.icon size={22} className={`transition-colors duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isActive ? 'text-secondary' : 'text-white/40'}`} />
                   </div>
-                  <span className={`text-[12px] font-medium transition-colors duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isActive ? 'text-secondary' : 'text-muted'}`}>
+                  <span className={`text-[12px] font-medium transition-colors duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isActive ? 'text-secondary' : 'text-white/40'}`}>
                     {item.label}
                   </span>
                 </button>
@@ -3871,7 +3871,7 @@ const CustomersView: React.FC<{
       {/* FAB */}
       <button 
         onClick={onAddCustomer}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-secondary text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-secondary active:scale-90 transition-all z-50 pointer-events-auto"
+        className="fixed bottom-24 right-6 w-14 h-14 bg-secondary text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-secondary active:scale-90 transition-all z-50 pointer-events-auto opacity-[0.85]"
       >
         <Plus size={28} strokeWidth={3} />
       </button>
