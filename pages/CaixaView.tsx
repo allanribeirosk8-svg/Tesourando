@@ -18,7 +18,10 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
+  DollarSign,
+  AlertTriangle,
+  UserPlus
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -56,6 +59,7 @@ export const CaixaView: React.FC = () => {
   const [showLancamento, setShowLancamento] = useState<'income' | 'expense' | false>(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [showAllInativos, setShowAllInativos] = useState(false);
+  const [filtroExtrato, setFiltroExtrato] = useState<'todas' | 'entradas' | 'saidas'>('todas');
 
   // Determine start/end of the current period
   const dateRange = useMemo(() => {
@@ -170,6 +174,48 @@ export const CaixaView: React.FC = () => {
     const prevAtend = prevCompleted.length;
     const atendDiff = prevAtend > 0 ? ((atendimentos - prevAtend) / prevAtend * 100) : null;
 
+    // Entrada avulsa do período anterior (para comparação)
+    const prevManualIncome = transactions
+      .filter(t =>
+        t.type === 'income' &&
+        !(t as any).linkedAppointmentId &&
+        t.date >= prevRange.start &&
+        t.date <= prevRange.end
+      )
+      .reduce((s, t) => s + t.amount, 0);
+    const manualIncomeDiff = prevManualIncome > 0
+      ? ((manualIncome - prevManualIncome) / prevManualIncome * 100)
+      : null;
+
+    // Despesa avulsa do período anterior (para comparação)
+    const prevExpenseTotal = transactions
+      .filter(t =>
+        t.type === 'expense' &&
+        t.date >= prevRange.start &&
+        t.date <= prevRange.end
+      )
+      .reduce((s, t) => s + t.amount, 0);
+    const expenseDiff = prevExpenseTotal > 0
+      ? ((expenseTotal - prevExpenseTotal) / prevExpenseTotal * 100)
+      : null;
+
+    // Lucro do período anterior (para comparação)
+    const prevLucro = prevFaturamento - prevExpenseTotal;
+    const lucroDiff = prevLucro !== 0
+      ? ((lucroEstimado - prevLucro) / Math.abs(prevLucro) * 100)
+      : null;
+
+    // Faltas: valor perdido e comparação
+    const valorPerdido = faltas * ticketMedio;
+    const prevFaltas = appointments.filter(
+      a => a.status === 'no-show' &&
+      a.date >= prevRange.start &&
+      a.date <= prevRange.end
+    ).length;
+    const faltasDiff = prevFaltas > 0
+      ? ((faltas - prevFaltas) / prevFaltas * 100)
+      : null;
+
     const chartData = (() => {
       if (periodo === 'dia') {
         return Array.from({ length: 13 }, (_, i) => {
@@ -204,16 +250,40 @@ export const CaixaView: React.FC = () => {
     })();
     const maxChart = Math.max(...chartData.map(d => d.value), 1);
 
-    const Chip = ({ titulo, valor, diff, sub }: { titulo: string; valor: string; diff?: number | null; sub?: string }) => (
-      <div className="rounded-[1.5rem] bg-surface border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] p-4 flex flex-col gap-1 w-full">
+    const Chip = ({
+      titulo,
+      valor,
+      diff,
+      sub,
+      sub2,
+      icon: Icon,
+      diffInvert = false,
+    }: {
+      titulo: string;
+      valor: string;
+      diff?: number | null;
+      sub?: string;
+      sub2?: string;
+      icon?: React.ElementType;
+      diffInvert?: boolean;
+    }) => (
+      <div className="rounded-[1.5rem] bg-surface border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] p-4 flex flex-col gap-1 relative overflow-hidden">
+        {Icon && (
+          <Icon size={48} className="absolute bottom-2 right-3 text-white/[0.06] pointer-events-none" />
+        )}
         <span className="text-[10px] font-bold uppercase text-title truncate">{titulo}</span>
         <span className="text-base font-black text-white leading-tight break-words min-w-0">{valor}</span>
         {diff !== undefined && diff !== null && (
-          <span className={`text-[10px] font-bold flex items-center gap-0.5 ${diff >= 0 ? 'text-[#34D399]' : 'text-[#F87171]'}`}>
+          <span className={`text-[10px] font-bold flex items-center gap-0.5 ${
+            diffInvert
+              ? (diff <= 0 ? 'text-[#34D399]' : 'text-[#F87171]')
+              : (diff >= 0 ? 'text-[#34D399]' : 'text-[#F87171]')
+          }`}>
             {diff >= 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(1)}% vs anterior
           </span>
         )}
         {sub && <span className="text-[10px] text-title">{sub}</span>}
+        {sub2 && <span className="text-[10px] text-title">{sub2}</span>}
       </div>
     );
 
@@ -221,11 +291,75 @@ export const CaixaView: React.FC = () => {
       <div className="space-y-5">
         {/* KPI cards */}
         <div className="grid grid-cols-2 gap-3">
-          <Chip titulo="Faturamento" valor={formatCurrency(faturamento)} diff={faturamentoDiff} />
-          <Chip titulo="Atendimentos" valor={String(atendimentos)} diff={atendDiff} sub={faltas > 0 ? `${faltas} falta${faltas > 1 ? 's' : ''}` : undefined} />
-          <Chip titulo="Ticket Médio" valor={formatCurrency(ticketMedio)} diff={ticketDiff} />
-          <Chip titulo="Lucro Estimado" valor={formatCurrency(lucroEstimado)} sub={expenseTotal === 0 ? 'Cadastre saídas' : undefined} />
+          <Chip
+            titulo="Faturamento"
+            valor={formatCurrency(faturamento)}
+            diff={faturamentoDiff}
+            icon={TrendingUp}
+          />
+          <Chip
+            titulo="Atendimentos"
+            valor={String(atendimentos)}
+            diff={atendDiff}
+            icon={Scissors}
+          />
+          <Chip
+            titulo="Entrada Avulsa"
+            valor={formatCurrency(manualIncome)}
+            diff={manualIncomeDiff}
+            icon={ArrowUpCircle}
+          />
+          <Chip
+            titulo="Despesa Avulsa"
+            valor={formatCurrency(expenseTotal)}
+            diff={expenseDiff}
+            diffInvert
+            icon={ArrowDownCircle}
+            sub={expenseTotal === 0 ? 'Nenhuma saída' : undefined}
+          />
+          <Chip
+            titulo="Ticket Médio"
+            valor={formatCurrency(ticketMedio)}
+            diff={ticketDiff}
+            icon={DollarSign}
+          />
+          <Chip
+            titulo="Lucro Estimado"
+            valor={formatCurrency(lucroEstimado)}
+            diff={lucroDiff}
+            icon={Wallet}
+          />
         </div>
+
+        {/* Card Faltas — fora do grid, abaixo */}
+        {(faltas > 0 || prevFaltas > 0) && (
+          <div className="rounded-[1.5rem] bg-surface border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] p-4 relative overflow-hidden">
+            <AlertTriangle size={48} className="absolute bottom-2 right-3 text-[#F87171]/[0.08] pointer-events-none" />
+            <span className="text-[10px] font-bold uppercase text-title">Faltas</span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-base font-black text-white">
+                {faltas} falta{faltas !== 1 ? 's' : ''}
+              </span>
+              {ticketMedio > 0 && (
+                <span className="text-[11px] font-bold text-[#F87171]">
+                  · {formatCurrency(valorPerdido)} perdidos
+                </span>
+              )}
+            </div>
+            {faltasDiff !== null && (
+              <span className={`text-[10px] font-bold flex items-center gap-0.5 mt-0.5 ${
+                faltasDiff <= 0 ? 'text-[#34D399]' : 'text-[#F87171]'
+              }`}>
+                {faltasDiff >= 0 ? '▲' : '▼'} {Math.abs(faltasDiff).toFixed(1)}% vs anterior
+              </span>
+            )}
+            {faltas === 0 && (
+              <span className="text-[10px] text-[#34D399] font-bold mt-0.5">
+                ✓ Nenhuma falta neste período
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Alerta (máx 1) */}
         {noShowRate > 20 ? (
@@ -312,15 +446,68 @@ export const CaixaView: React.FC = () => {
     const totalSaidas = extratoItems.filter(i => i.type === 'expense').reduce((s, i) => s + i.amount, 0);
     const resultado = totalEntradas - totalSaidas;
 
+    const transacoesFiltradas = extratoItems.filter(t => {
+      if (filtroExtrato === 'entradas') return t.type === 'income';
+      if (filtroExtrato === 'saidas')   return t.type === 'expense';
+      return true;
+    });
+
     return (
       <div className="space-y-4 pb-20">
-        {extratoItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 text-title">
-            <Wallet size={48} className="mb-4 opacity-50" />
-            <p className="text-sm font-medium">Nenhum lançamento neste período.</p>
+        {/* Filtro de abas — fixo, não scrolla com a lista */}
+        <div className="sticky top-0 z-10 pb-3 -mx-4 px-4 pt-2 -mt-2 bg-[#1E1B4B]">
+          <div className="flex bg-primary/40 rounded-2xl p-1 gap-1">
+            {([
+              { key: 'todas',    label: 'Todas'    },
+              { key: 'entradas', label: 'Entradas' },
+              { key: 'saidas',   label: 'Saídas'   },
+            ] as const).map(({ key, label }) => {
+
+              const isActive = filtroExtrato === key;
+
+              // Cor do fundo ativo por aba
+              const activeBg =
+                key === 'todas'    ? 'bg-secondary' :   // cor principal
+                key === 'entradas' ? 'bg-[#34D399]' :   // verde — cor do valor de entrada
+                                     'bg-[#F87171]';    // vermelho — cor do valor de saída
+
+              // Cor do texto ativo
+              const activeText =
+                key === 'todas'    ? 'text-white' :
+                key === 'entradas' ? 'text-white' :
+                                     'text-white';
+
+              return (
+                <button
+                  key={key}
+                  onClick={() => setFiltroExtrato(key)}
+                  className={`
+                    flex-1 py-2 rounded-xl text-xs font-black transition-all duration-200
+                    ${isActive
+                      ? `${activeBg} ${activeText} shadow-[0_2px_8px_rgba(0,0,0,0.3)]`
+                      : 'text-title hover:text-white'
+                    }
+                  `}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {transacoesFiltradas.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-title text-sm font-bold">
+              {filtroExtrato === 'entradas'
+                ? 'Nenhuma entrada neste período'
+                : filtroExtrato === 'saidas'
+                ? 'Nenhuma saída neste período'
+                : 'Nenhuma transação neste período'}
+            </p>
           </div>
         ) : (
-          extratoItems.map(item => {
+          transacoesFiltradas.map(item => {
             let icon, iconBg;
             if (item.isAppointment) {
               icon = <Scissors size={18} />;
@@ -453,6 +640,21 @@ export const CaixaView: React.FC = () => {
       .sort((a, b) => b.faltas - a.faltas)
       .slice(0, 3);
 
+    // Clientes atendidos únicos no período (phones distintos)
+    const clientesAtendidos = clientesArr.length;
+
+    // Novos clientes: primeiro atendimento de todos os tempos cai dentro do dateRange
+    const novosClientes = clientesArr.filter(c => {
+      const todosApts = appointments
+        .filter(a => a.phone === c.phone && a.status === 'completed')
+        .map(a => a.date)
+        .sort();
+      return todosApts.length > 0 && todosApts[0] >= dateRange.start && todosApts[0] <= dateRange.end;
+    }).length;
+
+    // Inativos em risco: sem visita há mais de 60 dias
+    const inativosEmRisco = inativos.filter(c => c.diasAtraso > 60).length;
+
     const ClienteItem: React.FC<{ nome: string; sub: string; valor: string }> = ({ nome, sub, valor }) => (
       <div className="flex items-center gap-3 py-2">
         <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${getAvatarColor(nome)}`}>
@@ -468,22 +670,109 @@ export const CaixaView: React.FC = () => {
 
     return (
       <div className="space-y-4 pb-6">
-        {/* KPIs */}
-        <div className="flex gap-3">
-          <div className="flex-1 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-            <p className="text-[10px] font-bold uppercase text-title mb-1">Clientes Ativos</p>
-            <p className="text-2xl font-black text-white">{clientesAtivos}</p>
-            <p className="text-[10px] text-title">últimos 60 dias</p>
+        {/* ── BLOCO 1: Visão Geral (sempre fixo, independente do período) ── */}
+        <div>
+          <p className="text-[10px] font-bold uppercase text-title mb-2 tracking-[0.1em]">
+            Visão Geral
+          </p>
+          <div className="flex gap-3">
+            {/* Clientes Ativos */}
+            <div className="flex-1 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] relative overflow-hidden">
+              <Users size={48} className="absolute bottom-2 right-3 text-white/[0.06] pointer-events-none" />
+              <p className="text-[10px] font-bold uppercase text-title mb-1">Clientes Ativos</p>
+              <p className="text-2xl font-black text-white">{clientesAtivos}</p>
+              <p className="text-[10px] text-title">últimos 60 dias</p>
+            </div>
+            {/* Inativos em risco */}
+            <div className="flex-1 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] relative overflow-hidden">
+              <AlertTriangle size={48} className="absolute bottom-2 right-3 text-white/[0.06] pointer-events-none" />
+              <p className="text-[10px] font-bold uppercase text-title mb-1">Em Risco</p>
+              <p className={`text-2xl font-black ${inativosEmRisco > 0 ? 'text-[#F87171]' : 'text-white'}`}>
+                {inativosEmRisco}
+              </p>
+              <p className="text-[10px] text-title">sem visita +60 dias</p>
+            </div>
           </div>
-          <div className="flex-1 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-            <p className="text-[10px] font-bold uppercase text-title mb-1">Retorno</p>
-            <p className="text-2xl font-black text-white">{returnRate.toFixed(0)}%</p>
-            <p className="text-[10px] text-title">≥ 2 visitas no período</p>
+          {inativos.length > 0 && (
+            <div className="mt-3 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+              <p className="text-[10px] font-bold uppercase text-title mb-3">Clientes Inativos</p>
+              {inativosVisiveis.map(c => (
+                <div key={c.phone} className="flex items-center gap-3 py-2">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${getAvatarColor(c.nome)}`}>
+                    {getInitials(c.nome)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white truncate">{c.nome}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black ${
+                        c.diasAtraso > 60
+                          ? 'bg-[#F87171]/15 text-[#F87171] border border-[#F87171]/30'
+                          : 'bg-[#FBBF24]/15 text-[#FBBF24] border border-[#FBBF24]/30'
+                      }`}>
+                        {c.diasAtraso > 60 ? '⚠ Risco alto' : '· Atenção'}
+                      </span>
+                      <span className="text-[10px] text-title">{c.diasAtraso} dias sem visita</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {inativos.length > 5 && (
+                <button
+                  onClick={() => setShowAllInativos(!showAllInativos)}
+                  className="mt-2 text-xs text-secondary font-bold w-full text-center"
+                >
+                  {showAllInativos ? 'Ver menos' : `Ver todos (${inativos.length})`}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── BLOCO 2: No período selecionado (responde ao filtro) ── */}
+        <div>
+          <p className="text-[10px] font-bold uppercase text-title mb-2 tracking-[0.1em]">
+            No Período
+          </p>
+          <div className="flex gap-3">
+            {/* Clientes Atendidos */}
+            <div className="flex-1 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] relative overflow-hidden">
+              <Scissors size={48} className="absolute bottom-2 right-3 text-white/[0.06] pointer-events-none" />
+              <p className="text-[10px] font-bold uppercase text-title mb-1">Atendidos</p>
+              <p className="text-2xl font-black text-white">{clientesAtendidos}</p>
+              <p className="text-[10px] text-title">clientes únicos</p>
+            </div>
+            {/* Novos Clientes */}
+            <div className="flex-1 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] relative overflow-hidden">
+              <UserPlus size={48} className="absolute bottom-2 right-3 text-white/[0.06] pointer-events-none" />
+              <p className="text-[10px] font-bold uppercase text-title mb-1">Novos</p>
+              <p className={`text-2xl font-black ${novosClientes > 0 ? 'text-secondary' : 'text-white'}`}>
+                {novosClientes}
+              </p>
+              <p className="text-[10px] text-title">primeira visita</p>
+            </div>
+          </div>
+
+          {/* Taxa de retorno — logo abaixo, largura total */}
+          <div className="mt-3 bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+            <div className="flex justify-between items-baseline">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-title mb-1">Taxa de Retorno</p>
+                <p className="text-[10px] text-title">clientes com ≥ 2 visitas no período</p>
+              </div>
+              <p className="text-2xl font-black text-white">{returnRate.toFixed(0)}%</p>
+            </div>
+            {/* Barra de progresso */}
+            <div className="w-full bg-primary/40 rounded-full h-2 mt-3">
+              <div
+                className="bg-secondary h-2 rounded-full transition-all"
+                style={{ width: `${Math.min(returnRate, 100)}%` }}
+              />
+            </div>
           </div>
         </div>
 
         {/* Top frequência */}
-        {topFreq.length > 0 && (
+        {periodo !== 'dia' && topFreq.length > 0 && (
           <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
             <p className="text-[10px] font-bold uppercase text-title mb-3">Mais Frequentes</p>
             {topFreq.map(c => <ClienteItem key={c.phone} nome={c.nome} sub={`${c.visitas} visita${c.visitas > 1 ? 's' : ''}`} valor={formatCurrency(c.total)} />)}
@@ -491,43 +780,44 @@ export const CaixaView: React.FC = () => {
         )}
 
         {/* Top valor */}
-        {topValor.length > 0 && (
+        {periodo !== 'dia' && topValor.length > 0 && (
           <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
             <p className="text-[10px] font-bold uppercase text-title mb-3">Maior Valor</p>
             {topValor.map(c => <ClienteItem key={c.phone} nome={c.nome} sub={`${c.visitas} visita${c.visitas > 1 ? 's' : ''}`} valor={formatCurrency(c.total)} />)}
           </div>
         )}
 
-        {/* Inativos */}
-        {inativos.length > 0 && (
+        {/* Atendimentos do Dia */}
+        {periodo === 'dia' && clientesAtendidos > 0 && (
           <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-            <p className="text-[10px] font-bold uppercase text-title mb-3">Clientes Inativos</p>
-            {inativosVisiveis.map(c => (
-              <div key={c.phone} className="flex items-center gap-3 py-2">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${getAvatarColor(c.nome)}`}>
-                  {getInitials(c.nome)}
+            <p className="text-[10px] font-bold uppercase text-title mb-2">Atendimentos do Dia</p>
+            {completedApts.map(a => (
+              <div key={a.id} className="flex items-center gap-3 py-2">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${getAvatarColor(a.clientName)}`}>
+                  {getInitials(a.clientName)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{c.nome}</p>
-                  <p className={`text-[11px] font-medium ${c.diasAtraso > 60 ? 'text-[#F87171]' : 'text-[#FBBF24]'}`}>
-                    Último corte: {c.diasAtraso} dias atrás
-                  </p>
+                  <p className="text-sm font-bold text-white truncate">{a.clientName}</p>
+                  <p className="text-[11px] text-title">{a.service} · {a.time}</p>
                 </div>
+                <span className="text-sm font-black text-secondary">{formatCurrency(a.price || 0)}</span>
               </div>
             ))}
-            {inativos.length > 5 && (
-              <button onClick={() => setShowAllInativos(!showAllInativos)} className="mt-2 text-xs text-secondary font-bold w-full text-center">
-                {showAllInativos ? 'Ver menos' : `Ver todos (${inativos.length})`}
-              </button>
-            )}
           </div>
         )}
 
-        {/* No-shows */}
+        {/* Faltantes */}
         {noShowClientes.length > 0 && (
           <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
             <p className="text-[10px] font-bold uppercase text-title mb-3">Maiores Faltantes</p>
-            {noShowClientes.map(c => <ClienteItem key={c.phone} nome={c.nome} sub="no-shows no período" valor={`${c.faltas}x`} />)}
+            {noShowClientes.map(c => (
+              <ClienteItem
+                key={c.phone}
+                nome={c.nome}
+                sub={`${c.faltas} falta${c.faltas > 1 ? 's' : ''} no período`}
+                valor={ticketMedio > 0 ? `${c.faltas}x · ${formatCurrency(c.faltas * ticketMedio)}` : `${c.faltas}x`}
+              />
+            ))}
           </div>
         )}
 
@@ -645,20 +935,20 @@ export const CaixaView: React.FC = () => {
     const ocupacao = totalSlots > 0 ? Math.round((usedSlots / totalSlots) * 100) : 0;
     const ocupacaoColor = ocupacao >= 70 ? '#34D399' : ocupacao >= 40 ? '#FBBF24' : '#F87171';
 
-    // Dias mais movimentados (histórico completo)
+    // Dias mais movimentados (filtrado)
     const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const porDia = [0, 0, 0, 0, 0, 0, 0];
-    appointments.filter(a => a.status === 'completed').forEach(a => {
+    completedApts.forEach(a => {
       const [y, m, d] = a.date.split('-').map(Number);
       porDia[new Date(y, m - 1, d).getDay()]++;
     });
     const maxDia = Math.max(...porDia, 1);
 
-    // Horários de pico (histórico completo)
+    // Horários de pico (filtrado)
     const picoManha = [0, 0, 0, 0, 0, 0, 0];
     const picoTarde = [0, 0, 0, 0, 0, 0, 0];
     const picoNoite = [0, 0, 0, 0, 0, 0, 0];
-    appointments.filter(a => a.status === 'completed').forEach(a => {
+    completedApts.forEach(a => {
       const [y, m, d] = a.date.split('-').map(Number);
       const dow = new Date(y, m - 1, d).getDay();
       const h = parseInt(a.time?.split(':') || '0');
@@ -667,6 +957,35 @@ export const CaixaView: React.FC = () => {
       else if (h >= 17 && h < 21) picoNoite[dow]++;
     });
     const maxPico = Math.max(...picoManha, ...picoTarde, ...picoNoite, 1);
+
+    // Para período === 'semana'
+    const porDiaSemana = diasSemana.map((label, dow) => {
+      const count = completedApts.filter(a => {
+        const [y, m, d] = a.date.split('-').map(Number);
+        return new Date(y, m - 1, d).getDay() === dow;
+      }).length;
+      // data real do dia
+      const diaReal = new Date(dateRange.start);
+      diaReal.setHours(12);
+      while (diaReal.getDay() !== dow) diaReal.setDate(diaReal.getDate() + 1);
+      const dentroDoRange =
+        diaReal.toISOString().split('T')[0] >= dateRange.start &&
+        diaReal.toISOString().split('T')[0] <= dateRange.end;
+      return { label, dow, count, dentroDoRange };
+    });
+    const maxDiaSemana = Math.max(...porDiaSemana.map(d => d.count), 1);
+
+    // Para período === 'dia'
+    const porHora = Array.from({ length: 13 }, (_, i) => {
+      const h = i + 8;
+      const count = completedApts.filter(a => {
+        const hora = parseInt(a.time?.split(':') || '0');
+        return hora === h;
+      }).length;
+      return { label: `${h}h`, h, count };
+    });
+    const maxHora = Math.max(...porHora.map(d => d.count), 1);
+    const horaPico = porHora.reduce((max, cur) => cur.count > max.count ? cur : max, porHora[0]);
 
     return (
       <div className="space-y-4 pb-6">
@@ -682,7 +1001,7 @@ export const CaixaView: React.FC = () => {
           <p className="text-[11px] text-title mt-1">{usedSlots} de {totalSlots} slots utilizados</p>
         </div>
 
-        {/* Impacto no-show */}
+        {/* Impacto faltas */}
         {faltas > 0 && (
           <div className="bg-red-500/10 border border-red-500/20  rounded-2xl p-4">
             <p className="text-[10px] font-bold uppercase text-[#F87171] mb-1">Impacto das Faltas</p>
@@ -692,38 +1011,121 @@ export const CaixaView: React.FC = () => {
           </div>
         )}
 
-        {/* Dias movimentados */}
-        <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-          <p className="text-[10px] font-bold uppercase text-title mb-3">Dias Mais Movimentados</p>
-          <div className="space-y-2">
-            {diasSemana.map((d, i) => (
-              <div key={d} className="flex items-center gap-2">
-                <span className="text-xs text-title w-8">{d}</span>
-                <div className="flex-1 bg-primary/40 rounded-full h-2">
-                  <div className="bg-secondary h-2 rounded-full" style={{ width: `${(porDia[i] / maxDia) * 100}%` }} />
-                </div>
-                <span className="text-xs font-bold text-white w-6 text-right">{porDia[i]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Horários de pico */}
-        <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-          <p className="text-[10px] font-bold uppercase text-title mb-3">Horários de Pico</p>
-          <div className="grid grid-cols-8 gap-1 text-center">
-            <div className="text-[9px] text-title"></div>
-            {diasSemana.map(d => <div key={d} className="text-[9px] text-title font-bold">{d}</div>)}
-            {[{ label: 'Manhã', data: picoManha }, { label: 'Tarde', data: picoTarde }, { label: 'Noite', data: picoNoite }].map(row => (
-              <React.Fragment key={row.label}>
-                <div className="text-[9px] text-title flex items-center">{row.label}</div>
-                {row.data.map((v, i) => (
-                  <div key={i} className="h-6 rounded" style={{ backgroundColor: `rgba(40,152,216,${v / maxPico})` }} />
+        {(periodo === 'mes' || periodo === 'ano') && (
+          <>
+            {/* Dias movimentados */}
+            <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+              <p className="text-[10px] font-bold uppercase text-title mb-3">Dias Mais Movimentados</p>
+              <div className="space-y-2">
+                {diasSemana.map((d, i) => (
+                  <div key={d} className="flex items-center gap-2">
+                    <span className="text-xs text-title w-8">{d}</span>
+                    <div className="flex-1 bg-primary/40 rounded-full h-2">
+                      <div className="bg-secondary h-2 rounded-full" style={{ width: `${(porDia[i] / maxDia) * 100}%` }} />
+                    </div>
+                    <span className="text-xs font-bold text-white w-6 text-right">{porDia[i]}</span>
+                  </div>
                 ))}
-              </React.Fragment>
-            ))}
+              </div>
+            </div>
+
+            {/* Horários de pico */}
+            <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+              <p className="text-[10px] font-bold uppercase text-title mb-3">Horários de Pico</p>
+              <div className="grid grid-cols-8 gap-1 text-center">
+                <div className="text-[9px] text-title"></div>
+                {diasSemana.map(d => <div key={d} className="text-[9px] text-title font-bold">{d}</div>)}
+                {[{ label: 'Manhã', data: picoManha }, { label: 'Tarde', data: picoTarde }, { label: 'Noite', data: picoNoite }].map(row => (
+                  <React.Fragment key={row.label}>
+                    <div className="text-[9px] text-title flex items-center">{row.label}</div>
+                    {row.data.map((v, i) => (
+                      <div key={i} className="h-6 rounded" style={{ backgroundColor: `rgba(40,152,216,${v / maxPico})` }} />
+                    ))}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {periodo === 'semana' && (
+          <>
+            {/* Movimento da Semana */}
+            <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+              <p className="text-[10px] font-bold uppercase text-title mb-3">
+                Movimento da Semana
+              </p>
+              <div className="space-y-2">
+                {porDiaSemana.map(({ label, count, dentroDoRange }) => (
+                  <div key={label} className={`flex items-center gap-2 ${!dentroDoRange ? 'opacity-30' : ''}`}>
+                    <span className="text-xs text-title w-8">{label}</span>
+                    <div className="flex-1 bg-primary/40 rounded-full h-2">
+                      <div
+                        className="bg-secondary h-2 rounded-full transition-all"
+                        style={{ width: `${(count / maxDiaSemana) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-white w-6 text-right">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Turnos da Semana */}
+            <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+              <p className="text-[10px] font-bold uppercase text-title mb-1">Turnos da Semana</p>
+              <p className="text-[9px] text-title/50 mb-3">Concentração de atendimentos por turno</p>
+              <div className="grid grid-cols-8 gap-1 text-center">
+                <div className="text-[9px] text-title"></div>
+                {diasSemana.map(d => <div key={d} className="text-[9px] text-title font-bold">{d}</div>)}
+                {[{ label: 'Manhã', data: picoManha }, { label: 'Tarde', data: picoTarde }, { label: 'Noite', data: picoNoite }].map(row => (
+                  <React.Fragment key={row.label}>
+                    <div className="text-[9px] text-title flex items-center">{row.label}</div>
+                    {row.data.map((v, i) => (
+                      <div key={i} className="h-6 rounded" style={{ backgroundColor: `rgba(40,152,216,${v / maxPico})` }} />
+                    ))}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {periodo === 'dia' && (
+          <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+            <div className="flex justify-between items-baseline mb-3">
+              <p className="text-[10px] font-bold uppercase text-title">Linha do Dia</p>
+              {horaPico && horaPico.count > 0 && (
+                <span className="text-[10px] font-bold text-secondary">
+                  Pico: {horaPico.label}
+                </span>
+              )}
+            </div>
+
+            {completedApts.length === 0 ? (
+              <p className="text-[11px] text-title text-center py-4">
+                Nenhum atendimento neste dia
+              </p>
+            ) : (
+              <div className="space-y-1.5">
+                {porHora.map(({ label, count }) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="text-[10px] text-title w-7">{label}</span>
+                    <div className="flex-1 bg-primary/40 rounded-full h-2">
+                      <div
+                        className="bg-secondary h-2 rounded-full transition-all"
+                        style={{ width: `${(count / maxHora) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-white w-4 text-right">
+                      {count > 0 ? count : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     );
   };

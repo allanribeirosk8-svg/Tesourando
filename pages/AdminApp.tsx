@@ -915,6 +915,7 @@ export const AdminApp: React.FC = () => {
                   setSuccessMessage(msg);
                   setTimeout(() => setSuccessMessage(null), 3000);
                 }}
+                onNavigateToCaixa={() => setActiveTab('caixa')}
             />
         )}
         {activeTab === 'clientes' && (
@@ -1143,7 +1144,8 @@ const AgendaView: React.FC<{
     onAddInSlot: (date: string, time: string, isExceptional?: boolean) => void;
     handleCameraClick: (phone: string) => void;
     onSuccess?: (msg: string) => void;
-}> = ({ selectedDate, setSelectedDate, onOpenCustomer, showWeeklyModal, setShowWeeklyModal, onReschedule, onAddInSlot, handleCameraClick, onSuccess }) => {
+    onNavigateToCaixa?: () => void;
+}> = ({ selectedDate, setSelectedDate, onOpenCustomer, showWeeklyModal, setShowWeeklyModal, onReschedule, onAddInSlot, handleCameraClick, onSuccess, onNavigateToCaixa }) => {
   const { appointments, finishAppointment, revertAppointment, deleteAppointment, blockedSlots, unblockedSlots, toggleSlotAvailability, toggleSlotUnblock, weeklySchedule, markNoShow, toggleWeeklyBreak, fetchAppointmentsByDate } = useStore();
   
   useEffect(() => {
@@ -1244,6 +1246,7 @@ const AgendaView: React.FC<{
   }, [appointments, selectedDate]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
+    setSlideDirection(direction === 'next' ? 1 : -1);
     const d = new Date(selectedDate + 'T12:00:00');
     d.setDate(d.getDate() + (direction === 'next' ? 7 : -7));
     setSelectedDate(d.toISOString().split('T')[0]);
@@ -1586,43 +1589,52 @@ const AgendaView: React.FC<{
               <ChevronLeft size={20} />
             </button>
             
-            <div className="flex-1 flex justify-between gap-1">
-              {weekDays.map((day) => {
-                const isSelected = day.dateStr === selectedDate;
-                const isToday = day.dateStr === getTodayString();
-                const isClosed = !day.isOpen;
-                const count = getAppointmentsCount(day.dateStr);
-                
-                return (
-                  <button
-                    key={day.dateStr}
-                    onClick={() => setSelectedDate(day.dateStr)}
-                    className={`flex-1 flex flex-col items-center justify-center rounded-xl transition-all py-1.5 relative
-                      ${isSelected 
-                        ? 'bg-secondary text-white ring-2 ring-secondary ring-offset-2 ' 
-                        : isToday 
-                          ? 'bg-secondary text-white' 
-                          : isClosed
-                            ? 'text-white/30 line-through '
-                            : 'hover:bg-white/5 text-white/80'}`}
-                  >
-                    <span className={`text-[9px] font-bold uppercase tracking-tighter 
-                      ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-white/60'}`}>
-                      {day.dayLabel}
-                    </span>
-                    <span className={`text-sm font-black 
-                      ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-white/30 ' : 'text-white '}`}>
-                      {day.dayNum}
-                    </span>
-                    {count > 0 && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-secondary text-white border-transparent ">
-                        {count > 9 ? '9+' : count}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={weekDays[0]?.dateStr}
+                initial={{ opacity: 0, x: slideDirection * 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -slideDirection * 15 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 flex justify-between gap-1"
+              >
+                {weekDays.map((day) => {
+                  const isSelected = day.dateStr === selectedDate;
+                  const isToday = day.dateStr === getTodayString();
+                  const isClosed = !day.isOpen;
+                  const count = getAppointmentsCount(day.dateStr);
+                  
+                  return (
+                    <button
+                      key={day.dateStr}
+                      onClick={() => setSelectedDate(day.dateStr)}
+                      className={`flex-1 flex flex-col items-center justify-center rounded-xl transition-all py-1.5 relative
+                        ${isSelected 
+                          ? 'bg-secondary text-white shadow-[0_0_0_2px_#1E1B4B,0_0_0_4px_#F99417]' 
+                          : isToday 
+                            ? 'bg-secondary/25 text-white ring-1 ring-secondary/50' 
+                            : isClosed
+                              ? 'text-white/30 line-through '
+                              : 'hover:bg-white/5 text-white/80'}`}
+                    >
+                      <span className={`text-[9px] font-bold uppercase tracking-tighter 
+                        ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-white/60'}`}>
+                        {day.dayLabel}
+                      </span>
+                      <span className={`text-sm font-black 
+                        ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-white/30 ' : 'text-white '}`}>
+                        {day.dayNum}
+                      </span>
+                      {count > 0 && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-secondary text-white border-transparent ">
+                          {count > 9 ? '9+' : count}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
 
             <button 
               onClick={() => navigateWeek('next')}
@@ -1636,33 +1648,49 @@ const AgendaView: React.FC<{
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0">
-        <div 
-          className="w-[160.5px] h-[74.5px] -ml-[6px] rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0, duration: 0.35, ease: 'easeOut' }}
         >
-          {/* Decoração — círculo grande translúcido */}
-          <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)' }}
-          />
-          <div className="absolute -right-2 -bottom-8 w-24 h-24 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
-          />
-          
-          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.dayLabel}</span>
-          <div className="flex flex-col relative z-10">
-            <span className="text-[22px] font-extrabold text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
-            <span className="text-[11px] text-white/75 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
-          </div>
-          <DollarSign size={48} className="text-white/10 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
-        </div>
+          <button 
+            onClick={onNavigateToCaixa}
+            className="w-[160.5px] h-[74.5px] -ml-[6px] rounded-[14px] py-[10px] px-[14px] flex flex-col items-start justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group text-left active:scale-[0.97] transition-transform"
+          >
+            {/* Decoração — círculo grande translúcido */}
+            <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)' }}
+            />
+            <div className="absolute -right-2 -bottom-8 w-24 h-24 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
+            />
+            
+            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.dayLabel}</span>
+            <div className="flex flex-col relative z-10">
+              <span className="text-[22px] font-extrabold text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
+              <span className="text-[11px] text-white/75 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            </div>
+            <DollarSign size={48} className="text-white/10 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
+          </button>
+        </motion.div>
 
-        <div className="w-[160.5px] ml-[6px] bg-white/[0.08] rounded-[14px] py-[10px] px-[14px] flex flex-col justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group">
-          <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.weekLabel}</span>
-          <div className="flex flex-col relative z-10">
-            <span className="text-[22px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
-            <span className="text-[11px] font-normal text-white/75 leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
-          </div>
-          <DollarSign size={48} className="text-secondary/5 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08, duration: 0.35, ease: 'easeOut' }}
+        >
+          <button 
+            onClick={onNavigateToCaixa}
+            className="w-[160.5px] ml-[6px] bg-white/[0.08] rounded-[14px] py-[10px] px-[14px] flex flex-col items-start justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group text-left active:scale-[0.97] transition-transform"
+          >
+            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.weekLabel}</span>
+            <div className="flex flex-col relative z-10">
+              <span className="text-[22px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
+              <span className="text-[11px] font-normal text-white/75 leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
+            </div>
+            <DollarSign size={48} className="text-secondary/5 absolute right-4 bottom-2 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
+          </button>
+        </motion.div>
       </div>
       </div>
 
@@ -1731,6 +1759,19 @@ const AgendaView: React.FC<{
             </div>
         ) : (
             <div className="grid grid-cols-1 gap-3">
+                {activeSlots.length === 0 && dayConfig?.isOpen && currentDayAppointments.filter(a => a.status === 'pending').length === 0 && (
+                  <div className="py-10 flex flex-col items-center gap-3 text-center">
+                    <div className="w-12 h-12 rounded-full bg-[#1E1B4B]/10 flex items-center justify-center">
+                      <Check size={24} className="text-[#48C78E]" />
+                    </div>
+                    <p className="text-[13px] font-bold text-[#1E1B4B]/50 uppercase tracking-widest">
+                      Expediente encerrado
+                    </p>
+                    <p className="text-[11px] text-[#1E1B4B]/35">
+                      Todos os horários passaram ou foram concluídos
+                    </p>
+                  </div>
+                )}
                 {activeFilter !== 'concluidos' && activeSlots.map(({ slot, apt, isStartSlot }) => {
                     const isManualBlocked = dateBlockedSlots.some(s => normalizeTime(s) === slot);
                     const isManualUnblocked = (unblockedSlots[selectedDate] || []).some(s => normalizeTime(s) === slot);
@@ -2854,7 +2895,7 @@ const AddAppointmentModal: React.FC<{
                   )}
                 </div>
               ) : (
-                <div className={`p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 relative group bg-surface/80/30 border-title/30  `}>
+                <div className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 relative group bg-secondary/[0.12] border-secondary/25`}>
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="w-12 h-12 rounded-full bg-surface  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                       {selectedCustomer?.avatar ? (
@@ -2987,7 +3028,7 @@ const AddAppointmentModal: React.FC<{
               </label>
               <div className={`flex flex-wrap gap-2 p-1 rounded-2xl transition-all ${errors.services ? 'ring-2 ring-red-500 bg-red-50/50' : ''}`}>
                 {services.map(s => (
-                  <button key={s.id} type="button" onClick={() => toggleService(s.id)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all border ${formData.serviceIds.includes(s.id) ? 'bg-secondary text-white border-secondary shadow-md' : 'bg-surface  text-title border-title/30 '}`}>{s.name}</button>
+                  <button key={s.id} type="button" onClick={() => toggleService(s.id)} className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all ${formData.serviceIds.includes(s.id) ? 'bg-secondary/20 border border-secondary/50 text-secondary' : 'bg-white/[0.08] border border-white/[0.12] text-white/70'}`}>{s.name}</button>
                 ))}
               </div>
               {errors.services && (
@@ -2997,14 +3038,30 @@ const AddAppointmentModal: React.FC<{
                 </div>
               )}
             </div>
-            <Input 
-              label="Data" 
-              type="date" 
-              value={formData.date} 
-              min={getTodayString()} 
-              onChange={e => { setFormData({...formData, date: e.target.value, time: ''}); setShowErrorMsg(false); }} 
-              requiredField
-            />
+            
+            <div className="border-t border-white/[0.06] my-1" />
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-bold uppercase tracking-widest ml-1 flex items-center gap-1 text-title ">
+                Data
+                <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={formData.date}
+                  min={getTodayString()}
+                  onChange={e => { setFormData({...formData, date: e.target.value, time: ''}); setShowErrorMsg(false); }} 
+                  className="w-full bg-white/[0.08] border border-white/[0.12] text-white rounded-2xl h-12 px-4 pr-10 text-sm font-medium [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+                <Calendar 
+                  size={16} 
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" 
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-white/[0.06] my-1" />
 
             {isExceptional ? (
               <Input 
@@ -3021,12 +3078,12 @@ const AddAppointmentModal: React.FC<{
                   Horário
                   <span className="text-red-500">*</span>
                 </label>
-                <div className={`grid grid-cols-4 gap-2 p-1 rounded-2xl transition-all ${errors.time ? 'ring-2 ring-red-500 bg-red-50/50' : ''}`}>
+                <div className={`overflow-x-auto flex gap-2 p-1 rounded-2xl transition-all ${errors.time ? 'ring-2 ring-red-500 bg-red-50/50' : ''}`}>
                     {generatedSlots.map(slot => {
                       const available = isSlotAvailable(slot);
                       if (isSlotPast(slot)) return null;
                       return (
-                        <button key={slot} type="button" disabled={!available} onClick={() => { setFormData({...formData, time: slot}); setErrors(prev => ({...prev, time: false})); setShowErrorMsg(false); }} className={`py-2 rounded-xl text-xs font-bold transition-all border ${formData.time === slot ? 'bg-secondary text-white border-secondary' : !available ? 'bg-primary/40  text-title  border-title/30 ' : 'bg-surface  text-white  border-title/30 '}`}>{slot}</button>
+                        <button key={slot} type="button" disabled={!available} onClick={() => { setFormData({...formData, time: slot}); setErrors(prev => ({...prev, time: false})); setShowErrorMsg(false); }} className={`py-2 px-4 shrink-0 rounded-xl text-xs font-bold transition-all ${formData.time === slot ? 'bg-secondary text-white shadow-[0_0_0_2px_#1E1B4B,0_0_0_4px_#F99417]' : !available ? 'bg-primary/40 text-title border border-title/30' : 'bg-white/[0.08] border border-white/[0.12] text-white/70 active:bg-white/[0.14]'}`}>{slot}</button>
                       );
                     })}
                 </div>
@@ -3053,7 +3110,7 @@ const AddAppointmentModal: React.FC<{
               type="submit" 
               fullWidth 
               disabled={isExceptional && isWithinRegularHours}
-              className={`h-14 font-black uppercase tracking-widest shadow-xl shadow-secondary/20 text-sm px-4 disabled:opacity-50 transition-colors duration-300 ${isButtonFlashing ? '!bg-amber-500 !shadow-amber-500/40' : ''}`}
+              className={`w-full h-14 bg-secondary rounded-2xl text-white font-black shadow-lg shadow-secondary/30 active:scale-[0.98] transition-transform uppercase tracking-widest text-sm px-4 disabled:opacity-50 duration-300 ${isButtonFlashing ? '!bg-amber-500 !shadow-amber-500/40' : ''}`}
             >
               Agendar Atendimento
             </Button>
