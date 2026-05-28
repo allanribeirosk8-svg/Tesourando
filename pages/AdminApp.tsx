@@ -58,6 +58,7 @@ import {
   Minus,
   DollarSign,
   Users2,
+  Bell,
   Activity,
   Award,
   UserX,
@@ -73,6 +74,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { CaixaView } from './CaixaView';
+import NotificacoesPanel, { AppNotification } from '../components/NotificacoesPanel';
 import { 
   BarChart, 
   Bar, 
@@ -665,6 +667,49 @@ export const AdminApp: React.FC = () => {
   const [showSetup, setShowSetup] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // NOVO: Notificações
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        if (data) setNotifications(data);
+      });
+
+    const channel = supabase
+      .channel('notifications-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          const nova = payload.new as AppNotification;
+          setNotifications(prev => [nova, ...prev]);
+          if (setSuccessMessage) {
+              setSuccessMessage(nova.title + ' — ' + nova.body);
+              setTimeout(() => setSuccessMessage(null), 4000);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id]);
+
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       const isNewUserFlag = localStorage.getItem('tesourando_new_user');
@@ -897,6 +942,20 @@ export const AdminApp: React.FC = () => {
           </div>
         )}
 
+        {/* Right: Notifications */}
+        <div className="flex items-center shrink-0">
+          <button
+            onClick={() => setPanelOpen(true)}
+            className="relative p-2"
+          >
+            <Bell size={22} className="text-white" />
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-[#F97316] rounded-full text-[10px] font-black text-white flex items-center justify-center px-1">
+                {notifications.filter(n => !n.read).length > 99 ? '99+' : notifications.filter(n => !n.read).length}
+              </span>
+            )}
+          </button>
+        </div>
         
       </motion.header>
 
@@ -1104,6 +1163,34 @@ export const AdminApp: React.FC = () => {
 
       <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleFileChange} />
       <input type="file" accept="image/*" ref={galleryInputRef} className="hidden" onChange={handleFileChange} />
+
+      <NotificacoesPanel
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        notifications={notifications}
+        onMarkRead={(id) => {
+          setNotifications(prev =>
+            prev.map(n => n.id === id ? { ...n, read: true } : n)
+          );
+          supabase
+            .from('notifications')
+            .update({ read: true })
+            .eq('id', id)
+            // Fire and forget, no await here because we don't have async handler inside render
+            .then(() => {}); 
+        }}
+        onMarkAllRead={() => {
+          setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+          if (session?.user?.id) {
+            supabase
+              .from('notifications')
+              .update({ read: true })
+              .eq('user_id', session.user.id)
+              .eq('read', false)
+              .then(() => {});
+          }
+        }}
+      />
 
       <AnimatePresence>
         {showPhotoActionSheet && (

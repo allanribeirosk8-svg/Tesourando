@@ -255,6 +255,24 @@ export default function AgendamentoPublico() {
           setErrorMessage('Erro ao agendar, tente novamente.');
         }
       } else {
+        supabase
+          .from('notifications')
+          .insert({
+            user_id: profile!.id,
+            type: 'new_appointment',
+            title: '📅 Novo agendamento!',
+            body: `${cleanName} agendou ${selectedService!.name} às ${selectedTime}`,
+            data: {
+              client_name: cleanName,
+              service: selectedService!.name,
+              date: selectedDate,
+              time: selectedTime,
+            },
+            read: false,
+          })
+          .then(() => {})
+          .catch(console.error);
+        
         setStep(5);
       }
     } catch (err) {
