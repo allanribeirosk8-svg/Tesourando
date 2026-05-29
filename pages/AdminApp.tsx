@@ -672,20 +672,25 @@ export const AdminApp: React.FC = () => {
   const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
-
+    console.log('[NOTIF] useEffect disparou. userId:', session?.user?.id);
+    if (!isAuthenticated || !session?.user?.id) {
+      console.log('[NOTIF] Abortou — userId é null/undefined ou não autenticado');
+      return;
+    }
+    console.log('[NOTIF] Buscando notificações no banco...');
     supabase
       .from('notifications')
       .select('*')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
       .limit(50)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        console.log('[NOTIF] Fetch — data:', data?.length ?? 'null', '| error:', error?.message ?? 'nenhum');
         if (data) setNotifications(data);
       });
-
+    console.log('[NOTIF] Criando canal Realtime...');
     const channel = supabase
-      .channel('notifications-channel')
+      .channel(`notifications-${session.user.id}`)
       .on(
         'postgres_changes',
         {
@@ -695,20 +700,21 @@ export const AdminApp: React.FC = () => {
           filter: `user_id=eq.${session.user.id}`,
         },
         (payload) => {
+          console.log('[NOTIF] Payload Realtime recebido:', payload);
           const nova = payload.new as AppNotification;
           setNotifications(prev => [nova, ...prev]);
-          if (setSuccessMessage) {
-              setSuccessMessage(nova.title + ' — ' + nova.body);
-              setTimeout(() => setSuccessMessage(null), 4000);
-          }
+          setSuccessMessage(nova.title + ' — ' + nova.body);
+          setTimeout(() => setSuccessMessage(null), 4000);
         }
       )
-      .subscribe();
-
+      .subscribe((status, err) => {
+        console.log('[NOTIF] Canal status:', status, '| err:', err ?? 'nenhum');
+      });
     return () => {
+      console.log('[NOTIF] Cleanup — removendo canal');
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id]);
+  }, [isAuthenticated, session?.user?.id]);
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {

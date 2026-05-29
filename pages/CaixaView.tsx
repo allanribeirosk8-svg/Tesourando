@@ -21,7 +21,9 @@ import {
   TrendingUp,
   DollarSign,
   AlertTriangle,
-  UserPlus
+  UserPlus,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -59,6 +61,7 @@ export const CaixaView: React.FC = () => {
   const [showLancamento, setShowLancamento] = useState<'income' | 'expense' | false>(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [showAllInativos, setShowAllInativos] = useState(false);
+  const [entradasExpanded, setEntradasExpanded] = useState(false);
   const [filtroExtrato, setFiltroExtrato] = useState<'todas' | 'entradas' | 'saidas'>('todas');
 
   // Determine start/end of the current period
@@ -287,79 +290,108 @@ export const CaixaView: React.FC = () => {
       </div>
     );
 
-    return (
-      <div className="space-y-5">
-        {/* KPI cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <Chip
-            titulo="Faturamento"
-            valor={formatCurrency(faturamento)}
-            diff={faturamentoDiff}
-            icon={TrendingUp}
-          />
-          <Chip
-            titulo="Atendimentos"
-            valor={String(atendimentos)}
-            diff={atendDiff}
-            icon={Scissors}
-          />
-          <Chip
-            titulo="Entrada Avulsa"
-            valor={formatCurrency(manualIncome)}
-            diff={manualIncomeDiff}
-            icon={ArrowUpCircle}
-          />
-          <Chip
-            titulo="Despesa Avulsa"
-            valor={formatCurrency(expenseTotal)}
-            diff={expenseDiff}
-            diffInvert
-            icon={ArrowDownCircle}
-            sub={expenseTotal === 0 ? 'Nenhuma saída' : undefined}
-          />
-          <Chip
-            titulo="Ticket Médio"
-            valor={formatCurrency(ticketMedio)}
-            diff={ticketDiff}
-            icon={DollarSign}
-          />
-          <Chip
-            titulo="Lucro Estimado"
-            valor={formatCurrency(lucroEstimado)}
-            diff={lucroDiff}
-            icon={Wallet}
-          />
-        </div>
+    const totalAtendimentosMes = atendimentos;
+    const totalFaltas = faltas;
+    const variacaoAtendimentos = atendDiff !== null ? atendDiff.toFixed(1) : 0;
+    const valorPerdidoFaltas = valorPerdido;
+    const totalGorjetas = txNoPeriodo.filter(t => t.type === 'income' && t.category === 'tip' && !(t as any).linkedAppointmentId).reduce((s,t) => s+t.amount, 0);
+    const totalProdutos = txNoPeriodo.filter(t => t.type === 'income' && t.category === 'product' && !(t as any).linkedAppointmentId).reduce((s,t) => s+t.amount, 0);
+    const totalAtendimentosValor = aptIncome + txNoPeriodo.filter(t => t.type === 'income' && t.category === 'walk_in' && !(t as any).linkedAppointmentId).reduce((s,t) => s+t.amount, 0);
+    const totalOutros = txNoPeriodo.filter(t => t.type === 'income' && !['tip', 'product', 'walk_in'].includes(t.category) && !(t as any).linkedAppointmentId).reduce((s,t) => s+t.amount, 0);
 
-        {/* Card Faltas — fora do grid, abaixo */}
-        {(faltas > 0 || prevFaltas > 0) && (
-          <div className="rounded-[1.5rem] bg-surface border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)] p-4 relative overflow-hidden">
-            <AlertTriangle size={48} className="absolute bottom-2 right-3 text-[#F87171]/[0.08] pointer-events-none" />
-            <span className="text-[10px] font-bold uppercase text-title">Faltas</span>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-base font-black text-white">
-                {faltas} falta{faltas !== 1 ? 's' : ''}
+    return (
+      <div className="space-y-4">
+        {/* Card Resumo de Caixa */}
+        <div className="bg-gray-800 rounded-[1.5rem] p-4 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+          {/* Linha Entradas */}
+          <div 
+            onClick={() => setEntradasExpanded(!entradasExpanded)}
+            className="flex items-center justify-between py-3 border-b border-gray-700 cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-900/50 flex items-center justify-center">
+                <ArrowDown className="w-4 h-4 text-green-400" />
+              </div>
+              <span className="text-white font-medium text-sm flex items-center gap-2">
+                Entradas
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${entradasExpanded ? 'rotate-180' : ''}`} />
               </span>
-              {ticketMedio > 0 && (
-                <span className="text-[11px] font-bold text-[#F87171]">
-                  · {formatCurrency(valorPerdido)} perdidos
+            </div>
+            <span className="text-green-400 font-semibold text-sm">{formatCurrency(faturamento)}</span>
+          </div>
+
+          {/* Breakdown expansível */}
+          {entradasExpanded && (
+            <div className="pl-11 pb-2 pt-2 space-y-1">
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>✂️ Atendimentos</span>
+                <span className="text-green-400">{formatCurrency(totalAtendimentosValor)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>🤝 Gorjeta</span>
+                <span className="text-green-400">{formatCurrency(totalGorjetas)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>🛍️ Produto</span>
+                <span className="text-green-400">{formatCurrency(totalProdutos)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>📦 Outros</span>
+                <span className="text-green-400">{formatCurrency(totalOutros)}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Linha Saídas */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-red-900/50 flex items-center justify-center">
+                <ArrowUp className="w-4 h-4 text-red-400" />
+              </div>
+              <span className="text-white font-medium text-sm">Saídas</span>
+            </div>
+            <span className="text-red-400 font-semibold text-sm">{formatCurrency(expenseTotal)}</span>
+          </div>
+          
+          {/* Saldo */}
+          <div className="flex items-center justify-between pt-3">
+            <span className="text-white font-semibold text-base">Saldo {periodo === 'mes' ? 'do mês' : 'do período'}</span>
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-green-400 font-black text-lg">{formatCurrency(lucroEstimado)}</span>
+              {lucroDiff !== null && (
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${lucroDiff >= 0 ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                  {lucroDiff >= 0 ? '↑' : '↓'} {lucroDiff >= 0 ? '+' : ''}{lucroDiff.toFixed(1)}% vs {periodo === 'mes' ? 'mês anterior' : 'período anterior'}
                 </span>
               )}
             </div>
-            {faltasDiff !== null && (
-              <span className={`text-[10px] font-bold flex items-center gap-0.5 mt-0.5 ${
-                faltasDiff <= 0 ? 'text-[#34D399]' : 'text-[#F87171]'
-              }`}>
-                {faltasDiff >= 0 ? '▲' : '▼'} {Math.abs(faltasDiff).toFixed(1)}% vs anterior
-              </span>
-            )}
-            {faltas === 0 && (
-              <span className="text-[10px] text-[#34D399] font-bold mt-0.5">
-                ✓ Nenhuma falta neste período
-              </span>
-            )}
           </div>
-        )}
+        </div>
+
+        {/* Card Atendimentos */}
+        <div className="bg-gray-800 rounded-[1.5rem] p-4 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+          {/* Linha 1 — Atendimentos + badge inline */}
+          <div className="flex items-center justify-between py-2 border-b border-gray-700">
+            <span className="text-white font-medium">✂️ Atendimentos</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-bold">{totalAtendimentosMes}</span>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${Number(variacaoAtendimentos) >= 0 ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                {Number(variacaoAtendimentos) >= 0 ? '↑' : '↓'} {Number(variacaoAtendimentos) >= 0 ? '+' : ''}{variacaoAtendimentos}%
+              </span>
+            </div>
+          </div>
+          {/* Linha 2 — Ticket médio */}
+          <div className="flex items-center justify-between py-2 border-b border-gray-700">
+            <span className="text-white font-medium">💰 Ticket médio</span>
+            <span className="text-green-400 font-semibold">{formatCurrency(ticketMedio)}</span>
+          </div>
+          {/* Linha 3 — Faltas */}
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-white font-medium">⚠️ Faltas</span>
+            <span className="text-red-400 font-semibold">
+              {totalFaltas} · {formatCurrency(valorPerdidoFaltas)} perdidos
+            </span>
+          </div>
+        </div>
 
         {/* Alerta (máx 1) */}
         {noShowRate > 20 ? (

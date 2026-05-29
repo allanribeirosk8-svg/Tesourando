@@ -377,8 +377,12 @@ export default function AgendamentoPublico() {
             <div className="grid grid-cols-4 gap-2">
               {Array.from({length: 30}).map((_, i) => {
                 const d = new Date();
+                d.setHours(0, 0, 0, 0);
                 d.setDate(d.getDate() + i);
-                const isPast = d < new Date(new Date().setHours(0,0,0,0));
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const isPast = d < today;
                 
                 const dow = d.getDay();
                 const isOpen = schedule.find(s => s.day_of_week === dow)?.is_open;

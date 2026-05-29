@@ -1,3 +1,5 @@
+import { Session } from '@supabase/supabase-js';
+
 export interface ServiceItem {
   id: string;
   name: string;
@@ -83,6 +85,8 @@ export interface AppState {
   weeklySchedule: Record<number, DayConfig>; // 0-6 (day of week) -> Config
   services: ServiceItem[];
   barberProfile: BarberProfile;
+  session: Session | null;
+  isLoading: boolean;
   addAppointment: (apt: Appointment, isExceptional?: boolean) => Promise<void>;
   updateAppointment: (id: string, updates: Partial<Appointment>) => void;
   finishAppointment: (id: string) => void;

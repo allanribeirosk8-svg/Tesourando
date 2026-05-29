@@ -235,7 +235,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Load from Supabase (Primary) and LocalStorage (Fallback/Cache)
   useEffect(() => {
     if (isSupabaseConfigured()) {
+      // Fetch initial session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+      });
+
       const authResult = supabase.auth.onAuthStateChange((event, newSession) => {
+        console.log('[AUTH] evento:', event);
+        console.log('[AUTH] session recebida:', newSession);
+        console.log('[AUTH] session.user?.id:', newSession?.user?.id);
         console.log("Auth event:", event);
         setSession(newSession);
         
@@ -1061,6 +1069,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       weeklySchedule, 
       services,
       barberProfile,
+      session,
       isLoading,
       addAppointment, 
       updateAppointment,
