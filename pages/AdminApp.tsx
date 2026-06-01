@@ -1264,6 +1264,22 @@ const AgendaView: React.FC<{
   const [activeFilter, setActiveFilter] = useState<'todos' | 'agendados' | 'livres' | 'concluidos'>('todos');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [parallaxOffset, setParallaxOffset] = useState(0);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    
+    const handleScroll = () => {
+      const offset = Math.min(el.scrollTop, 100);
+      setParallaxOffset(offset);
+    };
+    
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const getAppointmentsCount = (dateStr: string) => {
     return appointments.filter(a => a.date === dateStr && a.status === 'pending').length;
   };
@@ -1740,7 +1756,14 @@ const AgendaView: React.FC<{
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0">
+      <div 
+        className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0"
+        style={{
+          opacity: Math.max(0, 1 - (parallaxOffset / 100)),
+          pointerEvents: parallaxOffset > 50 ? 'none' : 'auto',
+          transition: 'opacity 0.15s ease-out'
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1787,9 +1810,17 @@ const AgendaView: React.FC<{
       </div>
       </div>
 
-      <div className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[10px] pt-0 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-28 relative z-10 min-h-0 overflow-y-auto">
+      <div 
+        ref={scrollRef}
+        style={{
+          transform: `translateY(-${parallaxOffset}px)`,
+          marginBottom: `-${parallaxOffset}px`,
+          transition: 'transform 0.15s ease-out, margin-bottom 0.15s ease-out'
+        }}
+        className="flex-1 bg-[#F5F5F8] rounded-t-[28px] -mt-[10px] pt-0 px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] pb-28 relative z-10 min-h-0 overflow-y-auto"
+      >
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-        <div className={`flex items-center mt-5 mb-2 relative ${activeFilter === 'concluidos' ? 'justify-end' : 'justify-between'}`}>
+        <div className={`sticky top-0 z-20 bg-[#F5F5F8] pt-5 pb-2 -mx-4 px-4 flex items-center relative ${activeFilter === 'concluidos' ? 'justify-end' : 'justify-between'}`}>
           {activeFilter !== 'concluidos' && (
             <SectionHeader title="Grade do Dia" count={currentDayAppointments.filter(a => a.status === 'pending').length} accent="blue" />
           )}
@@ -1811,7 +1842,7 @@ const AgendaView: React.FC<{
           {showFilterMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowFilterMenu(false)} />
-              <div className="absolute right-0 top-10 z-20 bg-white rounded-2xl shadow-xl overflow-hidden border border-[#1E1B4B]/10 w-44">
+              <div className="absolute right-4 top-14 z-20 bg-white rounded-2xl shadow-xl overflow-hidden border border-[#1E1B4B]/10 w-44">
                 {[
                   { value: 'todos', label: 'Todos' },
                   { value: 'agendados', label: 'Agendados' },

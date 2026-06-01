@@ -302,64 +302,64 @@ export const CaixaView: React.FC = () => {
     return (
       <div className="space-y-4">
         {/* Card Resumo de Caixa */}
-        <div className="bg-gray-800 rounded-[1.5rem] p-4 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <div className="bg-[#F5F5F8] rounded-[1.5rem] p-4 shadow-[0_3px_12px_rgba(0,0,0,0.10)] border border-black/[0.06]">
           {/* Linha Entradas */}
           <div 
             onClick={() => setEntradasExpanded(!entradasExpanded)}
-            className="flex items-center justify-between py-3 border-b border-gray-700 cursor-pointer"
+            className="flex items-center justify-between py-3 border-b border-black/[0.06] cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-900/50 flex items-center justify-center">
-                <ArrowDown className="w-4 h-4 text-green-400" />
+              <div className="w-8 h-8 rounded-full bg-green-100/80 flex items-center justify-center">
+                <ArrowDown className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-white font-medium text-sm flex items-center gap-2">
+              <span className="text-[#1E1B4B] font-medium text-sm flex items-center gap-2">
                 Entradas
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${entradasExpanded ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform ${entradasExpanded ? 'rotate-180' : ''}`} />
               </span>
             </div>
-            <span className="text-green-400 font-semibold text-sm">{formatCurrency(faturamento)}</span>
+            <span className="text-green-600 font-semibold text-sm">{formatCurrency(faturamento)}</span>
           </div>
 
           {/* Breakdown expansível */}
           {entradasExpanded && (
             <div className="pl-11 pb-2 pt-2 space-y-1">
-              <div className="flex justify-between text-sm text-gray-300">
+              <div className="flex justify-between text-sm text-[#6B7280]">
                 <span>✂️ Atendimentos</span>
-                <span className="text-green-400">{formatCurrency(totalAtendimentosValor)}</span>
+                <span className="text-green-600">{formatCurrency(totalAtendimentosValor)}</span>
               </div>
-              <div className="flex justify-between text-sm text-gray-300">
+              <div className="flex justify-between text-sm text-[#6B7280]">
                 <span>🤝 Gorjeta</span>
-                <span className="text-green-400">{formatCurrency(totalGorjetas)}</span>
+                <span className="text-green-600">{formatCurrency(totalGorjetas)}</span>
               </div>
-              <div className="flex justify-between text-sm text-gray-300">
+              <div className="flex justify-between text-sm text-[#6B7280]">
                 <span>🛍️ Produto</span>
-                <span className="text-green-400">{formatCurrency(totalProdutos)}</span>
+                <span className="text-green-600">{formatCurrency(totalProdutos)}</span>
               </div>
-              <div className="flex justify-between text-sm text-gray-300">
+              <div className="flex justify-between text-sm text-[#6B7280]">
                 <span>📦 Outros</span>
-                <span className="text-green-400">{formatCurrency(totalOutros)}</span>
+                <span className="text-green-600">{formatCurrency(totalOutros)}</span>
               </div>
             </div>
           )}
 
           {/* Linha Saídas */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-700">
+          <div className="flex items-center justify-between py-3 border-b border-black/[0.06]">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-red-900/50 flex items-center justify-center">
-                <ArrowUp className="w-4 h-4 text-red-400" />
+              <div className="w-8 h-8 rounded-full bg-red-100/80 flex items-center justify-center">
+                <ArrowUp className="w-4 h-4 text-red-500" />
               </div>
-              <span className="text-white font-medium text-sm">Saídas</span>
+              <span className="text-[#1E1B4B] font-medium text-sm">Saídas</span>
             </div>
-            <span className="text-red-400 font-semibold text-sm">{formatCurrency(expenseTotal)}</span>
+            <span className="text-red-500 font-semibold text-sm">{formatCurrency(expenseTotal)}</span>
           </div>
           
           {/* Saldo */}
           <div className="flex items-center justify-between pt-3">
-            <span className="text-white font-semibold text-base">Saldo {periodo === 'mes' ? 'do mês' : 'do período'}</span>
+            <span className="text-[#1E1B4B] font-semibold text-base">Saldo {periodo === 'mes' ? 'do mês' : 'do período'}</span>
             <div className="flex flex-col items-end gap-1">
-              <span className="text-green-400 font-black text-lg">{formatCurrency(lucroEstimado)}</span>
+              <span className={`font-black text-lg ${lucroEstimado >= 0 ? 'text-green-600' : 'text-red-500'}`}>{formatCurrency(lucroEstimado)}</span>
               {lucroDiff !== null && (
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${lucroDiff >= 0 ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${lucroDiff >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                   {lucroDiff >= 0 ? '↑' : '↓'} {lucroDiff >= 0 ? '+' : ''}{lucroDiff.toFixed(1)}% vs {periodo === 'mes' ? 'mês anterior' : 'período anterior'}
                 </span>
               )}
@@ -368,28 +368,33 @@ export const CaixaView: React.FC = () => {
         </div>
 
         {/* Card Atendimentos */}
-        <div className="bg-gray-800 rounded-[1.5rem] p-4 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <div className="bg-[#F5F5F8] rounded-[1.5rem] p-4 shadow-[0_3px_12px_rgba(0,0,0,0.10)] border border-black/[0.06]">
           {/* Linha 1 — Atendimentos + badge inline */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-700">
-            <span className="text-white font-medium">✂️ Atendimentos</span>
+          <div className="flex items-center justify-between py-2 border-b border-black/[0.06]">
+            <span className="text-[#1E1B4B] font-medium">✂️ Atendimentos</span>
             <div className="flex items-center gap-2">
-              <span className="text-white font-bold">{totalAtendimentosMes}</span>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${Number(variacaoAtendimentos) >= 0 ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+              <span className="text-[#1E1B4B] font-bold">{totalAtendimentosMes}</span>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${Number(variacaoAtendimentos) >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                 {Number(variacaoAtendimentos) >= 0 ? '↑' : '↓'} {Number(variacaoAtendimentos) >= 0 ? '+' : ''}{variacaoAtendimentos}%
               </span>
             </div>
           </div>
           {/* Linha 2 — Ticket médio */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-700">
-            <span className="text-white font-medium">💰 Ticket médio</span>
-            <span className="text-green-400 font-semibold">{formatCurrency(ticketMedio)}</span>
+          <div className="flex items-center justify-between py-2 border-b border-black/[0.06]">
+            <span className="text-[#1E1B4B] font-medium">💰 Ticket médio</span>
+            <span className="text-green-600 font-semibold">{formatCurrency(ticketMedio)}</span>
           </div>
           {/* Linha 3 — Faltas */}
           <div className="flex items-center justify-between pt-2">
-            <span className="text-white font-medium">⚠️ Faltas</span>
-            <span className="text-red-400 font-semibold">
-              {totalFaltas} · {formatCurrency(valorPerdidoFaltas)} perdidos
-            </span>
+            <span className="text-[#1E1B4B] font-medium">⚠️ Faltas</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[#1E1B4B] font-bold">{totalFaltas}</span>
+              {(ticketMedio > 0 && totalFaltas > 0) && (
+                <span className="bg-red-100 text-red-600 font-black text-[10px] px-2 py-0.5 rounded-full">
+                  - {formatCurrency(valorPerdidoFaltas)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
