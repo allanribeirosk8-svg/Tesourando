@@ -15,7 +15,10 @@ import {
   MessageSquare,
   MapPin,
   ArrowRight,
-  X
+  X,
+  CheckSquare,
+  CheckCircle2,
+  ChevronDown
 } from 'lucide-react';
 import { formatCurrency, generateTimeSlots } from '../utils/helpers';
 
@@ -74,7 +77,13 @@ export default function AgendamentoPublico() {
   const [services, setServices] = useState<Service[]>([]);
   const [schedule, setSchedule] = useState<WeeklySchedule[]>([]);
   
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [servicesExpanded, setServicesExpanded] = useState(false);
+  
+  useEffect(() => {
+    setServicesExpanded(false);
+  }, [selectedServices]);
+
   const [selectedDate, setSelectedDate] = useState<string>(''); // YYYY-MM-DD
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState<string>(''); // HH:MM
@@ -82,8 +91,11 @@ export default function AgendamentoPublico() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [activeShift, setActiveShift] = useState('manha');
   const [showAllTimes, setShowAllTimes] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [modalYearMonth, setModalYearMonth] = useState({ year: new Date().getFullYear(), month: new Date().getMonth() });
+  const [fullDays, setFullDays] = useState<Set<string>>(new Set());
+  const touchStartX = React.useRef<number>(0);
   const MAX_WEEK_OFFSET = 4;
   
   const [clientName, setClientName] = useState('');
@@ -128,7 +140,7 @@ export default function AgendamentoPublico() {
         if (!servErr && serv) {
           setServices(serv);
           if (serv.length === 1) {
-            setSelectedService(serv[0]);
+            setSelectedServices([serv[0]]);
           }
         }
 
@@ -150,7 +162,7 @@ export default function AgendamentoPublico() {
 
   // Load available times for a selected date
   useEffect(() => {
-    if (!selectedDate || !profile || !selectedService) return;
+    if (!selectedDate || !profile || selectedServices.length === 0) return;
     
     async function loadSlots() {
       setDateLoading(true);
@@ -183,10 +195,11 @@ export default function AgendamentoPublico() {
         const endDayMin = toMin(dayConfig.end_time.substring(0, 5));
 
         const invalidSlots = new Set<string>();
+        const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
         
         allSlots.forEach(slot => {
           const slotMin = toMin(slot);
-          const slotEndMin = slotMin + selectedService.duration;
+          const slotEndMin = slotMin + totalDuration;
           
           if (slotEndMin > endDayMin) {
              invalidSlots.add(slot);
@@ -221,6 +234,20 @@ export default function AgendamentoPublico() {
         });
 
         setAvailableSlots(available);
+
+        if (available.length === 0) {
+          setFullDays(prev => {
+            const next = new Set(prev);
+            next.add(selectedDate);
+            return next;
+          });
+        } else {
+          setFullDays(prev => {
+            const next = new Set(prev);
+            next.delete(selectedDate);
+            return next;
+          });
+        }
         
         // Compute best starting shift
         if (available.length > 0) {
@@ -258,7 +285,7 @@ export default function AgendamentoPublico() {
     }
     
     loadSlots();
-  }, [selectedDate, schedule, profile, selectedService]);
+  }, [selectedDate, schedule, profile, selectedServices]);
 
 
   const submitAppointment = async (e: React.FormEvent) => {
@@ -279,13 +306,17 @@ export default function AgendamentoPublico() {
     setErrorMessage('');
     
     try {
+      const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
+      const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+      const serviceNames = selectedServices.map(s => s.name).join(' + ');
+
       const { error } = await supabase.from('appointments').insert({
         user_id: profile!.id,
         client_name: cleanName,
         phone: phoneObj,
-        service: selectedService!.name,
-        price: selectedService!.price,
-        duration: selectedService!.duration,
+        service: serviceNames,
+        price: totalPrice,
+        duration: totalDuration,
         date: selectedDate,
         time: selectedTime + ':00',
         status: 'pending',
@@ -307,10 +338,10 @@ export default function AgendamentoPublico() {
             user_id: profile!.id,
             type: 'new_appointment',
             title: '📅 Novo agendamento!',
-            body: `${cleanName} agendou ${selectedService!.name} às ${selectedTime}`,
+            body: `${cleanName} agendou ${serviceNames} às ${selectedTime}`,
             data: {
               client_name: cleanName,
-              service: selectedService!.name,
+              service: serviceNames,
               date: selectedDate,
               time: selectedTime,
             },
@@ -383,7 +414,7 @@ export default function AgendamentoPublico() {
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 flex flex-col h-full">
             <div className="pt-3 px-4 shrink-0">
-              {renderHeader(false)}
+              {renderHeader(false, true)}
             </div>
             
             <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
@@ -393,25 +424,41 @@ export default function AgendamentoPublico() {
                 </a>
               )}
 
-              <h2 className="text-sm uppercase tracking-widest font-bold text-title mb-4 flex items-center gap-2 px-4">
-                <Scissors size={16} /> Escolha um serviço
-              </h2>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-4 mb-2">
-                {services.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => setSelectedService(s)}
-                    className={`min-w-[120px] h-16 rounded-2xl flex flex-col items-start justify-center px-3 border transition-all shrink-0
-                      ${selectedService?.id === s.id ? 'bg-secondary/10 border-2 border-secondary' : 'bg-surface border-white/10'}`}
-                  >
-                     <span className={`font-semibold text-sm truncate w-full text-left ${selectedService?.id === s.id ? 'text-secondary' : 'text-white'}`}>
-                       {s.name}
-                     </span>
-                     <span className={`text-xs truncate w-full text-left ${selectedService?.id === s.id ? 'text-secondary/70' : 'text-white/50'}`}>
-                       {s.duration} min · {formatCurrency(s.price)}
-                     </span>
-                  </button>
-                ))}
+              <div className="px-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Scissors className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-xs font-semibold tracking-widest text-white/40 uppercase">
+                    Escolha um ou mais serviços
+                  </span>
+                </div>
+              </div>
+              <div className={`grid ${services.length === 1 ? 'grid-cols-1' : services.length === 2 ? 'grid-cols-2' : services.length === 3 ? 'grid-cols-3' : 'grid-cols-4'} gap-2 px-4 mb-2`}>
+                {services.map(s => {
+                  const isSelected = selectedServices.some(selected => selected.id === s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedServices(prev => prev.filter(selected => selected.id !== s.id));
+                        } else {
+                          setSelectedServices(prev => [...prev, s]);
+                        }
+                      }}
+                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all relative ${isSelected ? 'border-secondary bg-secondary/15 cursor-pointer' : 'border-white/10 bg-white/5 cursor-pointer'}`}
+                    >
+                      {isSelected && (
+                        <CheckCircle2 size={14} className="text-secondary absolute top-1.5 right-1.5" />
+                      )}
+                      <span className={`font-medium text-sm text-center line-clamp-2 w-full ${isSelected ? 'text-white' : 'text-white/80'}`}>
+                        {s.name}
+                      </span>
+                      <span className="text-xs text-secondary font-semibold">
+                        {formatCurrency(s.price)}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
               {services.length === 1 && (
                 <p className="text-center text-title/40 text-[13px] font-medium pt-2 pb-4 px-4">
@@ -426,7 +473,15 @@ export default function AgendamentoPublico() {
                 </div>
               )}
 
-              <div className={`transition-all duration-300 ease-in-out origin-top ${selectedService ? 'opacity-100 scale-y-100 h-auto mt-4' : 'opacity-0 scale-y-0 h-0 overflow-hidden'}`}>
+              <div className={`transition-all duration-300 ease-in-out origin-top ${selectedServices.length > 0 ? 'opacity-100 scale-y-100 h-auto mt-4' : 'opacity-0 scale-y-0 h-0 overflow-hidden'}`}>
+                <div className="px-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CalendarDays className="w-3.5 h-3.5 text-white/40" />
+                    <span className="text-xs font-semibold tracking-widest text-white/40 uppercase">
+                      Escolha uma data
+                    </span>
+                  </div>
+                </div>
                 <div className="flex items-center justify-between mb-2 px-4">
                   <button 
                     onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))}
@@ -467,7 +522,19 @@ export default function AgendamentoPublico() {
                   </button>
                 </div>
 
-                <div className="overflow-hidden px-4 mb-2">
+                <div 
+                  className="overflow-hidden px-4 mb-2"
+                  onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+                  onTouchEnd={(e) => {
+                    const diff = touchStartX.current - e.changedTouches[0].clientX;
+                    if (Math.abs(diff) < 50) return;
+                    if (diff > 0 && weekOffset < MAX_WEEK_OFFSET) {
+                      setWeekOffset(prev => prev + 1);
+                    } else if (diff < 0 && weekOffset > 0) {
+                      setWeekOffset(prev => prev - 1);
+                    }
+                  }}
+                >
                   <div key={weekOffset} className="flex gap-1.5 animate-in slide-in-from-right-4 duration-200 ease-in-out">
                     {(() => {
                       const dates = [];
@@ -502,6 +569,7 @@ export default function AgendamentoPublico() {
                         else if (isTomorrow) w = "AMANHÃ";
                         
                         const isDisabled = isPast || !isOpen;
+                        const isFull = fullDays.has(dateStr);
                         
                         // Check if month changes in this specific week, or just always show except for today/tomorrow
                         const monthStr = (!isToday && !isTomorrow) 
@@ -512,12 +580,14 @@ export default function AgendamentoPublico() {
                           <button
                             key={i}
                             disabled={isDisabled}
-                            onClick={() => { setSelectedDate(dateStr); setSelectedTime(''); }}
+                            onClick={() => { setSelectedDate(dateStr); setSelectedTime(''); setShowTimePicker(false); }}
                             className={`flex-1 h-[68px] rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all shrink-0 relative
                               ${isDisabled ? 'opacity-25 pointer-events-none bg-transparent' : 
+                                isFull ? 'opacity-40' :
                                 selectedDate === dateStr ? 'bg-secondary shadow-[0_0_12px_rgba(249,148,23,0.4)]' : 
                                 'bg-transparent border border-white/10 active:scale-95'}`}
                           >
+                            {isFull && !isDisabled && <X size={10} className="absolute top-1 right-1 opacity-40" />}
                             <span className={`${w === 'AMANHÃ' ? 'text-[8px]' : 'text-[9px]'} uppercase font-medium ${selectedDate === dateStr && !isDisabled ? 'text-white' : 'text-white/50'}`}>
                               {w}
                             </span>
@@ -540,111 +610,145 @@ export default function AgendamentoPublico() {
                 </div>
               </div>
 
-              <div className={`transition-all duration-300 ease-in-out origin-top ${selectedService && selectedDate ? 'opacity-100 scale-y-100 h-auto mt-4' : 'opacity-0 scale-y-0 h-0 overflow-hidden'}`}>
-                <h2 className="text-sm uppercase tracking-widest font-bold text-title mb-4 flex items-center gap-2 px-4">
-                  <Clock size={16} /> Horários disponíveis
-                </h2>
-                
-                {dateLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="animate-spin text-secondary" /></div>
-                ) : availableSlots.length === 0 ? (
-                  <div className="px-4">
-                    <div className="text-center p-8 bg-surface rounded-2xl border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-                      <p className="text-white font-bold mb-2">Nenhum horário disponível neste dia</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-4 pb-4">
-                    {(() => {
-                      const TURNOS_LOCAL: Record<string, {label: string, inicio: number, fim: number}> = {
-                        manha: { label: 'Manhã', inicio: 6, fim: 12 },
-                        tarde: { label: 'Tarde', inicio: 12, fim: 18 },
-                        noite: { label: 'Noite', inicio: 18, fim: 24 }
-                      };
-                      
-                      const shiftCounts: Record<string, number> = { manha: 0, tarde: 0, noite: 0 };
-                      availableSlots.forEach(t => {
-                        const h = parseInt(t.split(':')[0], 10);
-                        if (h >= TURNOS_LOCAL.manha.inicio && h < TURNOS_LOCAL.manha.fim) shiftCounts.manha++;
-                        else if (h >= TURNOS_LOCAL.tarde.inicio && h < TURNOS_LOCAL.tarde.fim) shiftCounts.tarde++;
-                        else if (h >= TURNOS_LOCAL.noite.inicio && h < TURNOS_LOCAL.noite.fim) shiftCounts.noite++;
-                      });
-                      
-                      const activeShiftLimits = TURNOS_LOCAL[activeShift];
-                      const currentShiftSlots = availableSlots.filter(t => {
-                        const h = parseInt(t.split(':')[0], 10);
-                        return h >= activeShiftLimits.inicio && h < activeShiftLimits.fim;
-                      });
-                      
-                      const availableShiftsCount = Object.values(shiftCounts).filter(c => c > 0).length;
-
-                      return (
-                        <>
-                          {availableShiftsCount > 1 && (
-                            <div className="flex gap-2 justify-center mb-3">
-                              {Object.entries(TURNOS_LOCAL).map(([key, info]) => {
-                                const q = shiftCounts[key];
-                                if (q === 0) return null;
-                                const isActive = activeShift === key;
-                                return (
-                                  <button
-                                    key={key}
-                                    onClick={() => setActiveShift(key)}
-                                    className={`rounded-full px-4 py-1 transition-all flex items-center gap-1.5 ${isActive ? 'border-secondary border text-secondary font-semibold bg-secondary/10' : 'border border-white/15 text-white/50'}`}
-                                  >
-                                    <span className="text-xs">{info.label}</span>
-                                  </button>
-                                );
-                              })}
+              {selectedServices.length > 0 && selectedDate && (
+                <div className="px-4 mt-4 animate-in fade-in duration-200">
+                  {!selectedTime ? (
+                    <button
+                      onClick={() => setShowTimePicker(true)}
+                      className={`w-full h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 bg-secondary/15 border border-secondary/30 text-secondary`}
+                    >
+                      <Clock size={16} />
+                      {dateLoading
+                        ? 'Carregando horários...'
+                        : `Ver horários disponíveis ${availableSlots.length > 0 ? `(${availableSlots.length})` : ''}`
+                      }
+                      {dateLoading && <Loader2 size={14} className="animate-spin ml-1" />}
+                    </button>
+                  ) : (
+                    <div className="animate-in zoom-in-95 fade-in duration-300">
+                      <div className="bg-gradient-to-br from-white/10 to-white/[0.03] rounded-2xl border border-white/20 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/12">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 shrink-0">
+                              {profile?.logo || profile?.photo ? (
+                                <img
+                                  src={profile.logo || profile.photo!}
+                                  alt={profile.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <User size={12} className="text-white/50" />
+                                </div>
+                              )}
                             </div>
-                          )}
-                          <div className="grid grid-cols-5 gap-1.5">
-                            {currentShiftSlots.length === 0 ? (
-                               <div className="col-span-5 text-center py-4 text-white/50 text-sm">Nenhum horário neste turno</div>
-                            ) : currentShiftSlots.map(time => {
-                              const now = new Date();
-                              const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                              const isToday = selectedDate === todayStr;
-                              const currentMin = now.getHours() * 60 + now.getMinutes();
-                              const timeMin = time.split(':').map(Number).reduce((h, m) => h * 60 + m);
-                              const isSoon = isToday && (timeMin - currentMin <= 120) && (timeMin > currentMin);
-
-                              return (
-                                <button
-                                  key={time}
-                                  onClick={() => setSelectedTime(time)}
-                                  className={`
-                                    relative py-2 rounded-xl text-xs font-semibold transition-all flex flex-col justify-center items-center
-                                    ${selectedTime === time ? 'bg-secondary text-white border-none shadow-[0_0_10px_rgba(249,148,23,0.35)]' : 'bg-surface text-white border border-white/10 active:scale-95 hover:bg-white/5'}
-                                  `}
-                                >
-                                  {isSoon && (
-                                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#FBBF24] text-black text-[9px] font-black uppercase px-2 py-0.5 rounded-full z-10 whitespace-nowrap hidden sm:block">
-                                      Em breve
-                                    </span>
-                                  )}
-                                  <span>{time}</span>
-                                </button>
-                              );
-                            })}
+                            <span className="text-white/80 text-xs font-semibold truncate">
+                              {profile?.shop_name || profile?.name}
+                            </span>
                           </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
-                {errorMessage && <p className="text-red-500 font-bold text-sm mt-4 text-center">{errorMessage}</p>}
-              </div>
+                          <div className="flex items-center gap-1.5 bg-secondary/20 rounded-full px-2.5 py-1">
+                            <Check size={11} className="text-secondary" />
+                            <span className="text-secondary text-[11px] font-black uppercase tracking-wide">
+                              Selecionado
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="px-4 py-3 space-y-2.5">
+                          {selectedServices.length === 1 ? (
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Scissors className="w-3.5 h-3.5 text-secondary" />
+                                <span className="text-sm font-semibold text-white">
+                                  {selectedServices[0].name}
+                                </span>
+                              </div>
+                              <span className="text-sm font-semibold text-secondary">
+                                {formatCurrency(selectedServices[0].price)}
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => setServicesExpanded(prev => !prev)}
+                                className="flex items-center justify-between w-full"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Scissors className="w-3.5 h-3.5 text-secondary" />
+                                  <span className="text-sm font-semibold text-white">
+                                    {selectedServices.length} serviços
+                                  </span>
+                                  <ChevronDown
+                                    className={`w-3.5 h-3.5 text-white/40 transition-transform duration-200 ${servicesExpanded ? 'rotate-180' : ''}`}
+                                  />
+                                </div>
+                                <span className="text-sm font-semibold text-secondary">
+                                  {formatCurrency(selectedServices.reduce((sum, s) => sum + s.price, 0))}
+                                </span>
+                              </button>
+                              
+                              {servicesExpanded && (
+                                <div className="mt-2 space-y-1.5 pl-5 border-l border-white/10">
+                                  {selectedServices.map(service => (
+                                    <div key={service.id} className="flex items-center justify-between">
+                                      <span className="text-xs text-white/60">{service.name}</span>
+                                      <span className="text-xs text-white/60">
+                                        {formatCurrency(service.price)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+                            <CalendarDays size={14} className="text-white/50 shrink-0" />
+                            <span className="text-white/80 text-sm font-medium">
+                              {(() => {
+                                const [y, m, d] = selectedDate.split('-').map(Number);
+                                const date = new Date(y, m - 1, d);
+                                const dow = ['Domingo','Segunda','Terça','Quarta',
+                                             'Quinta','Sexta','Sábado'][date.getDay()];
+                                const month = ['Jan','Fev','Mar','Abr','Mai','Jun',
+                                               'Jul','Ago','Set','Out','Nov','Dez'][m - 1];
+                                return `${dow}, ${d} de ${month}`;
+                              })()}
+                              {' · '}
+                              <span className="text-white font-bold">{selectedTime}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/12 px-4 py-2.5">
+                          <button
+                            onClick={() => setShowTimePicker(true)}
+                            className="w-full flex items-center justify-center gap-1.5 text-white/50 hover:text-secondary transition-colors active:scale-95 text-xs font-semibold"
+                          >
+                            <Clock size={12} />
+                            Alterar horário
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {errorMessage && (
+                    <p className="text-red-500 font-bold text-sm mt-3 text-center">
+                      {errorMessage}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="p-4 bg-background border-t border-white/10 shrink-0">
               <button
-                disabled={!selectedService || !selectedDate || !selectedTime}
+                disabled={selectedServices.length === 0 || !selectedDate || !selectedTime}
                 onClick={() => setStep(4)}
                 className={`w-full h-14 rounded-2xl font-black flex items-center justify-center gap-2 transition-all 
-                  ${selectedService && selectedDate && selectedTime ? 'bg-secondary text-white shadow-[0_4px_16px_rgba(249,148,23,0.4)] active:scale-95' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}
+                  ${selectedServices.length > 0 && selectedDate && selectedTime ? 'bg-secondary text-white shadow-[0_4px_16px_rgba(249,148,23,0.4)] active:scale-95' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}
               >
-                {(!selectedService) ? 'Escolha um serviço' : (!selectedDate) ? 'Escolha uma data' : (!selectedTime) ? 'Escolha um horário' : 'Próximo →'}
+                {selectedServices.length === 0 ? 'Escolha um serviço' : (!selectedDate) ? 'Escolha uma data' : (!selectedTime) ? 'Escolha um horário' : 'Próximo →'}
               </button>
             </div>
           </div>
@@ -661,7 +765,7 @@ export default function AgendamentoPublico() {
                 <div className="bg-surface/80 p-3 rounded-2xl border border-secondary/20 mb-3 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
                   <div className="flex justify-between items-center mb-2 pb-2 border-b border-white/10">
                     <span className="text-title text-xs font-bold flex items-center gap-1.5"><Scissors size={14} /> Serviço</span>
-                    <span className="text-white font-black text-right max-w-[60%] truncate">{selectedService?.name}</span>
+                    <span className="text-white font-black text-right max-w-[60%] truncate">{selectedServices.map(s => s.name).join(' + ')}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2 pb-2 border-b border-white/10">
                     <span className="text-title text-xs font-bold flex items-center gap-1.5"><CalendarDays size={14} /> Data</span>
@@ -669,11 +773,11 @@ export default function AgendamentoPublico() {
                   </div>
                   <div className="flex justify-between items-center mb-2 pb-2 border-b border-white/10">
                     <span className="text-title text-xs font-bold flex items-center gap-1.5"><Clock size={14} /> Duração</span>
-                    <span className="text-white font-black text-right">{selectedService?.duration} min</span>
+                    <span className="text-white font-black text-right">{selectedServices.reduce((sum,s) => sum + s.duration, 0)} min</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-title text-xs font-bold flex items-center gap-1.5">💰 Valor</span>
-                    <span className="text-secondary font-black text-lg text-right">{formatCurrency(selectedService?.price || 0)}</span>
+                    <span className="text-secondary font-black text-lg text-right">{formatCurrency(selectedServices.reduce((sum,s) => sum + s.price, 0))}</span>
                   </div>
                 </div>
 
@@ -758,8 +862,8 @@ export default function AgendamentoPublico() {
             </p>
 
             <div className="w-full max-w-sm bg-surface p-5 rounded-2xl border border-white/8 mb-8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
-               <p className="text-white font-bold text-lg mb-1">{selectedService?.name}</p>
-               <p className="text-title text-sm mb-4">{selectedService?.duration} min · {formatCurrency(selectedService?.price || 0)}</p>
+               <p className="text-white font-bold text-lg mb-1">{selectedServices.map(s => s.name).join(' + ')}</p>
+               <p className="text-title text-sm mb-4">{selectedServices.reduce((sum,s) => sum + s.duration, 0)} min · {formatCurrency(selectedServices.reduce((sum,s) => sum + s.price, 0))}</p>
                
                <div className="flex items-center justify-center gap-2 text-title text-sm bg-background/50 p-2 rounded-xl">
                  <MapPin size={16} /> <span>{profile?.shop_name || profile?.name}</span>
@@ -773,7 +877,7 @@ export default function AgendamentoPublico() {
                 const [yyyy, mm, dd] = selectedDate.split('-').map(Number);
                 
                 const start = new Date(yyyy, mm - 1, dd, startH, startM);
-                const end = new Date(start.getTime() + (selectedService?.duration || 0) * 60000);
+                const end = new Date(start.getTime() + (selectedServices.reduce((sum,s) => sum + s.duration, 0)) * 60000);
                 
                 const fmt = (d: Date) =>
                   `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}` +
@@ -784,7 +888,7 @@ export default function AgendamentoPublico() {
 
                 return (
                   <a 
-                    href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`${selectedService?.name} com ${profile?.shop_name || profile?.name}`)}&dates=${startStr}/${endStr}&ctz=America/Sao_Paulo&details=Agendado+via+Tesourando`}
+                    href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`${selectedServices.map(s => s.name).join(' + ')} com ${profile?.shop_name || profile?.name}`)}&dates=${startStr}/${endStr}&ctz=America/Sao_Paulo&details=Agendado+via+Tesourando`}
                     target="_blank" rel="noopener noreferrer"
                     className="w-full flex items-center justify-center h-14 bg-surface border border-white/8 rounded-2xl text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.3)] active:scale-95 transition-translate gap-2 hover:bg-white/5"
                   >
@@ -800,6 +904,7 @@ export default function AgendamentoPublico() {
                   setSelectedDate('');
                   setAvailableSlots([]);
                   setSelectedTime('');
+                  setShowTimePicker(false);
                   setClientName('');
                   setClientPhone('');
                   setObservation('');
@@ -814,6 +919,161 @@ export default function AgendamentoPublico() {
         )}
 
       </div>
+
+      {showTimePicker && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          onClick={() => setShowTimePicker(false)}
+        >
+          <div
+            className="bg-[#1E1C3A] w-full max-w-[480px] rounded-t-3xl pb-safe animate-in slide-in-from-bottom-4 duration-300"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
+
+            {/* Header do modal */}
+            <div className="px-5 pt-2 pb-4 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-black text-base">
+                    Escolha um horário
+                  </h3>
+                  <p className="text-white/50 text-xs mt-0.5">
+                    {selectedServices.map(s => s.name).join(' + ')} · {(() => {
+                      const [y, m, d] = selectedDate.split('-').map(Number);
+                      const date = new Date(y, m - 1, d);
+                      const dow = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][date.getDay()];
+                      const month = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m - 1];
+                      return `${dow}, ${d} de ${month}`;
+                    })()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowTimePicker(false)}
+                  className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Conteúdo dos horários */}
+            <div className="px-5 py-4 max-h-[60vh] overflow-y-auto">
+              {dateLoading ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="animate-spin text-secondary" size={28} />
+                </div>
+              ) : availableSlots.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-white font-bold mb-1">
+                    Nenhum horário disponível
+                  </p>
+                  <p className="text-white/40 text-sm">
+                    Tente outro dia
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Tabs de turno */}
+                  {(() => {
+                    const TURNOS: Record<string, {label: string, inicio: number, fim: number}> = {
+                      manha: { label: 'Manhã', inicio: 6, fim: 12 },
+                      tarde: { label: 'Tarde', inicio: 12, fim: 18 },
+                      noite: { label: 'Noite', inicio: 18, fim: 24 }
+                    };
+
+                    const shiftCounts: Record<string, number> = {
+                      manha: 0, tarde: 0, noite: 0
+                    };
+                    availableSlots.forEach(t => {
+                      const h = parseInt(t.split(':')[0], 10);
+                      if (h >= 6 && h < 12) shiftCounts.manha++;
+                      else if (h >= 12 && h < 18) shiftCounts.tarde++;
+                      else if (h >= 18) shiftCounts.noite++;
+                    });
+
+                    const activeSlots = availableSlots.filter(t => {
+                      const h = parseInt(t.split(':')[0], 10);
+                      const s = TURNOS[activeShift];
+                      return h >= s.inicio && h < s.fim;
+                    });
+
+                    const shiftsWithSlots = Object.entries(TURNOS)
+                      .filter(([k]) => shiftCounts[k] > 0);
+
+                    return (
+                      <>
+                        {/* Total de horários */}
+                        <p className="text-xs text-white/40 font-medium mb-3">
+                          {availableSlots.length} horário{availableSlots.length !== 1 ? 's' : ''} disponível{availableSlots.length !== 1 ? 'is' : ''} neste dia
+                        </p>
+
+                        {/* Tabs só se tiver mais de 1 turno */}
+                        {shiftsWithSlots.length > 1 && (
+                          <div className="flex gap-2 mb-4">
+                            {shiftsWithSlots.map(([key, info]) => {
+                              const isActive = activeShift === key;
+                              const hasSelection = selectedTime && (() => {
+                                const h = parseInt(selectedTime.split(':')[0], 10);
+                                return h >= info.inicio && h < info.fim;
+                              })();
+                              return (
+                                <button
+                                  key={key}
+                                  onClick={() => setActiveShift(key)}
+                                  className={`rounded-full px-4 py-1.5 transition-all flex items-center gap-1.5 text-xs font-semibold
+                                    ${isActive
+                                      ? 'border border-secondary text-secondary bg-secondary/10'
+                                      : 'border border-white/15 text-white/50'
+                                    }`}
+                                >
+                                  {info.label}
+                                  <span className={`text-[10px] ${isActive ? 'text-secondary/70' : 'text-white/30'}`}>
+                                    {shiftCounts[key]}
+                                  </span>
+                                  {hasSelection && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Grid de horários */}
+                        <div className="grid grid-cols-4 gap-2">
+                          {activeSlots.map(time => (
+                            <button
+                              key={time}
+                              onClick={() => {
+                                setSelectedTime(time);
+                                setShowTimePicker(false);
+                              }}
+                              className={`py-3 rounded-2xl text-sm font-semibold transition-all active:scale-95
+                                ${selectedTime === time
+                                  ? 'bg-secondary text-white shadow-[0_0_12px_rgba(249,148,23,0.4)]'
+                                  : 'bg-surface text-white border border-white/10 hover:bg-white/5'
+                                }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+
+            {/* Padding extra para iOS safe area */}
+            <div className="h-6" />
+          </div>
+        </div>
+      )}
 
       {showCalendarModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowCalendarModal(false)}>
@@ -882,15 +1142,17 @@ export default function AgendamentoPublico() {
                   
                   const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                   const isSelected = selectedDate === dateStr;
+                  const isFull = fullDays.has(dateStr);
 
                   cells.push(
-                    <div key={i} className="flex justify-center">
+                    <div key={i} className="flex justify-center relative">
                       <button
                         disabled={isDisabled}
                         onClick={() => {
                           setSelectedDate(dateStr);
                           setSelectedTime('');
                           setShowCalendarModal(false);
+                          setShowTimePicker(false);
                           
                           // Calculate week offset
                           const today = new Date();
@@ -903,6 +1165,7 @@ export default function AgendamentoPublico() {
                         className={`
                           w-10 h-10 rounded-full flex flex-col items-center justify-center relative transition-all
                           ${isDisabled ? 'text-white/20 pointer-events-none' : 
+                            isFull ? 'opacity-40' :
                             isSelected ? 'bg-secondary text-white font-bold' : 
                             'text-white hover:bg-white/10 active:scale-95'}
                         `}
@@ -910,6 +1173,7 @@ export default function AgendamentoPublico() {
                         <span className="text-sm">{i}</span>
                         {isToday && !isSelected && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-secondary" />}
                       </button>
+                      {isFull && !isDisabled && <X size={10} className="absolute top-1 right-2 w-full text-center text-white/40 pointer-events-none" />}
                     </div>
                   );
                 }

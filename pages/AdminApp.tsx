@@ -3564,7 +3564,7 @@ const ServicesView: React.FC<{ onSuccess?: (msg: string) => void }> = ({ onSucce
     }
     
     const serviceData = { 
-      id: Date.now().toString(), 
+      id: crypto.randomUUID(), 
       name: formData.name, 
       price: numericPrice,
       duration: duration

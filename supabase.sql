@@ -187,3 +187,11 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- --- BUGFIX: svc_insert policy missing WITH CHECK ---
+DROP POLICY IF EXISTS "svc_insert" ON services;
+
+CREATE POLICY "svc_insert" ON services
+  FOR INSERT
+  TO public
+  WITH CHECK (auth.uid() = user_id);

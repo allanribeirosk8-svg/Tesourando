@@ -170,7 +170,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           ] = await Promise.all([
             supabaseService.getAppointments(targetId),
             supabaseService.getCustomers(targetId),
-            supabaseService.getServices(targetId),
+            supabaseService.getServices(targetId).then(data => {
+              console.log('[INIT] serviços carregados do banco:', data);
+              return data;
+            }),
             supabaseService.getProfile(targetId),
             supabaseService.getWeeklySchedule(targetId),
             supabaseService.getBlockedSlots(targetId),
@@ -977,11 +980,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const currentSession = sessionRef.current;
       if (currentSession) {
+        console.log('[UI] handleSaveServices chamado em addService, lista:', newList);
         const savedServices = await supabaseService.saveServices(newList);
+        console.log('[UI] saveServices retornou:', savedServices);
+        console.log('[UI] estado atualizado com IDs do banco?', savedServices.map(s => s.id));
         setServices(savedServices);
       }
     } catch (e) {
-      console.error("Supabase sync error in addService", e);
+      console.error('[UI] ERRO ao salvar:', e);
     }
   }, []);
 
@@ -1003,8 +1009,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const sync = async () => {
         const currentSession = sessionRef.current;
         if (currentSession) {
-          const savedServices = await supabaseService.saveServices(newList);
-          setServices(savedServices);
+          console.log('[UI] handleSaveServices chamado em updateService, lista:', newList);
+          try {
+            const savedServices = await supabaseService.saveServices(newList);
+            console.log('[UI] saveServices retornou:', savedServices);
+            console.log('[UI] estado atualizado com IDs do banco?', savedServices.map(s => s.id));
+            setServices(savedServices);
+          } catch (e) {
+            console.error('[UI] ERRO ao salvar em updateService:', e);
+          }
         }
       };
       sync();
@@ -1051,8 +1064,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const sync = async () => {
       const currentSession = sessionRef.current;
       if (currentSession) {
-        const savedServices = await supabaseService.saveServices(newServices);
-        setServices(savedServices);
+        console.log('[UI] handleSaveServices chamado em reorderServices, lista:', newServices);
+        try {
+            const savedServices = await supabaseService.saveServices(newServices);
+            console.log('[UI] saveServices retornou:', savedServices);
+            console.log('[UI] estado atualizado com IDs do banco?', savedServices.map(s => s.id));
+            setServices(savedServices);
+        } catch (e) {
+            console.error('[UI] ERRO ao salvar em reorderServices:', e);
+        }
       }
     };
     sync();

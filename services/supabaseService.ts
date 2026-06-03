@@ -8,6 +8,9 @@ export const supabaseService = {
  async getUserId() {
     try {
         const result = await supabase.auth.getSession();
+        const session = result?.data?.session;
+        console.log('[getUserId] session exists:', !!session);
+        console.log('[getUserId] userId:', session?.user?.id ?? 'NULL');
         const error = result?.error;
         const data = result?.data;
         
@@ -96,40 +99,83 @@ export const supabaseService = {
   // Services
   async getServices(targetUserId?: string) {
     const userId = targetUserId || await this.getUserId();
-    if (!userId) return [];
+    console.log('[getServices] buscando para userId:', userId);
+
+    if (!userId) {
+      console.warn('[getServices] userId null - retornando []');
+      return [];
+    }
 
     const { data, error } = await supabase.from('services').select('*').eq('user_id', userId).order('order_index', { ascending: true });
-    if (error) throw error;
-    return (data as any[]).map(s => ({
+    
+    if (error) {
+      console.error('[getServices] ERRO:', error);
+      throw error;
+    }
+
+    console.log('[getServices] dados brutos do banco:', data);
+    console.log('[getServices] quantidade:', data?.length);
+
+    const mapped = (data as any[]).map(s => ({
       id: s.id,
       name: s.name,
       price: Number(s.price),
       duration: s.duration
     })) as ServiceItem[];
+    
+    console.log('[getServices] retornando:', mapped);
+    return mapped;
   },
   async saveServices(services: ServiceItem[]) {
+    console.log('[saveServices] INICIANDO', { services });
     const userId = await this.getUserId();
-    if (!userId) throw new Error('User not authenticated');
+    console.log('[saveServices] userId:', userId);
 
-    const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (!userId) {
+      console.error('[saveServices] ERRO: userId null - usuário não autenticado');
+      throw new Error('User not authenticated');
+    }
 
-    const { data, error } = await supabase.from('services').upsert(
-      services.map((s, index) => {
-        const item: any = {
-          user_id: userId,
-          name: s.name,
-          price: s.price,
-          duration: s.duration,
-          order_index: index
-        };
-        if (isUUID(s.id)) {
-          item.id = s.id;
-        }
-        return item;
-      }) as any
-    ).select();
+    const existingIds = services.map(s => s.id);
 
-    if (error) throw error;
+    if (existingIds.length > 0) {
+      await supabase
+        .from('services')
+        .delete()
+        .eq('user_id', userId)
+        .not('id', 'in', `(${existingIds.join(',')})`);
+    } else {
+      await supabase
+        .from('services')
+        .delete()
+        .eq('user_id', userId);
+    }
+
+    const payload = services.map((s, index) => ({
+      id: s.id,
+      user_id: userId,
+      name: s.name,
+      price: s.price,
+      duration: s.duration,
+      order_index: index
+    }));
+    
+    console.log('[saveServices] payload para upsert:', payload);
+
+    const { data, error } = await supabase.from('services')
+      .upsert(payload as any)
+      .select();
+
+    if (error) {
+      console.error('[saveServices] ERRO no upsert:', error);
+      console.error('[saveServices] error.code:', error.code);
+      console.error('[saveServices] error.message:', error.message);
+      console.error('[saveServices] error.details:', error.details);
+      console.error('[saveServices] error.hint:', error.hint);
+      throw error;
+    }
+
+    console.log('[saveServices] SUCESSO - data retornada:', data);
     return (data as any[]).map(s => ({
       id: s.id,
       name: s.name,
