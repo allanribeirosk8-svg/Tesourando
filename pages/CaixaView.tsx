@@ -159,12 +159,39 @@ export const CaixaView: React.FC = () => {
   const lucroEstimado = faturamento - expenseTotal;
 
   const prevRange = useMemo(() => {
-    const s = new Date(dateRange.start);
-    const e = new Date(dateRange.end);
-    const diff = e.getTime() - s.getTime() + 86400000;
+    const hoje = new Date();
+    const sStart = new Date(dateRange.start);
+    const sEnd = new Date(dateRange.end);
+
+    // Detecta se o período selecionado ainda está em andamento
+    const periodoEmAndamento =
+      hoje >= sStart && hoje <= sEnd;
+
+    // Calcula quantos dias já se passaram no período atual
+    const diasDecorridos = periodoEmAndamento
+      ? Math.floor((hoje.getTime() - sStart.getTime()) / (1000 * 60 * 60 * 24))
+      : Math.floor((sEnd.getTime() - sStart.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Duração total do período atual
+    const duracaoTotal = Math.floor((sEnd.getTime() - sStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    // Início do período anterior (mesmo tamanho)
+    const prevStart = new Date(sStart);
+    prevStart.setDate(prevStart.getDate() - duracaoTotal);
+
+    // Fim do período anterior: proporcional se em andamento, completo se encerrado
+    const prevEnd = new Date(prevStart);
+    prevEnd.setDate(prevEnd.getDate() + diasDecorridos);
+
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
     return {
-      start: new Date(s.getTime() - diff).toISOString().split('T')[0],
-      end: new Date(e.getTime() - diff).toISOString().split('T')[0],
+      start: fmt(prevStart),
+      end: fmt(prevEnd),
+      periodoEmAndamento,
+      diasDecorridos,
+      duracaoTotal,
     };
   }, [dateRange]);
 
@@ -299,6 +326,209 @@ export const CaixaView: React.FC = () => {
     const totalAtendimentosValor = aptIncome + txNoPeriodo.filter(t => t.type === 'income' && t.category === 'walk_in' && !(t as any).linkedAppointmentId).reduce((s,t) => s+t.amount, 0);
     const totalOutros = txNoPeriodo.filter(t => t.type === 'income' && !['tip', 'product', 'walk_in'].includes(t.category) && !(t as any).linkedAppointmentId).reduce((s,t) => s+t.amount, 0);
 
+    // Texto de contexto da comparação proporcional
+    const ctxComparacao = (() => {
+      if (!prevRange.periodoEmAndamento) return null; // período encerrado, sem aviso necessário
+
+      if (periodo === 'dia') return null; // dia é sempre completo
+
+      if (periodo === 'semana') {
+        const diasSemana = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+        const diaAtual = diasSemana[new Date().getDay()];
+        return `até ${diaAtual} (mesmo recorte das 2 semanas)`;
+      }
+
+      if (periodo === 'mes') {
+        const dia = new Date().getDate();
+        const mesAnteriorNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+          'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][
+            new Date(prevRange.start).getMonth()
+          ];
+        return `comparando os primeiros ${dia} dias com os primeiros ${dia} dias de ${mesAnteriorNome}`;
+      }
+
+      if (periodo === 'ano') {
+        const hoje = new Date();
+        return `comparando até ${hoje.getDate()}/${hoje.getMonth()+1} dos dois anos`;
+      }
+
+      return null;
+    })();
+
+    // Linha de rodapé proporcional para adicionar ao corpo dos insights quando necessário
+    const rodapeProporcional = ctxComparacao
+      ? `\n📐 Comparação proporcional: ${ctxComparacao}.`
+      : '';
+
+    const insights: { emoji: string; titulo: string; corpo: string; cor: 'red' | 'green' | 'yellow' | 'blue' }[] = [];
+
+    const periodoNome = periodo === 'mes' ? 'mês' : periodo === 'semana' ? 'semana' : periodo === 'ano' ? 'ano' : 'dia';
+    const prevMesNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][
+        new Date(prevRange.start).getMonth()
+      ];
+
+    // 1. Alta taxa de faltas
+    if (noShowRate > 20) {
+      insights.push({
+        emoji: '🚨', cor: 'red',
+        titulo: 'Atenção: muitas faltas',
+        corpo: `${noShowRate.toFixed(0)}% dos agendamentos viraram falta este ${periodoNome}. Você perdeu ${formatCurrency(valorPerdido)} em receita. Considere cobrar sinal ou confirmar 1h antes.`,
+      });
+    }
+
+    // 2. Queda de faturamento
+    if (faturamentoDiff !== null && faturamentoDiff < -15) {
+      insights.push({
+        emoji: '📉', cor: 'red',
+        titulo: 'Faturamento caindo',
+        corpo: `Receita ${faturamentoDiff.toFixed(1)}% menor que o período anterior (era ${formatCurrency(prevFaturamento)}).${rodapeProporcional} Verifique se houve menos dias trabalhados ou perda de clientes.`,
+      });
+    }
+
+    // 3. Ticket médio crescendo
+    if (ticketDiff !== null && ticketDiff > 10 && atendimentos >= 5) {
+      insights.push({
+        emoji: '📈', cor: 'green',
+        titulo: 'Ticket médio em alta',
+        corpo: `Seu corte médio subiu ${ticketDiff.toFixed(1)}% em relação ao período anterior${ctxComparacao ? ` (${ctxComparacao})` : ''}. De ${formatCurrency(prevTicket)} para ${formatCurrency(ticketMedio)}. Seus clientes estão pagando mais — resultado de posicionamento ou serviços premium.`,
+      });
+    }
+
+    // 4. Volume alto, lucro comprimido
+    if (atendimentos > 15 && lucroEstimado < faturamento * 0.5) {
+      insights.push({
+        emoji: '⚡', cor: 'yellow',
+        titulo: 'Volume alto, lucro comprimido',
+        corpo: `Você fez ${atendimentos} atendimentos mas o lucro ficou em ${((lucroEstimado / faturamento) * 100).toFixed(0)}% da receita. Suas despesas estão pesando — revise os custos fixos.`,
+      });
+    }
+
+    // 5. Melhor período registrado
+    if (faturamentoDiff !== null && faturamentoDiff > 50 && atendimentos > 10) {
+      insights.push({
+        emoji: '🎯', cor: 'green',
+        titulo: `Ótimo ${periodoNome}${prevRange.periodoEmAndamento ? ' até agora' : ''}`,
+        corpo: prevRange.periodoEmAndamento
+          ? `Nos primeiros ${prevRange.diasDecorridos + 1} dias: ${formatCurrency(faturamento)} com ${atendimentos} atendimentos e ticket médio de ${formatCurrency(ticketMedio)}. ${faturamentoDiff.toFixed(0)}% acima dos primeiros ${prevRange.diasDecorridos + 1} dias de ${prevMesNome}. Anote o que está fazendo diferente.`
+          : `${formatCurrency(faturamento)} com ${atendimentos} atendimentos e ticket médio de ${formatCurrency(ticketMedio)}. ${faturamentoDiff.toFixed(0)}% acima de ${prevMesNome} completo. Anote o que fez diferente desta vez.`,
+      });
+    }
+
+    // 6. Faltas com impacto financeiro relevante
+    if (faltas > 0 && valorPerdido > faturamento * 0.1) {
+      insights.push({
+        emoji: '💸', cor: 'yellow',
+        titulo: 'Faltas custando caro',
+        corpo: `${faltas} falta${faltas > 1 ? 's representaram' : ' representou'} ${formatCurrency(valorPerdido)} — ${((valorPerdido / faturamento) * 100).toFixed(0)}% da sua receita do período jogada fora.`,
+      });
+    }
+
+    // 7. Despesas crescendo mais rápido que receita
+    if (expenseDiff !== null && faturamentoDiff !== null && expenseDiff > faturamentoDiff + 20) {
+      insights.push({
+        emoji: '💰', cor: 'yellow',
+        titulo: 'Despesas crescendo mais que a receita',
+        corpo: `Suas saídas subiram ${expenseDiff.toFixed(1)}% enquanto a receita cresceu ${faturamentoDiff.toFixed(1)}%${ctxComparacao ? ` (${ctxComparacao})` : ''}. Isso comprime sua margem — fique de olho nos custos.`,
+      });
+    }
+
+    // 8. Crescimento consistente
+    if (faturamentoDiff !== null && faturamentoDiff > 10 && faturamentoDiff <= 50 && atendDiff !== null && atendDiff > 0) {
+      insights.push({
+        emoji: '🌱', cor: 'blue',
+        titulo: 'Crescimento saudável',
+        corpo: `Faturamento +${faturamentoDiff.toFixed(1)}% e ${atendimentos} atendimentos (+${atendDiff.toFixed(0)}% vs anterior)${ctxComparacao ? `, ${ctxComparacao}` : ''}. Crescimento consistente é mais valioso que um pico isolado.`,
+      });
+    }
+
+    const historicData = (() => {
+      if (periodo === 'mes') {
+        const MESES_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        return Array.from({ length: 12 }, (_, i) => {
+          const ref = new Date(selectedDate);
+          ref.setDate(15);
+          ref.setMonth(ref.getMonth() - (11 - i));
+          const ano = ref.getFullYear();
+          const mes = ref.getMonth(); // 0-based
+          const count = appointments.filter(a => {
+            const dateParts = a.date.split('-');
+            return a.status === 'completed' && parseInt(dateParts[0]) === ano && parseInt(dateParts[1]) - 1 === mes;
+          }).length;
+          const receita = appointments
+            .filter(a => {
+              const dateParts = a.date.split('-');
+              return a.status === 'completed' && parseInt(dateParts[0]) === ano && parseInt(dateParts[1]) - 1 === mes;
+            })
+            .reduce((s, a) => s + (a.price || 0), 0);
+          const isSelected = ano === selectedDate.getFullYear() && mes === selectedDate.getMonth();
+          return { label: MESES_ABREV[mes], count, receita, isSelected };
+        });
+      } else if (periodo === 'semana') {
+        return Array.from({ length: 8 }, (_, i) => {
+          const ref = new Date(dateRange.start); 
+          ref.setDate(ref.getDate() - (7 - i) * 7);
+          const wStart = ref.toISOString().split('T')[0];
+          const wEndDate = new Date(ref);
+          wEndDate.setDate(ref.getDate() + 6);
+          const wEnd = wEndDate.toISOString().split('T')[0];
+          const count = appointments.filter(a =>
+            a.status === 'completed' && a.date >= wStart && a.date <= wEnd
+          ).length;
+          const receita = appointments
+            .filter(a => a.status === 'completed' && a.date >= wStart && a.date <= wEnd)
+            .reduce((s, a) => s + (a.price || 0), 0);
+          const isSelected = i === 7; 
+          const label = `${String(ref.getDate()).padStart(2,'0')}/${String(ref.getMonth()+1).padStart(2,'0')}`;
+          return { label, count, receita, isSelected };
+        });
+      } else if (periodo === 'ano') {
+        const anos = [...new Set(appointments.map(a => parseInt(a.date.split('-')[0])))].sort();
+        if (anos.length < 2) return []; 
+        return anos.map(ano => {
+          const count = appointments.filter(a =>
+            a.status === 'completed' && parseInt(a.date.split('-')[0]) === ano
+          ).length;
+          const receita = appointments
+            .filter(a => a.status === 'completed' && parseInt(a.date.split('-')[0]) === ano)
+            .reduce((s, a) => s + (a.price || 0), 0);
+          return { label: String(ano), count, receita, isSelected: ano === selectedDate.getFullYear() };
+        });
+      } else { 
+        const hoje = new Date();
+        const noventa = new Date(hoje);
+        noventa.setDate(hoje.getDate() - 90);
+        const noveStr = noventa.toISOString().split('T')[0];
+        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+        const contagemDOW = [0, 0, 0, 0, 0, 0, 0];
+        const totalDias = [0, 0, 0, 0, 0, 0, 0];
+
+        const d = new Date(noventa);
+        while (d <= hoje) {
+          totalDias[d.getDay()]++;
+          d.setDate(d.getDate() + 1);
+        }
+
+        appointments
+          .filter(a => a.status === 'completed' && a.date >= noveStr)
+          .forEach(a => {
+            const dow = new Date(a.date + 'T12:00:00').getDay();
+            contagemDOW[dow]++;
+          });
+
+        const currentDOW = selectedDate.getDay();
+
+        return diasSemana.map((label, i) => ({
+          label,
+          count: totalDias[i] > 0 ? parseFloat((contagemDOW[i] / totalDias[i] * 7).toFixed(1)) : 0,
+          receita: 0,
+          isSelected: i === currentDOW,
+        }));
+      }
+    })();
+    const tituloHistorico = periodo === 'mes' ? 'Últimos 12 Meses' : periodo === 'semana' ? 'Últimas 8 Semanas' : periodo === 'ano' ? 'Evolução Anual' : 'Média por Dia da Semana (90 dias)';
+
     return (
       <div className="space-y-4">
         {/* Card Resumo de Caixa */}
@@ -398,16 +628,25 @@ export const CaixaView: React.FC = () => {
           </div>
         </div>
 
-        {/* Alerta (máx 1) */}
-        {noShowRate > 20 ? (
-          <div className="bg-red-500/10 border border-red-500/20  text-[#F87171] p-3 rounded-2xl text-xs font-bold">
-            🚨 {noShowRate.toFixed(1)}% das marcações resultaram em falta
+        {/* Insights Inteligentes */}
+        {insights.length > 0 && (
+          <div className="space-y-2">
+            {insights.slice(0, 3).map((insight, idx) => {
+              const cores = {
+                red:    'bg-red-500/10 border-red-500/20 text-[#F87171]',
+                green:  'bg-green-500/10 border-green-500/20 text-[#34D399]',
+                yellow: 'bg-[#FBBF24]/10 border-[#FBBF24]/20 text-[#FBBF24]',
+                blue:   'bg-blue-500/10 border-blue-500/20 text-blue-400',
+              };
+              return (
+                <div key={idx} className={`border rounded-2xl p-3 text-xs font-bold ${cores[insight.cor]}`}>
+                  <p className="font-black mb-1">{insight.emoji} {insight.titulo}</p>
+                  <p className="font-medium opacity-90 leading-relaxed whitespace-pre-line">{insight.corpo}</p>
+                </div>
+              );
+            })}
           </div>
-        ) : (faturamentoDiff !== null && faturamentoDiff > 30) ? (
-          <div className="bg-green-500/10 border border-green-500/20  text-[#34D399] p-3 rounded-2xl text-xs font-bold">
-            🎉 Ótimo período! +{faturamentoDiff.toFixed(1)}% acima do anterior
-          </div>
-        ) : null}
+        )}
 
         {/* Gráfico */}
         <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
@@ -429,6 +668,63 @@ export const CaixaView: React.FC = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Gráfico Histórico */}
+        {historicData.length > 0 && (
+          <div className="bg-surface rounded-2xl p-4 border border-white/8 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+            <p className="text-[10px] font-bold uppercase text-title mb-1">{tituloHistorico}</p>
+            <p className="text-[9px] text-title/60 mb-3">
+              {periodo === 'dia'
+                ? 'Atendimentos médios por dia da semana'
+                : 'Atendimentos concluídos'}
+            </p>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={historicData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: periodo === 'mes' ? 8 : 10, fill: '#8A98A8' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: '#8A98A8' }}
+                  axisLine={false}
+                  tickLine={false}
+                  allowDecimals={periodo === 'dia'}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12 }}
+                  formatter={(value: number, name: string, props: any) => {
+                    const item = props.payload;
+                    if (periodo === 'dia') return [`${value} atend./semana (média)`, ''];
+                    return [
+                      `${value} atend.${item.receita > 0 ? ` · ${formatCurrency(item.receita)}` : ''}`,
+                      ''
+                    ];
+                  }}
+                  labelFormatter={(label) => label}
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                  {historicData.map((d, i) => (
+                    <Cell
+                      key={i}
+                      fill={d.isSelected ? '#F99417' : '#F99417'}
+                      fillOpacity={d.isSelected ? 1 : 0.25}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            {/* Legenda do destaque */}
+            <p className="text-[9px] text-title/50 mt-2 text-center">
+              {periodo === 'mes' && '● Laranja = mês atual'}
+              {periodo === 'semana' && '● Laranja = semana atual'}
+              {periodo === 'ano' && '● Laranja = ano atual'}
+              {periodo === 'dia' && `● Laranja = ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][selectedDate.getDay()]} (dia selecionado)`}
+            </p>
+          </div>
+        )}
       </div>
     );
   };
@@ -1195,7 +1491,21 @@ export const CaixaView: React.FC = () => {
           <div className="relative">
             <select
               value={periodo}
-              onChange={e => setPeriodo(e.target.value as 'dia' | 'semana' | 'mes' | 'ano')}
+              onChange={e => {
+                const newPeriodo = e.target.value as 'dia' | 'semana' | 'mes' | 'ano';
+                setPeriodo(newPeriodo);
+
+                const d = new Date(selectedDate);
+                if (newPeriodo === 'semana') {
+                  const day = d.getDay();
+                  d.setDate(d.getDate() - day);
+                } else if (newPeriodo === 'mes') {
+                  d.setDate(1);
+                } else if (newPeriodo === 'ano') {
+                  d.setMonth(0, 1);
+                }
+                setSelectedDate(new Date(d));
+              }}
               className="appearance-none bg-surface border border-title/30 rounded-2xl pl-3 pr-7 h-10 text-[10px] font-black uppercase tracking-wider text-white shadow-[0_4px_16px_rgba(0,0,0,0.3)] focus:outline-none cursor-pointer text-center"
             >
               <option value="dia">Dia</option>
