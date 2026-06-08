@@ -17,8 +17,9 @@ import {
   ArrowRight,
   X,
   CheckSquare,
-  CheckCircle2,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  Pencil
 } from 'lucide-react';
 import { formatCurrency, generateTimeSlots } from '../utils/helpers';
 
@@ -79,6 +80,7 @@ export default function AgendamentoPublico() {
   
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [servicesExpanded, setServicesExpanded] = useState(false);
+  const [servicesSheetOpen, setServicesSheetOpen] = useState(false);
   
   useEffect(() => {
     setServicesExpanded(false);
@@ -424,54 +426,41 @@ export default function AgendamentoPublico() {
                 </a>
               )}
 
-              <div className="px-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Scissors className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-xs font-semibold tracking-widest text-white/40 uppercase">
-                    Escolha um ou mais serviços
-                  </span>
-                </div>
-              </div>
-              <div className={`grid ${services.length === 1 ? 'grid-cols-1' : services.length === 2 ? 'grid-cols-2' : services.length === 3 ? 'grid-cols-3' : 'grid-cols-4'} gap-2 px-4 mb-2`}>
-                {services.map(s => {
-                  const isSelected = selectedServices.some(selected => selected.id === s.id);
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedServices(prev => prev.filter(selected => selected.id !== s.id));
-                        } else {
-                          setSelectedServices(prev => [...prev, s]);
-                        }
-                      }}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all relative ${isSelected ? 'border-secondary bg-secondary/15 cursor-pointer' : 'border-white/10 bg-white/5 cursor-pointer'}`}
-                    >
-                      {isSelected && (
-                        <CheckCircle2 size={14} className="text-secondary absolute top-1.5 right-1.5" />
-                      )}
-                      <span className={`font-medium text-sm text-center line-clamp-2 w-full ${isSelected ? 'text-white' : 'text-white/80'}`}>
-                        {s.name}
+              <div className="px-4 mb-2">
+                {/* Estado vazio — nenhum serviço selecionado */}
+                {selectedServices.length === 0 && (
+                  <button
+                    onClick={() => setServicesSheetOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-semibold text-sm bg-secondary text-white transition-all hover:bg-secondary/90 active:scale-[0.98]"
+                  >
+                    <Scissors className="w-4 h-4" />
+                    <span>Escolha um ou mais serviços</span>
+                  </button>
+                )}
+
+                {/* Estado preenchido — serviços selecionados */}
+                {selectedServices.length > 0 && (
+                  <button
+                    onClick={() => setServicesSheetOpen(true)}
+                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-secondary/40 bg-secondary/10 transition-all hover:bg-secondary/15"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Scissors className="w-4 h-4 text-secondary shrink-0" />
+                      <span className="text-sm font-medium text-white truncate">
+                        {selectedServices.length === 1
+                          ? selectedServices[0].name
+                          : selectedServices.map(s => s.name).join(' + ')}
                       </span>
-                      <span className="text-xs text-secondary font-semibold">
-                        {formatCurrency(s.price)}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-semibold text-secondary">
+                        {formatCurrency(selectedServices.reduce((sum, s) => sum + s.price, 0))}
                       </span>
-                    </button>
-                  );
-                })}
+                      <Pencil className="w-3.5 h-3.5 text-white/40" />
+                    </div>
+                  </button>
+                )}
               </div>
-              {services.length === 1 && (
-                <p className="text-center text-title/40 text-[13px] font-medium pt-2 pb-4 px-4">
-                  Mais serviços em breve
-                </p>
-              )}
-              {services.length === 0 && (
-                <div className="px-4 mb-2">
-                  <div className="text-center p-4 bg-surface rounded-2xl border border-white/8">
-                    <p className="text-title text-sm">Nenhum serviço cadastrado.</p>
-                  </div>
-                </div>
-              )}
 
               <div className={`transition-all duration-300 ease-in-out origin-top ${selectedServices.length > 0 ? 'opacity-100 scale-y-100 h-auto mt-4' : 'opacity-0 scale-y-0 h-0 overflow-hidden'}`}>
                 <div className="px-4">
@@ -900,7 +889,7 @@ export default function AgendamentoPublico() {
               <button 
                 onClick={() => {
                   setStep(1);
-                  setSelectedService(null);
+                  setSelectedServices([]);
                   setSelectedDate('');
                   setAvailableSlots([]);
                   setSelectedTime('');
@@ -1182,6 +1171,90 @@ export default function AgendamentoPublico() {
             </div>
           </div>
         </div>
+      )}
+
+      {servicesSheetOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 z-40"
+            onClick={() => setServicesSheetOpen(false)}
+          />
+
+          {/* Sheet */}
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-[#1a1830] rounded-t-2xl shadow-xl max-h-[75vh] flex flex-col">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/8 shrink-0">
+              <div>
+                <h3 className="text-base font-semibold text-white">
+                  Escolha seus serviços
+                </h3>
+                <p className="text-xs text-white/40 mt-0.5">
+                  Selecione um ou mais
+                </p>
+              </div>
+              <button
+                onClick={() => setServicesSheetOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+              >
+                <X className="w-4 h-4 text-white/60" />
+              </button>
+            </div>
+
+            {/* Grid dinâmico de serviços — com scroll próprio */}
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              <div className={`grid gap-3 ${
+                services.length === 1 ? 'grid-cols-1' :
+                services.length === 2 ? 'grid-cols-2' :
+                services.length === 3 ? 'grid-cols-3' :
+                'grid-cols-4'
+              }`}>
+                {services.map(service => {
+                  const selected = selectedServices.some(s => s.id === service.id)
+                  return (
+                    <button
+                      key={service.id}
+                      onClick={() => {
+                        setSelectedServices(prev =>
+                          selected
+                            ? prev.filter(s => s.id !== service.id)
+                            : [...prev, service]
+                        )
+                      }}
+                      className={`relative flex flex-col items-start justify-start pt-7 pl-3 pb-3 pr-3 gap-1 rounded-xl border transition-all ${selected ? 'border-secondary bg-secondary/15' : 'border-white/10 bg-white/5'}`}
+                    >
+                      <div className={`absolute top-2 left-2 w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${selected ? 'border-secondary bg-secondary' : 'border-white/30 bg-transparent'}`}>
+                        {selected && (
+                          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-white leading-tight w-full text-left">
+                        {service.name}
+                      </span>
+                      <span className="text-xs text-secondary w-full text-left">
+                        {formatCurrency(service.price)}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Botão confirmar */}
+            <div className="px-5 pb-6 pt-3 shrink-0 border-t border-white/8">
+              <button
+                onClick={() => setServicesSheetOpen(false)}
+                disabled={selectedServices.length === 0}
+                className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:bg-white/10 disabled:text-white/30 enabled:bg-secondary enabled:text-white"
+              >
+                {selectedServices.length === 0
+                  ? 'Selecione ao menos um serviço'
+                  : `Confirmar (${selectedServices.length})`}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
     </div>
