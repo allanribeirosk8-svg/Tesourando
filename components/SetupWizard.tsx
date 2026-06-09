@@ -147,10 +147,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         console.log('[ONBOARDING] removeService/delete chamado para todos os serviços do user');
         
         // Insere os novos serviços diretamente
+        const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
         const payload = localServices.map((s, index) => {
           console.log('[ONBOARDING] addService chamado para:', s.name, '| resultado esperado no banco');
           return {
-            id: s.id,
+            id: isUUID(s.id) ? s.id : crypto.randomUUID(),
             user_id: userId,
             name: s.name,
             price: s.price,

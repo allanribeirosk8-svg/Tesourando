@@ -1635,10 +1635,11 @@ const AgendaView: React.FC<{
                               setSelectedDate(dateStr);
                               setIsCalendarExpanded(false);
                             }}
-                            className={`h-9 w-full rounded-xl flex items-center justify-center text-[12px] font-bold transition-all relative
-                              ${isSelected ? 'bg-secondary text-white shadow-sm' : isToday ? 'bg-secondary text-white' : isClosed ? 'text-muted line-through ' : 'hover:bg-primary/40 :bg-surface text-white '}`}
+                            className={`h-9 w-full flex-col rounded-xl flex items-center justify-center text-[12px] font-bold transition-all relative
+                              ${isSelected ? 'bg-secondary text-white shadow-[0_0_0_2px_#1E1B4B,0_0_0_4px_#F99417]' : isToday ? 'bg-secondary/25 text-white ring-1 ring-secondary/50' : isClosed ? 'text-muted line-through ' : 'hover:bg-primary/40 bg-surface text-white '}`}
                           >
-                            {d}
+                            <span>{d}</span>
+                            {isToday && <div className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-secondary'}`}></div>}
                             {count > 0 && (
                               <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold border bg-secondary text-white border-white ">
                                 {count > 9 ? '9+' : count}
@@ -1733,9 +1734,10 @@ const AgendaView: React.FC<{
                         ${isSelected ? 'text-white/80' : isToday ? 'text-white/90' : isClosed ? 'line-through' : 'text-white/60'}`}>
                         {day.dayLabel}
                       </span>
-                      <span className={`text-sm font-black 
+                      <span className={`text-sm font-black flex flex-col items-center
                         ${isSelected ? 'text-white' : isToday ? 'text-white' : isClosed ? 'text-white/30 ' : 'text-white '}`}>
-                        {day.dayNum}
+                        <span>{day.dayNum}</span>
+                        {isToday && <div className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-secondary'}`}></div>}
                       </span>
                       {count > 0 && (
                         <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold border-2 bg-secondary text-white border-transparent ">
@@ -4922,9 +4924,12 @@ const ReportsView: React.FC = () => {
           </button>
           <button 
             onClick={() => setViewMode('years')}
-            className="text-xs font-bold text-white  capitalize hover:text-secondary transition-colors"
+            className="text-xs font-bold text-white hover:text-secondary transition-colors"
           >
-            {viewDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+            {(() => {
+              const str = viewDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+              return str.charAt(0).toUpperCase() + str.slice(1);
+            })()}
           </button>
           <button onClick={handleReportsSwipeLeft} className="p-1 text-title hover:text-secondary">
             <ChevronRight size={16} />

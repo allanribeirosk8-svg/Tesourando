@@ -520,7 +520,9 @@ export default function AgendamentoPublico() {
                           onClick={() => setShowCalendarModal(true)}
                           className="flex items-center gap-1 text-white/70 hover:text-white transition-colors active:scale-95"
                         >
-                          <span className="font-semibold text-sm capitalize">{monthStr} de {centralDay.getFullYear()}</span>
+                          <span className="font-semibold text-sm">
+                            {monthStr.charAt(0).toUpperCase() + monthStr.slice(1)} de {centralDay.getFullYear()}
+                          </span>
                           <ChevronLeft className="-rotate-90 opacity-50" size={14} />
                         </button>
                       );
@@ -1113,8 +1115,11 @@ export default function AgendamentoPublico() {
                 <ChevronLeft size={20} />
               </button>
               
-              <span className="font-bold text-white text-base capitalize">
-                {new Date(modalYearMonth.year, modalYearMonth.month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+              <span className="font-bold text-white text-base">
+                {(() => {
+                  const dateStr = new Date(modalYearMonth.year, modalYearMonth.month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                  return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+                })()}
               </span>
 
               <div className="flex items-center gap-2">
