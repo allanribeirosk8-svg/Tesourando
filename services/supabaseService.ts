@@ -2,6 +2,21 @@ import { supabase } from '../lib/supabase';
 import { Appointment, BarberProfile, Customer, DayConfig, ServiceItem } from '../types';
 import { normalizePhone, normalizeTime } from '../utils/helpers';
 
+function generateSlug(shopName: string, userId: string): string {
+  const base = shopName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')   // remove caracteres especiais
+    .replace(/\s+/g, '-')            // espaços viram hífens
+    .replace(/-+/g, '-');            // hífens duplicados
+
+  // Sufixo com os últimos 6 chars do userId para garantir unicidade
+  const suffix = userId.replace(/-/g, '').slice(-6);
+  return `${base}-${suffix}`;
+}
+
 // Define database types to fix lint errors
 export const supabaseService = {
   // Helper to get current user ID
@@ -78,6 +93,15 @@ export const supabaseService = {
     const userId = await this.getUserId();
     if (!userId) throw new Error('User not authenticated');
 
+    // Busca o slug atual para não sobrescrever
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('slug')
+      .eq('id', userId)
+      .maybeSingle();
+
+    const slug = (existing as any)?.slug || generateSlug(profile.shopName || profile.name || 'barbearia', userId);
+
     const { error } = await supabase.from('profiles').upsert({
       id: userId,
       name: profile.name,
@@ -91,6 +115,7 @@ export const supabaseService = {
       instagram: profile.instagram,
       website: profile.website,
       onboarding_seen: profile.onboarding_seen,
+      slug: slug,
       updated_at: new Date().toISOString()
     } as any);
     if (error) throw error;
@@ -151,8 +176,9 @@ export const supabaseService = {
         .eq('user_id', userId);
     }
 
+    const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     const payload = services.map((s, index) => ({
-      id: s.id,
+      id: isUUID(s.id) ? s.id : crypto.randomUUID(),
       user_id: userId,
       name: s.name,
       price: s.price,
@@ -448,17 +474,34 @@ export const supabaseService = {
     const userId = await this.getUserId();
     if (!userId) throw new Error('User not authenticated');
 
-    const { error } = await supabase.from('weekly_schedule').upsert({
+    const payload = {
       user_id: userId,
       day_of_week: day,
       start_time: normalizeTime(config.start),
       end_time: normalizeTime(config.end),
       is_open: config.isOpen
-    } as any);
+    };
+
+    console.group(`[DEBUG-AGENDA] saveWeeklySchedule - dia ${day}`);
+    console.log('[DEBUG-AGENDA] Payload:', payload);
+    console.log(`[DEBUG-AGENDA] day_of_week: ${day}, is_open: ${config.isOpen}`);
+    console.log(`[DEBUG-AGENDA] Tipo de is_open: ${typeof config.isOpen}`);
+    
+    const { data, error } = await supabase.from('weekly_schedule').upsert(payload as any).select();
+    
+    console.log('[DEBUG-AGENDA] Resposta Supabase:', {
+      sucesso: !error,
+      erro: error,
+      dados: data
+    });
+    console.groupEnd();
+    
     if (error) throw error;
 
     // Handle breaks
-    await supabase.from('weekly_breaks').delete().eq('day_of_week', day).eq('user_id', userId);
+    const { error: delError } = await supabase.from('weekly_breaks').delete().eq('day_of_week', day).eq('user_id', userId);
+    if (delError) throw delError;
+
     if (config.breaks && config.breaks.length > 0) {
       const { error: bError } = await supabase.from('weekly_breaks').insert(
         config.breaks.map(time => ({ user_id: userId, day_of_week: day, time: normalizeTime(time) })) as any

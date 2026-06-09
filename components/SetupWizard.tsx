@@ -3,6 +3,23 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Store, User, Phone, PhoneCall, MapPin, Instagram, Scissors, List, Trash2, Clock, CheckCircle } from 'lucide-react';
 import { useStore } from '../context/Store';
 import { ServiceItem, DaySchedule } from '../types';
+import { supabaseService } from '../services/supabaseService';
+import { supabase } from '../lib/supabase';
+
+const generateBreakSlots = (breakStart: string, breakEnd: string): string[] => {
+  const slots: string[] = [];
+  const [startH, startM] = breakStart.split(':').map(Number);
+  const [endH, endM] = breakEnd.split(':').map(Number);
+  let currentMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+  while (currentMinutes < endMinutes) {
+    const h = Math.floor(currentMinutes / 60).toString().padStart(2, '0');
+    const m = (currentMinutes % 60).toString().padStart(2, '0');
+    slots.push(`${h}:${m}`);
+    currentMinutes += 15;
+  }
+  return slots;
+};
 
 interface SetupWizardProps {
   onComplete: () => void;
@@ -107,6 +124,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setIsFinishing(true);
 
     try {
+      console.group('[ONBOARDING] handleComplete iniciado');
+      console.log('[ONBOARDING] localServices a salvar:', JSON.stringify(localServices, null, 2));
+      console.log('[ONBOARDING] quantidade de serviços:', localServices.length);
+
       // 1. Salvar perfil
       await updateBarberProfile({
         ...profileData,
@@ -116,23 +137,58 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         working_hours: schedule,
       });
 
+      console.log('[ONBOARDING] ► iniciando limpeza dos serviços antigos...');
+
       // 2. Substituir serviços
-      for (const s of services) {
-        await removeService(s.id);
-      }
-      for (const s of localServices) {
-        await addService(s);
+      const userId = await supabaseService.getUserId();
+      if (userId) {
+        // Deleta todos os serviços existentes do usuário
+        await supabase.from('services').delete().eq('user_id', userId);
+        console.log('[ONBOARDING] removeService/delete chamado para todos os serviços do user');
+        
+        // Insere os novos serviços diretamente
+        const payload = localServices.map((s, index) => {
+          console.log('[ONBOARDING] addService chamado para:', s.name, '| resultado esperado no banco');
+          return {
+            id: s.id,
+            user_id: userId,
+            name: s.name,
+            price: s.price,
+            duration: s.duration,
+            order_index: index
+          };
+        });
+        
+        const { data: inserted, error: insertErr } = await supabase.from('services').insert(payload).select();
+        console.log('[ONBOARDING] ✅ Serviços inseridos diretamente:', inserted);
+        console.log('[ONBOARDING] ❌ Erro ao inserir:', insertErr);
+
+        const { data: checkServ, error: checkErr } = await supabase
+          .from('services')
+          .select('id, name, user_id')
+          .eq('user_id', userId);
+        console.log('[ONBOARDING] ✅ Verificação direta no banco após salvar:', checkServ);
+        console.log('[ONBOARDING] ❌ Erro na verificação:', checkErr);
       }
 
       // 3. Salvar horários
+      console.group('[DEBUG-AGENDA] SetupWizard - Configuração Inicial');
       const dayMap: Record<number, string> = { 0: 'DOM', 1: 'SEG', 2: 'TER', 3: 'QUA', 4: 'QUI', 5: 'SEX', 6: 'SAB' };
       for (let day = 0; day <= 6; day++) {
         const dayKey = dayMap[day];
         const daySched = schedule[dayKey];
-        const breaks = [];
-        if (daySched.breakStart) {
-          breaks.push(daySched.breakStart);
+        const breaks: string[] = [];
+        if (daySched.breakStart && daySched.breakEnd) {
+          breaks.push(...generateBreakSlots(daySched.breakStart, daySched.breakEnd));
         }
+        
+        console.log(`[DEBUG-AGENDA] Enviando Dia ${day} (${dayKey}):`, {
+          isOpen: daySched.enabled,
+          tipoIsOpen: typeof daySched.enabled,
+          start: daySched.open,
+          end: daySched.close
+        });
+
         await updateDayConfig(day, {
           isOpen: daySched.enabled,
           start: daySched.open,
@@ -140,10 +196,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           breaks: breaks,
         });
       }
+      console.groupEnd();
 
       setIsFinishing(false);
       setIsFinished(true);
       
+      await new Promise(resolve => setTimeout(resolve, 500)); // aguarda Supabase processar
       setTimeout(() => {
         onComplete();
       }, 2500);

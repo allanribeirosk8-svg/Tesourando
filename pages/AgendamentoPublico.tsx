@@ -119,8 +119,13 @@ export default function AgendamentoPublico() {
 
   useEffect(() => {
     async function loadData() {
+      console.group('[AGENDAMENTO PUBLICO] loadData iniciado');
+      console.log('[AGENDAMENTO PUBLICO] slug recebido:', slug);
+
       if (!slug) {
+        console.warn('[AGENDAMENTO PUBLICO] ⚠️ slug está undefined/null');
         setStep(6);
+        console.groupEnd();
         return;
       }
       try {
@@ -130,6 +135,9 @@ export default function AgendamentoPublico() {
           .eq('slug', slug)
           .single();
           
+        console.log('[AGENDAMENTO PUBLICO] profile encontrado:', prof);
+        console.log('[AGENDAMENTO PUBLICO] erro no profile:', profErr);
+
         if (profErr || !prof) throw new Error('Barbeiro não encontrado');
         setProfile(prof);
 
@@ -139,7 +147,16 @@ export default function AgendamentoPublico() {
           .eq('user_id', prof.id)
           .order('order_index');
         
+        console.log('[AGENDAMENTO PUBLICO] prof.id usado para buscar serviços:', prof.id);
+        console.log('[AGENDAMENTO PUBLICO] serviços retornados:', serv);
+        console.log('[AGENDAMENTO PUBLICO] quantidade de serviços:', serv?.length ?? 0);
+        console.log('[AGENDAMENTO PUBLICO] erro nos serviços:', servErr);
+
         if (!servErr && serv) {
+          if (serv.length === 0) {
+            console.warn('[AGENDAMENTO PUBLICO] ⚠️ NENHUM SERVIÇO encontrado para user_id:', prof.id);
+            console.warn('[AGENDAMENTO PUBLICO] Verifique se os serviços foram salvos com este user_id no banco');
+          }
           setServices(serv);
           if (serv.length === 1) {
             setSelectedServices([serv[0]]);
@@ -151,12 +168,19 @@ export default function AgendamentoPublico() {
           .select('*')
           .eq('user_id', prof.id);
         
-        if (!schedErr && sched) setSchedule(sched);
+        if (!schedErr && sched) {
+          console.group('[DEBUG-AGENDA] Momento 2 - Inicialização AgendamentoPublico');
+          console.log('[DEBUG-AGENDA] Schedule carregado do DB:', sched);
+          console.groupEnd();
+          setSchedule(sched);
+        }
 
         setStep(1);
       } catch (err) {
-        console.error(err);
+        console.error('[AGENDAMENTO PUBLICO] ❌ Erro fatal:', err);
         setStep(6);
+      } finally {
+        console.groupEnd();
       }
     }
     loadData();
@@ -545,7 +569,16 @@ export default function AgendamentoPublico() {
                         
                         const isPast = d.getTime() < today.getTime();
                         const dow = d.getDay();
-                        const isOpen = schedule.find(sch => sch.day_of_week === dow)?.is_open;
+                        const dayEntry = schedule.find(sch => sch.day_of_week === dow);
+                        const isOpen = dayEntry?.is_open;
+                        const isDisabled = isPast || !isOpen;
+
+                        console.log(`[DEBUG-AGENDA] Render Dia ${dow}`);
+                        console.log(`  Entrada no schedule? ${!!dayEntry}`);
+                        console.log(`  Valor is_open: ${isOpen} (Tipo: ${typeof isOpen})`);
+                        console.log(`  is_open é undefined? ${isOpen === undefined}`);
+                        console.log(`  Comparações => !isOpen: ${!isOpen} | isOpen !== true: ${isOpen !== true}`);
+                        console.log(`  isDisabled final: ${isDisabled}`);
                         
                         dates.push({ d, isToday, isTomorrow, isPast, isOpen, dow, i });
                       }
@@ -1126,8 +1159,18 @@ export default function AgendamentoPublico() {
                   const isPast = d.getTime() < new Date().setHours(0,0,0,0);
                   const isToday = d.getTime() === new Date().setHours(0,0,0,0);
                   const dow = d.getDay();
-                  const isOpen = schedule.find(sch => sch.day_of_week === dow)?.is_open;
+                  const dayEntry = schedule.find(sch => sch.day_of_week === dow);
+                  const isOpen = dayEntry?.is_open;
                   const isDisabled = isPast || !isOpen;
+
+                  if (i <= 7) { // Só loga os primeiros dias para não floodar
+                    console.log(`[DEBUG-AGENDA-MODAL] Render Dia ${dow} (Data: ${i})`);
+                    console.log(`  Entrada no schedule? ${!!dayEntry}`);
+                    console.log(`  Valor is_open: ${isOpen} (Tipo: ${typeof isOpen})`);
+                    console.log(`  is_open é undefined? ${isOpen === undefined}`);
+                    console.log(`  Comparações => !isOpen: ${!isOpen} | isOpen !== true: ${isOpen !== true}`);
+                    console.log(`  isDisabled final: ${isDisabled}`);
+                  }
                   
                   const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                   const isSelected = selectedDate === dateStr;

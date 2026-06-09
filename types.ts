@@ -109,4 +109,5 @@ export interface AppState {
   addTransaction: (t: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   loadTransactions: (startDate: string, endDate: string) => Promise<void>;
+  reloadData: () => Promise<void>;
 }

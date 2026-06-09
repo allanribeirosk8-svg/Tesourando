@@ -648,7 +648,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
 };
 
 export const AdminApp: React.FC = () => {
-  const { barberProfile, appointments, session, isLoading, updateBarberProfile } = useStore();
+  const { barberProfile, appointments, session, isLoading, updateBarberProfile, reloadData } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'caixa' | 'configuracoes'>('agenda');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -726,8 +726,11 @@ export const AdminApp: React.FC = () => {
     }
   }, [isAuthenticated, isLoading]);
 
-  const handleCompleteSetup = () => {
+  const handleCompleteSetup = async () => {
     setShowSetup(false);
+    await new Promise(r => setTimeout(r, 1000)); // aguarda banco processar
+    await reloadData(); // força rebusca dos serviços recém-salvos
+    console.log('[ADMIN] reloadData após onboarding concluído');
   };
 
   useEffect(() => {
@@ -3873,7 +3876,14 @@ const WeeklyConfigModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="py-4 border-y border-title/30  flex items-center justify-between">
               <span className="text-[13px] font-bold text-white ">Aberto para agendamentos</span>
               <button 
-                onClick={() => updateDayConfig(selectedDay, { isOpen: !currentConfig?.isOpen })} 
+                onClick={() => {
+                  const newValue = !currentConfig?.isOpen;
+                  console.group(`[DEBUG-AGENDA] AdminApp - Alterando dia ${selectedDay}`);
+                  console.log(`[DEBUG-AGENDA] is_open alterado para:`, newValue);
+                  console.log(`[DEBUG-AGENDA] Tipo de is_open:`, typeof newValue);
+                  console.groupEnd();
+                  updateDayConfig(selectedDay, { isOpen: newValue });
+                }} 
                 className={`w-12 h-7 rounded-full transition-colors relative ${currentConfig?.isOpen ? 'bg-green-500' : 'bg-title/30 '}`}
               >
                 <div className={`w-5 h-5 bg-surface rounded-full absolute top-1 transition-all shadow-sm ${currentConfig?.isOpen ? 'left-6' : 'left-1'}`}></div>

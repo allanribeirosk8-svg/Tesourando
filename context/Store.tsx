@@ -149,12 +149,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
         
         // Determine which user's data to fetch
-        let targetId = currentSession?.user?.id || null;
-        
-        if (!targetId) {
-          // If not logged in, try to find a public barber profile
+        let targetId: string | null = null;
+        if (currentSession?.user?.id) {
+          targetId = currentSession.user.id; // usuário logado: usa o ID da sessão
+        } else {
+          // visitante: busca público
           targetId = await supabaseService.getPublicBarberId();
         }
+        console.log('[STORE loadData] targetId resolvido:', targetId, '| fonte:', currentSession?.user?.id ? 'session' : 'getPublicBarberId');
 
         setBarberId(targetId);
         
@@ -171,7 +173,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             supabaseService.getAppointments(targetId),
             supabaseService.getCustomers(targetId),
             supabaseService.getServices(targetId).then(data => {
-              console.log('[INIT] serviços carregados do banco:', data);
+              console.group('[STORE loadData] serviços');
+              console.log('targetId usado na busca:', targetId);
+              console.log('session.user.id:', currentSession?.user?.id);
+              console.log('targetId === session.user.id?', targetId === currentSession?.user?.id);
+              console.log('dados retornados do banco:', data);
+              console.log('quantidade:', data?.length ?? 0);
+              console.groupEnd();
               return data;
             }),
             supabaseService.getProfile(targetId),
@@ -191,7 +199,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             });
             setCustomers(custMap);
           }
-          setServices(dbServices && dbServices.length > 0 ? dbServices : DEFAULT_SERVICES);
+          
+          const finalServices = dbServices && dbServices.length > 0 ? dbServices : DEFAULT_SERVICES;
+          console.log('[STORE loadData] setServices com:', finalServices.map(s => s.name));
+          console.log('[STORE loadData] motivo:', dbServices?.length > 0 ? 'banco' : '⚠️ DEFAULT (banco vazio ou null)');
+          setServices(finalServices);
+          
           setBarberProfile(dbProfile || DEFAULT_PROFILE);
           setWeeklySchedule({ ...DEFAULT_WEEKLY, ...(dbWeekly || {}) });
           setBlockedSlots(dbBlocked || {});
@@ -1113,7 +1126,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       fetchAppointmentsByDate,
       loadTransactions,
       addTransaction,
-      deleteTransaction
+      deleteTransaction,
+      reloadData: loadData
     }}>
       {children}
     </AppContext.Provider>
