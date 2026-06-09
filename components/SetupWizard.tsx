@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Store, User, Phone, PhoneCall, MapPin, Instagram, Scissors, List, Trash2, Clock, CheckCircle } from 'lucide-react';
+import { Store, User, Phone, PhoneCall, MapPin, Instagram, Scissors, List, Trash2, Clock, CheckCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { useStore } from '../context/Store';
 import { ServiceItem, DaySchedule } from '../types';
 import { supabaseService } from '../services/supabaseService';
@@ -89,10 +89,36 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
   const [errors, setErrors] = useState<string[]>([]);
 
+  const [handle, setHandle] = useState('');
+  const [handleStatus, setHandleStatus] = useState<
+    'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+  >('idle');
+
+  const checkHandleAvailability = async (value: string) => {
+    if (value.length < 3 || /[^a-z0-9-]/.test(value)) return;
+    setHandleStatus('checking');
+    const { data } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('slug', value)
+      .limit(1);
+    setHandleStatus(data && data.length > 0 ? 'taken' : 'available');
+  };
+
+  const handleHandleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setHandle(val);
+    if (/[^a-z0-9-]/.test(val)) {
+      setHandleStatus('invalid');
+    } else {
+      setHandleStatus('idle');
+    }
+  };
+
   const commDigits = profileData.businessPhone.replace(/\D/g, '');
   const isBusinessPhoneValid = commDigits.length === 0 || validatePhone(profileData.businessPhone);
   const isStep1Valid = profileData.name.trim() !== '' && validatePhone(profileData.personalPhone) && isBusinessPhoneValid;
-  const isStep2Valid = profileData.shopName.trim() !== '';
+  const isStep2Valid = profileData.shopName.trim() !== '' && handleStatus === 'available';
 
   const handleNext = () => {
     if (step === 1) {
@@ -131,6 +157,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       // 1. Salvar perfil
       await updateBarberProfile({
         ...profileData,
+        slug: handle,
         logo: '',
         photo: '',
         website: '',
@@ -398,6 +425,58 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                           </div>
                         </div>
                         
+                        {/* Custom Handle */}
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
+                            Nome da conta <span className="text-red-500">*</span>
+                          </label>
+                          <p className="text-xs text-[#9CA3AF] mb-2 ml-1">
+                            tesourando.vercel.app/#/agendar/
+                            {handle ? (
+                              <span className="text-[#F5A623] font-semibold">{handle}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">minha-barbearia</span>
+                            )}
+                          </p>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="minha-barbearia"
+                              value={handle}
+                              onChange={handleHandleChange}
+                              onBlur={() => checkHandleAvailability(handle)}
+                              className={`w-full bg-[#F9FAFB] border-[1.5px] rounded-[12px] py-[12px] pl-[16px] pr-[40px] text-[15px] text-[#1E1B4B] focus:outline-none focus:ring-[3px] transition-all ${
+                                handleStatus === 'available' ? 'border-green-400 focus:border-green-400 focus:ring-green-400/20' :
+                                handleStatus === 'taken' || handleStatus === 'invalid' ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' :
+                                'border-[#E5E7EB] focus:border-[#F5A623] focus:ring-[#F5A623]/15'
+                              }`}
+                            />
+                            {handleStatus !== 'idle' && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center shrink-0">
+                                {handleStatus === 'checking' && <Loader2 size={18} className="text-[#9CA3AF] animate-spin" />}
+                                {handleStatus === 'available' && <CheckCircle2 size={18} className="text-green-500" />}
+                                {(handleStatus === 'taken' || handleStatus === 'invalid') && <XCircle size={18} className="text-red-500" />}
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-1 ml-1">
+                            {handleStatus === 'available' && (
+                              <p className="text-green-500 text-xs font-medium">Disponível!</p>
+                            )}
+                            {handleStatus === 'taken' && (
+                              <p className="text-red-500 text-xs font-medium">Este endereço já está em uso. Escolha outro.</p>
+                            )}
+                            {handleStatus === 'invalid' && (
+                              <p className="text-red-500 text-xs font-medium">Use apenas letras minúsculas, números e hífens.</p>
+                            )}
+                            {(handleStatus === 'idle' || handleStatus === 'checking') && (
+                              <p className="text-[#6B7280] text-xs">
+                                Link para o seu cliente agendar. Use apenas letras minúsculas, números e hífens.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
                         {/* Address */}
                         <div>
                           <label className="block text-[13px] font-medium text-gray-700 mb-1 ml-1">
