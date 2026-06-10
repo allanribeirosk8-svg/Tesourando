@@ -133,6 +133,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, []);
 
+  const resetStore = useCallback(() => {
+    setBarberProfile(DEFAULT_PROFILE);
+    setAppointments([]);
+    setCustomers({});
+    setBlockedSlots({});
+    setUnblockedSlots({});
+    setWeeklySchedule(DEFAULT_WEEKLY);
+    setServices(DEFAULT_SERVICES);
+    setTransactions([]);
+    setIsLoading(true);
+  }, []);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -263,8 +275,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.log("Auth event:", event);
         setSession(newSession);
         
+        if (event === 'SIGNED_OUT') {
+          resetStore();
+        }
+        
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-  loadData();
+          loadData();
         }
       });
 
@@ -276,7 +292,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } else {
       loadData();
     }
-  }, [loadData]);
+  }, [loadData, resetStore]);
 
   // Supabase Realtime Subscription
   useEffect(() => {
@@ -1127,6 +1143,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       loadTransactions,
       addTransaction,
       deleteTransaction,
+      resetStore,
       reloadData: loadData
     }}>
       {children}

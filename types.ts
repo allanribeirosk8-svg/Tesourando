@@ -108,6 +108,7 @@ export interface AppState {
   reorderServices: (services: ServiceItem[]) => void;
   addTransaction: (t: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  resetStore: () => void;
   loadTransactions: (startDate: string, endDate: string) => Promise<void>;
   reloadData: () => Promise<void>;
 }

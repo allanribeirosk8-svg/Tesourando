@@ -8,6 +8,7 @@ import { compressImage, formatDate, getTodayString, generateTimeSlots, formatCur
 import { useSwipe } from '../hooks/useSwipe';
 import { Onboarding } from '../components/Onboarding';
 import { SetupWizard } from '../components/SetupWizard';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { Customer, ServiceItem, Appointment, BarberProfile } from '../types';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, Reorder } from 'motion/react';
@@ -632,12 +633,6 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
                     </button>
                   </p>
                 </div>
-                
-                <div className="flex justify-center mt-1">
-                  <Link to="/" className="text-[rgba(30,27,75,0.4)] hover:text-[#1E1B4B] font-bold uppercase tracking-[0.1em] text-[11px] transition-colors">
-                    Sou Cliente
-                  </Link>
-                </div>
               </div>
             </form>
           </motion.div>
@@ -648,7 +643,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated
 };
 
 export const AdminApp: React.FC = () => {
-  const { barberProfile, appointments, session, isLoading, updateBarberProfile, reloadData } = useStore();
+  const { barberProfile, appointments, session, isLoading, updateBarberProfile, reloadData, resetStore } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<'agenda' | 'clientes' | 'servicos' | 'caixa' | 'configuracoes'>('agenda');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -839,6 +834,7 @@ export const AdminApp: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
+    resetStore();
     if (isSupabaseConfigured()) {
       await supabase.auth.signOut();
     }
@@ -886,6 +882,10 @@ export const AdminApp: React.FC = () => {
 
   if (!isAuthenticated) {
     return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
+
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
   return (
