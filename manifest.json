@@ -3,8 +3,8 @@
   "short_name": "Meu Corte",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F99417",
-  "theme_color": "#363062",
+  "background_color": "#F5A623",
+  "theme_color": "#1E1B4B",
   "icons": [
     {
       "src": "/logocomfundo.png",
