@@ -660,7 +660,7 @@ export const AdminApp: React.FC = () => {
   const [prefilledCustomer, setPrefilledCustomer] = useState<Customer | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showSetup, setShowSetup] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('tesourando_onboarding_shown'));
 
   // NOVO: Notificações
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -733,12 +733,8 @@ export const AdminApp: React.FC = () => {
       window.scrollTo(0, 0);
       setActiveTab('agenda');
       setSelectedDate(getTodayString());
-      
-      if (!isLoading && barberProfile?.onboarding_seen === false) {
-        setShowOnboarding(true);
-      }
     }
-  }, [isAuthenticated, isLoading, barberProfile?.onboarding_seen]);
+  }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
     if (activeTab === 'agenda') {
@@ -747,14 +743,8 @@ export const AdminApp: React.FC = () => {
   }, [activeTab]);
 
   const handleOnboardingComplete = async () => {
+    localStorage.setItem('tesourando_onboarding_shown', 'true');
     setShowOnboarding(false);
-    try {
-      if (barberProfile) {
-        await updateBarberProfile({ ...barberProfile, onboarding_seen: true });
-      }
-    } catch (err) {
-      console.error('Erro ao salvar onboarding_seen:', err);
-    }
   };
 
   const [photoTargetPhone, setPhotoTargetPhone] = useState<string | null>(null);
@@ -874,11 +864,15 @@ export const AdminApp: React.FC = () => {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    const name = barberProfile.name || 'Barbeiro';
+    const name = barberProfile?.name || 'Barbeiro';
     if (hour >= 5 && hour < 12) return `Bom dia, ${name}! ☀️`;
     if (hour >= 12 && hour < 18) return `Boa tarde, ${name}! 👋`;
     return `Boa noite, ${name}! 🌙`;
   };
+
+  if (showOnboarding) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
 
   if (!isAuthenticated) {
     return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} />;
@@ -1037,10 +1031,6 @@ export const AdminApp: React.FC = () => {
       <AnimatePresence>
         {showSetup && (
           <SetupWizard onComplete={handleCompleteSetup} />
-        )}
-
-        {showOnboarding && (
-          <Onboarding onComplete={handleOnboardingComplete} />
         )}
 
         {showWeeklyModal && (
