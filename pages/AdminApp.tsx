@@ -4216,32 +4216,25 @@ const CustomerDetail: React.FC<{
     setEditPhone(customer.phone);
     setIsEditing(false);
   };
+  const [showNoShows, setShowNoShows] = useState(false);
+  
+  const appointmentsData = localHistory.filter(h => h.status === 'completed');
+  const lastVisit = appointmentsData.length > 0 ? formatDate(appointmentsData[0].date) : null;
+  const totalRevenue = appointmentsData.reduce((sum, h) => sum + (h.price || 0), 0);
+
   return (
-    <div className="animate-fade-in pb-10">
-      <div className="flex items-center justify-between mb-6">
-        <button onClick={onBack} className="text-[10px] font-black text-title flex items-center gap-1 uppercase tracking-widest hover:text-secondary transition-colors">
-          <ChevronLeft size={16} />
-          Voltar
-        </button>
-        <button 
-          onClick={() => onNewAppointment(customer)}
-          className="text-[10px] font-black text-white flex items-center gap-2 bg-secondary px-4 py-2 rounded-full uppercase tracking-widest shadow-md shadow-secondary/20 active:scale-95 transition-all"
-        >
-          <Calendar size={14} />
-          Novo Agendamento
-        </button>
-      </div>
-      <div className="bg-surface  p-6 rounded-3xl mb-6 text-center relative overflow-hidden">
+    <div className="animate-fade-in pb-28">
+      <div className="bg-surface rounded-3xl mx-4 mt-4 mb-6 p-4 relative overflow-hidden">
         <button 
           onClick={() => isEditing ? handleCancelEdit() : setIsEditing(true)}
-          className="absolute top-4 right-4 w-10 h-10 bg-primary/40  text-title rounded-full flex items-center justify-center hover:bg-primary/40 transition-colors"
+          className="absolute top-4 right-4 w-8 h-8 bg-primary/40 text-title rounded-full flex items-center justify-center hover:bg-primary/40 transition-colors z-10"
         >
-          {isEditing ? <X size={18} /> : <Edit3 size={18} />}
+          {isEditing ? <X size={14} /> : <Edit3 size={14} />}
         </button>
 
-        <div className="flex flex-col items-center mb-4">
-          <div className="relative group">
-            <div className={`w-24 h-24 rounded-full ${getAvatarColor(customer.name)} flex items-center justify-center text-white font-black text-2xl shadow-xl overflow-hidden border-4 border-white `}>
+        <div className="flex flex-row items-start gap-4 mb-4">
+          <div className="relative group shrink-0">
+            <div className={`w-16 h-16 rounded-2xl ${getAvatarColor(customer.phone)} flex items-center justify-center text-white font-black text-2xl overflow-hidden`}>
               {customer.avatar ? (
                 <img src={customer.avatar} className="w-full h-full object-cover" alt={customer.name} />
               ) : (
@@ -4250,114 +4243,203 @@ const CustomerDetail: React.FC<{
             </div>
             <button 
               onClick={() => { setPhotoType('avatar'); setShowActionSheet(true); }}
-              className="absolute bottom-0 right-0 w-8 h-8 bg-secondary text-white rounded-full flex items-center justify-center border-2 border-white  shadow-lg hover:bg-secondary transition-colors"
+              className="absolute bottom-0 right-0 w-6 h-6 bg-secondary text-white rounded-full flex items-center justify-center shadow-md ring-2 ring-surface hover:bg-secondary transition-colors"
             >
-              <Camera size={14} />
+              <Camera size={12} />
             </button>
+          </div>
+
+          <div className="flex-1 min-w-0 pr-8">
+            {isEditing ? (
+              <div className="space-y-3">
+                <input 
+                  type="text" 
+                  value={editName} 
+                  onChange={e => setEditName(e.target.value)}
+                  className="w-full bg-primary/40 border-none rounded-xl p-2 text-sm font-bold text-white"
+                  placeholder="Nome do cliente"
+                />
+                <input 
+                  type="tel" 
+                  value={editPhone} 
+                  onChange={e => setEditPhone(e.target.value)}
+                  className="w-full bg-primary/40 border-none rounded-xl p-2 text-sm text-title"
+                  placeholder="Telefone"
+                />
+                <Button fullWidth onClick={handleSaveEdit} className="h-8 rounded-xl bg-green-600 text-xs py-0">Salvar</Button>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-[18px] font-black text-white leading-tight truncate">{capitalizeName(customer.name)}</h2>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <CheckCircle2 size={11} className="text-secondary" />
+                  <span className="text-[11px] font-bold text-secondary uppercase tracking-wide">
+                    Cliente desde {localHistory.length > 0 ? localHistory[localHistory.length - 1].date.substring(0, 4) : new Date().getFullYear()}
+                  </span>
+                </div>
+
+                <div className="border-t border-white/10 my-2.5" />
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Phone size={13} className="text-white/40" />
+                    <span className="text-[13px] text-white/70 font-medium">{formatPhone(customer.phone)}</span>
+                  </div>
+                  <button 
+                    onClick={() => window.open(`https://wa.me/55${customer.phone.replace(/\D/g, '')}`)}
+                    className="w-8 h-8 rounded-xl bg-[#25D366]/15 flex items-center justify-center shrink-0"
+                  >
+                    <FaWhatsapp size={16} className="text-[#25D366]" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Calendar size={13} className="text-white/40" />
+                  <span className="text-[12px] text-white/50 font-medium truncate">
+                    Última visita: {lastVisit || 'Nenhuma visita ainda'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {isEditing ? (
-          <div className="space-y-3 mb-4">
-            <input 
-              type="text" 
-              value={editName} 
-              onChange={e => setEditName(e.target.value)}
-              className="w-full bg-primary/40  border-none rounded-xl p-3 text-center font-bold text-white "
-              placeholder="Nome do cliente"
-            />
-            <input 
-              type="tel" 
-              value={editPhone} 
-              onChange={e => setEditPhone(e.target.value)}
-              className="w-full bg-primary/40  border-none rounded-xl p-3 text-center text-title "
-              placeholder="Telefone"
-            />
-            <Button fullWidth onClick={handleSaveEdit} className="h-10 rounded-xl bg-green-600">Salvar</Button>
+        <div className="flex flex-col w-full">
+          <div className="flex justify-center gap-2 w-full">
+            <div className="bg-secondary/20 text-secondary border border-secondary/30 rounded-2xl flex-1 py-2 flex flex-col items-center justify-center min-h-[60px]">
+              <span className="font-black text-xl leading-none">{customer.cutCount}</span>
+              <span className="text-[8px] uppercase font-black tracking-widest opacity-80 mt-1">Cortes</span>
+            </div>
+            <div 
+              onClick={() => (customer.noShowCount || 0) > 0 && setShowNoShows(!showNoShows)}
+              className={`rounded-2xl border flex-1 py-2 flex flex-col items-center justify-center min-h-[60px] transition-all ${(customer.noShowCount || 0) > 0 ? 'bg-amber-500/20 text-amber-300 border-amber-400/20 cursor-pointer' : 'bg-primary/40 text-title border-title/30'}`}
+            >
+              <span className="font-black text-xl leading-none">{customer.noShowCount || 0}</span>
+               <span className="text-[8px] uppercase font-black tracking-widest opacity-80 mt-1">Faltas</span>
+            </div>
+            <div className="bg-green-500/10 text-green-400 border border-green-500/20 rounded-2xl flex-1 py-2 flex flex-col items-center justify-center min-h-[60px]">
+              <span className="font-black text-sm leading-none">{formatCurrency(totalRevenue)}</span>
+              <span className="text-[8px] uppercase font-black tracking-widest opacity-80 mt-1">Total</span>
+            </div>
           </div>
-        ) : (
-          <>
-            <h2 className="text-lg font-bold text-white ">{capitalizeName(customer.name)}</h2>
-            <p className="text-title  text-xs mb-4">{customer.phone}</p>
-          </>
-        )}
-        <div className="flex justify-center gap-3">
-          <div className="bg-secondary/20 text-secondary border border-secondary/30 px-6 py-2 rounded-2xl shadow-lg flex-1 max-w-[120px]">
-            <span className="font-black text-xl">{customer.cutCount}</span>
-            <span className="text-[8px] ml-2 uppercase font-black tracking-widest opacity-80">
-              {customer.cutCount === 1 ? 'corte' : 'cortes'}
-            </span>
-          </div>
-          <div className={`px-6 py-2 rounded-2xl shadow-lg flex-1 max-w-[120px] transition-all ${
-            (customer.noShowCount || 0) > 0 
-              ? 'bg-amber-500/20 text-amber-300 border border-amber-400/20' 
-              : 'bg-primary/40  text-title  border border-title/30  shadow-none'
-          }`}>
-            <span className="font-black text-xl">{customer.noShowCount || 0}</span>
-            <span className="text-[8px] ml-2 uppercase font-black tracking-widest opacity-80">
-              {(customer.noShowCount || 0) === 1 ? 'falta' : 'faltas'}
-            </span>
-          </div>
+          <AnimatePresence>
+            {showNoShows && localHistory.filter(h => h.status === 'no-show').length > 0 && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-red-500/10 rounded-xl px-3 py-2 mt-2 text-[11px] text-red-300 text-left">
+                  {localHistory.filter(h => h.status === 'no-show').map((apt, i) => (
+                    <div key={i}>• {formatDate(apt.date)} — {apt.service}</div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       <div className="space-y-6">
-        <h3 className="font-semibold text-white  text-sm uppercase tracking-widest mb-4">Histórico</h3>
-        <div className="space-y-3">
-          {isLoadingData && localHistory.length === 0 ? (
-            <div className="p-8 text-center text-title text-xs animate-pulse">Carregando histórico...</div>
-          ) : localHistory.length === 0 ? (
-            <div className="p-8 text-center text-title text-xs italic">Nenhum histórico encontrado.</div>
-          ) : (
-            localHistory.map((h: any, i) => {
-              const isNoShow = h.status === 'no-show' || h.service.includes('Falta registrada');
-              return (
-                <div key={i} className={`p-4 rounded-xl flex justify-between items-center bg-surface ${isNoShow ? "border-amber-400/20" : ""}`}>
-                  <div>
-                    <span className={`text-xs font-bold block ${isNoShow ? "text-amber-300 " : "text-white "}`}>{h.service}</span>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-white  font-bold uppercase">{formatDate(h.date)}</span>
-                      {h.time && <span className="text-[9px] text-title  font-medium uppercase">{h.time}</span>}
-                    </div>
+        <h3 className="font-semibold text-white text-sm uppercase tracking-widest mb-4 px-4">Histórico</h3>
+        <div className="space-y-3 px-4">
+          {(() => {
+            if (isLoadingData && localHistory.length === 0) return <div className="p-8 text-center text-title text-xs animate-pulse">Carregando histórico...</div>;
+            if (localHistory.length === 0) return (
+              <div className="py-10 flex flex-col items-center gap-3 text-center">
+                <Scissors size={32} className="text-secondary/40" />
+                <p className="font-bold text-white/40 uppercase tracking-widest text-sm">Primeiro atendimento a caminho!</p>
+                <p className="text-[11px] text-white/25">O histórico aparecerá aqui após o primeiro corte.</p>
+              </div>
+            );
+            
+            const grouped = localHistory.reduce((acc, apt) => {
+               const key = apt.date.substring(0, 7);
+               if(!acc[key]) acc[key] = [];
+               acc[key].push(apt);
+               return acc;
+            }, {} as Record<string, typeof localHistory>);
+            
+            return Object.keys(grouped).sort((a,b) => b.localeCompare(a)).map(monthKey => {
+               const [year, month] = monthKey.split('-');
+               const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+               const monthTitle = `${date.toLocaleString('pt-BR', { month: 'long' })} ${year}`;
+
+               return (
+                  <div key={monthKey} className="mb-6">
+                     <h4 className="font-bold text-white text-[11px] uppercase tracking-widest border-l-4 border-secondary pl-3 mb-3">{monthTitle}</h4>
+                     <div className="space-y-3">
+                       {grouped[monthKey].map((h: any, i) => {
+                         const isNoShow = h.status === 'no-show' || h.service.includes('Falta registrada');
+                         return (
+                           <div key={i} className={`px-4 py-3 rounded-xl flex justify-between items-center bg-surface ${isNoShow ? "border-amber-400/20" : ""}`}>
+                             <div>
+                               <span className={`text-xs font-bold block ${isNoShow ? "text-amber-300" : "text-white"}`}>{h.service}</span>
+                               <div className="flex items-center gap-2 mt-0.5">
+                                 <span className="text-[10px] text-white font-bold uppercase">{formatDate(h.date)}</span>
+                                 {h.time && <span className="text-[9px] text-title font-medium uppercase">{h.time}</span>}
+                               </div>
+                             </div>
+                             <div className="flex items-center gap-2">
+                               {h.price && h.price > 0 ? (
+                                 <span className="text-[10px] font-black text-title">{formatCurrency(h.price)}</span>
+                               ) : null}
+                               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${isNoShow ? "bg-amber-500/10 text-amber-300" : "bg-green-500/10 text-green-400"}`}>
+                                 {isNoShow ? <ThumbsDown size={14} /> : '✓'}
+                               </div>
+                             </div>
+                           </div>
+                         );
+                       })}
+                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {h.price && h.price > 0 ? (
-                      <span className="text-[10px] font-black text-title">{formatCurrency(h.price)}</span>
-                    ) : null}
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${isNoShow ? "bg-amber-500/10 text-amber-300" : "bg-green-500/10 text-green-400"}`}>
-                      {isNoShow ? <ThumbsDown size={14} /> : '✓'}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
+               );
+            });
+          })()}
         </div>
-        <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-white  text-sm uppercase tracking-widest">Fotos</h3>
-            <button onClick={() => { setPhotoType('history'); setShowActionSheet(true); }} className="text-[9px] bg-secondary text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest">+ Adicionar foto</button>
+        <div className="flex justify-between items-center px-4">
+            <h3 className="font-semibold text-white text-sm uppercase tracking-widest">Fotos</h3>
+            <button onClick={() => { setPhotoType('history'); setShowActionSheet(true); }} className="text-[9px] bg-secondary text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest shadow-sm">+ Adicionar foto</button>
             <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleFileChange} />
             <input type="file" accept="image/*" ref={galleryInputRef} className="hidden" onChange={handleFileChange} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 px-4">
           {isLoadingData && localPhotos.length === 0 ? (
             <div className="col-span-2 p-8 text-center text-title text-xs animate-pulse">Carregando fotos...</div>
-          ) : localPhotos.length === 0 ? (
-            <div className="col-span-2 p-8 text-center text-title text-xs italic">Nenhuma foto encontrada.</div>
           ) : (
-            localPhotos.map((photo, idx) => (
-              <div key={idx} className="flex flex-col gap-2">
-                <div className="aspect-[3/4] rounded-2xl overflow-hidden border-2 border-white  shadow-sm">
-                  <img src={photo.url} className="w-full h-full object-cover" loading="lazy" />
+            <>
+              {localPhotos.map((photo, idx) => (
+                <div key={idx} className="flex flex-col gap-2">
+                  <div className="aspect-[3/4] rounded-2xl overflow-hidden border-2 border-white shadow-sm">
+                    <img src={photo.url} className="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                  {photo.description && (
+                    <p className="text-[10px] text-title italic px-1 leading-tight">
+                      {photo.description}
+                    </p>
+                  )}
                 </div>
-                {photo.description && (
-                  <p className="text-[10px] text-title  italic px-1 leading-tight">
-                    {photo.description}
-                  </p>
-                )}
+              ))}
+              <div 
+                onClick={() => { setPhotoType('history'); setShowActionSheet(true); }}
+                className={`flex flex-col items-center justify-center border-2 border-dashed border-title/30 rounded-2xl cursor-pointer hover:bg-white/5 transition-colors aspect-[3/4] ${localPhotos.length === 0 ? 'col-span-2 aspect-auto py-12' : ''}`}
+              >
+                <Plus size={localPhotos.length === 0 ? 32 : 24} className="text-secondary mb-2" />
+                {localPhotos.length === 0 && <span className="text-xs text-title font-medium">Adicionar primeira foto</span>}
               </div>
-            ))
+            </>
           )}
         </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 bg-[#1E1B4B] z-50">
+        <button 
+          onClick={() => onNewAppointment(customer)}
+          className="w-full h-14 bg-secondary text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-secondary/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
+        >
+          <Calendar size={20} />
+          Novo Agendamento
+        </button>
       </div>
 
       <AnimatePresence>

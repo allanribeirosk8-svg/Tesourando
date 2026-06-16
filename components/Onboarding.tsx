@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Scissors, Calendar, User, Settings, Check } from 'lucide-react';
-import { Button } from './ui/Button';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -9,40 +7,75 @@ interface OnboardingProps {
 
 export function Onboarding({ onComplete }: OnboardingProps) {
   const [step, setStep] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  const steps = [
+  const slides = [
     {
-      icon: <Scissors size={64} className="text-[#F99417]" />,
-      title: "Bem-vindo ao Tesourando!",
-      description: "Seu assistente completo de barbearia. Vamos te mostrar o essencial em 3 passos rápidos."
+      image: "/slide-1.png",
+      title: "Chega de agenda no papel.",
+      description: "Organize seus atendimentos, clientes e financeiro num só lugar — feito para barbeiro."
     },
     {
-      icon: <Calendar size={64} className="text-[#F99417]" />,
-      title: "Agenda Inteligente",
-      description: "Visualize e gerencie todos os seus agendamentos. Toque num horário para ver detalhes, confirmar ou marcar falta."
+      image: "/slide-2.png",
+      title: "Nunca mais perca um cliente.",
+      description: "Histórico completo, fotos dos cortes e o contato sempre à mão. Seu cliente se sente lembrado."
     },
     {
-      icon: <User size={64} className="text-[#F99417]" />,
-      title: "Clientes com Histórico",
-      description: "Cada cliente tem seu perfil completo — histórico de cortes, fotos antes/depois e muito mais."
+      image: "/slide-3.png",
+      title: "Saiba exatamente quanto você faturou.",
+      description: "Veja o resumo do dia e da semana sem precisar anotar nada. O dinheiro no controle."
     },
     {
-      icon: <Settings size={64} className="text-[#F99417]" />,
-      title: "Configure do seu Jeito",
-      description: "Ajuste horários de funcionamento, serviços e o perfil da sua barbearia nas Configurações."
+      image: "/slide-4.svg",
+      title: "Pronto para organizar sua barbearia?",
+      description: "Crie sua conta grátis e comece agora."
     }
   ];
 
-  const handleNext = () => {
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-    } else {
-      onComplete();
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart === null || touchEnd === null) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && step < slides.length - 1) {
+      setStep(prev => prev + 1);
+    }
+    if (isRightSwipe && step > 0) {
+      setStep(prev => prev - 1);
     }
   };
 
+  const isLastStep = step === slides.length - 1;
+
   return (
-    <div className="fixed inset-0 z-[999] bg-[#1E1B4B] flex flex-col items-center justify-center p-6 text-white text-center">
+    <div 
+      className="fixed inset-0 z-[999] bg-[#1E1B4B] flex flex-col items-center justify-center p-6 text-white text-center"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {!isLastStep && (
+        <button 
+          onClick={onComplete}
+          className="absolute top-12 right-6 text-white/50 font-bold uppercase tracking-widest text-[11px] px-3 py-1.5 rounded-full border border-white/10 hover:bg-white/5 active:scale-95 transition-all"
+        >
+          Pular
+        </button>
+      )}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -50,41 +83,56 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
-          className="flex flex-col items-center max-w-sm w-full"
+          className="flex flex-col items-center max-w-sm w-full -mt-20"
         >
-          <div className="mb-8 p-6 bg-white/5 rounded-full backdrop-blur-lg border border-white/10 shadow-[0_0_40px_rgba(249,148,23,0.15)]">
-            {steps[step].icon}
+          <div className="w-64 h-64 mb-8 flex items-center justify-center relative">
+            <img 
+              src={slides[step].image} 
+              alt={slides[step].title} 
+              className="w-full h-full object-contain drop-shadow-xl" 
+            />
           </div>
-          <h1 className="text-3xl font-black mb-4">{steps[step].title}</h1>
-          <p className="text-white/70 text-lg leading-relaxed mb-12">
-            {steps[step].description}
+          <h1 className="text-3xl font-black mb-4 tracking-tight leading-tight">{slides[step].title}</h1>
+          <p className="text-white/70 text-base leading-relaxed mb-6 px-4">
+            {slides[step].description}
           </p>
         </motion.div>
       </AnimatePresence>
 
       <div className="absolute bottom-12 left-0 right-0 px-6 max-w-sm mx-auto w-full flex flex-col gap-8">
-        <div className="flex justify-center gap-3">
-          {steps.map((_, i) => (
-            <div 
+        <div className="flex justify-center gap-2">
+          {slides.map((_, i) => (
+            <button 
               key={i} 
+              onClick={() => setStep(i)}
               className={`h-2 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-[#F99417]' : 'w-2 bg-white/20'}`} 
             />
           ))}
         </div>
         
-        <button
-          onClick={handleNext}
-          className="w-full bg-[#F99417] text-white hover:bg-[#D87D10] h-14 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all text-lg shadow-lg shadow-[#F99417]/20"
-        >
-          {step === steps.length - 1 ? (
-            <>
-              Começar a Usar
-              <Check size={24} />
-            </>
-          ) : (
-            'Continuar'
-          )}
-        </button>
+        {isLastStep ? (
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={onComplete}
+              className="w-full bg-[#F99417] text-white h-14 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center active:scale-95 transition-all text-[13px] shadow-lg shadow-[#F99417]/20"
+            >
+              Criar conta grátis
+            </button>
+            <button
+              onClick={onComplete}
+              className="w-full bg-transparent border-2 border-white/20 text-white h-14 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center active:scale-95 transition-all text-[13px] hover:bg-white/5"
+            >
+              Já tenho conta
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setStep(prev => prev + 1)}
+            className="w-full bg-[#F99417] text-white h-14 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center active:scale-95 transition-all text-[13px] shadow-lg shadow-[#F99417]/20"
+          >
+            Continuar
+          </button>
+        )}
       </div>
     </div>
   );
