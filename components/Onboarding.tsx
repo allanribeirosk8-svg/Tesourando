@@ -139,6 +139,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             exit="exit"
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="absolute inset-0 w-full h-full object-contain object-bottom"
+            style={{ paddingTop: '25px' }}
           />
         </AnimatePresence>
       </div>

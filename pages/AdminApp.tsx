@@ -4284,9 +4284,9 @@ const CustomerDetail: React.FC<{
                   </div>
                   <button 
                     onClick={() => window.open(`https://wa.me/55${customer.phone.replace(/\D/g, '')}`)}
-                    className="w-8 h-8 rounded-xl bg-[#25D366]/15 flex items-center justify-center shrink-0"
+                    className="w-8 h-8 rounded-xl bg-[#25D366]/15 flex items-center justify-center shrink-0 text-[#25D366]"
                   >
-                    <FaWhatsapp size={16} className="text-[#25D366]" />
+                    <FaWhatsapp size={16} />
                   </button>
                 </div>
 
