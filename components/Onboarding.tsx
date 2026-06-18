@@ -70,7 +70,7 @@ const slides: Slide[] = [
     },
   },
   {
-    image: '/slide-4.svg',
+    image: '/slide-4.png',
     title: 'Pronto para organizar sua barbearia?',
     description: 'Crie sua conta grátis e comece agora.',
     theme: {
