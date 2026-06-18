@@ -11,6 +11,7 @@ interface SlideTheme {
   dotInactive: string;
   skipColor: string;
   skipBorder: string;
+  imagePaddingTop: string;
 }
 
 interface Slide {
@@ -26,15 +27,11 @@ const slides: Slide[] = [
     title: 'Chega de agenda no papel.',
     description: 'Organize seus atendimentos, clientes e financeiro num só lugar — feito para barbeiro.',
     theme: {
-      bg: '#F99417',
-      titleColor: '#1E1B4B',
-      descColor: '#1E1B4B',
-      buttonBg: '#1E1B4B',
-      buttonText: '#FFFFFF',
-      dotActive: '#1E1B4B',
-      dotInactive: 'rgba(30,27,75,0.25)',
-      skipColor: 'rgba(30,27,75,0.6)',
-      skipBorder: 'rgba(30,27,75,0.2)',
+      bg: '#F99417', titleColor: '#1E1B4B', descColor: '#1E1B4B',
+      buttonBg: '#1E1B4B', buttonText: '#FFFFFF',
+      dotActive: '#1E1B4B', dotInactive: 'rgba(30,27,75,0.25)',
+      skipColor: 'rgba(30,27,75,0.6)', skipBorder: 'rgba(30,27,75,0.2)',
+      imagePaddingTop: 'pt-10',
     },
   },
   {
@@ -42,15 +39,11 @@ const slides: Slide[] = [
     title: 'Nunca mais perca um cliente.',
     description: 'Histórico completo, fotos dos cortes e o contato sempre à mão. Seu cliente se sente lembrado.',
     theme: {
-      bg: '#F3F2FA',
-      titleColor: '#1E1B4B',
-      descColor: '#1E1B4B',
-      buttonBg: '#F99417',
-      buttonText: '#FFFFFF',
-      dotActive: '#F99417',
-      dotInactive: 'rgba(249,148,23,0.25)',
-      skipColor: 'rgba(30,27,75,0.6)',
-      skipBorder: 'rgba(30,27,75,0.2)',
+      bg: '#F3F2FA', titleColor: '#1E1B4B', descColor: '#1E1B4B',
+      buttonBg: '#F99417', buttonText: '#FFFFFF',
+      dotActive: '#F99417', dotInactive: 'rgba(249,148,23,0.25)',
+      skipColor: 'rgba(30,27,75,0.6)', skipBorder: 'rgba(30,27,75,0.2)',
+      imagePaddingTop: 'pt-10',
     },
   },
   {
@@ -58,15 +51,11 @@ const slides: Slide[] = [
     title: 'Saiba exatamente quanto você faturou.',
     description: 'Veja o resumo do dia e da semana sem precisar anotar nada. O dinheiro no controle.',
     theme: {
-      bg: '#1E1B4B',
-      titleColor: '#FFFFFF',
-      descColor: 'rgba(255,255,255,0.75)',
-      buttonBg: '#F99417',
-      buttonText: '#FFFFFF',
-      dotActive: '#F99417',
-      dotInactive: 'rgba(249,148,23,0.3)',
-      skipColor: 'rgba(255,255,255,0.55)',
-      skipBorder: 'rgba(255,255,255,0.2)',
+      bg: '#1E1B4B', titleColor: '#FFFFFF', descColor: 'rgba(255,255,255,0.75)',
+      buttonBg: '#F99417', buttonText: '#FFFFFF',
+      dotActive: '#F99417', dotInactive: 'rgba(249,148,23,0.3)',
+      skipColor: 'rgba(255,255,255,0.55)', skipBorder: 'rgba(255,255,255,0.2)',
+      imagePaddingTop: 'pt-10',
     },
   },
   {
@@ -74,15 +63,11 @@ const slides: Slide[] = [
     title: 'Pronto para organizar sua barbearia?',
     description: 'Crie sua conta grátis e comece agora.',
     theme: {
-      bg: '#F99417',
-      titleColor: '#1E1B4B',
-      descColor: '#1E1B4B',
-      buttonBg: '#1E1B4B',
-      buttonText: '#FFFFFF',
-      dotActive: '#1E1B4B',
-      dotInactive: 'rgba(30,27,75,0.25)',
-      skipColor: 'rgba(30,27,75,0.6)',
-      skipBorder: 'rgba(30,27,75,0.2)',
+      bg: '#F99417', titleColor: '#1E1B4B', descColor: '#1E1B4B',
+      buttonBg: '#1E1B4B', buttonText: '#FFFFFF',
+      dotActive: '#1E1B4B', dotInactive: 'rgba(30,27,75,0.25)',
+      skipColor: 'rgba(30,27,75,0.6)', skipBorder: 'rgba(30,27,75,0.2)',
+      imagePaddingTop: 'pt-4',
     },
   },
 ];
@@ -119,32 +104,29 @@ export function Onboarding({ onComplete }: OnboardingProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[999] flex flex-col overflow-hidden w-full h-[100dvh]"
+      className="fixed inset-0 z-[999] flex flex-col overflow-hidden"
       animate={{ backgroundColor: theme.bg }}
       transition={{ duration: 0.45, ease: 'easeInOut' }}
       onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
       onTouchEnd={(e) => {
         const diff = touchStartX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > 50) {
-          diff > 0 ? goTo(step + 1) : goTo(step - 1);
-        }
+        if (Math.abs(diff) > 50) diff > 0 ? goTo(step + 1) : goTo(step - 1);
       }}
     >
-      {/* Botão Pular */}
       {!isLast && (
-        <div className="absolute top-8 right-6 z-10 transition-colors duration-500">
+        <div className="absolute top-4 right-4 z-10 transition-colors duration-500">
           <button
-            onClick={onComplete}
+            onClick={() => onComplete()}
             className="px-4 py-1.5 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-colors duration-500"
             style={{ color: theme.skipColor, borderColor: theme.skipBorder }}
           >
-            Pular
+            PULAR
           </button>
         </div>
       )}
 
-      {/* Área da imagem — 58% da tela */}
-      <div className="flex-[58] relative overflow-hidden flex items-end justify-center w-full">
+      {/* Imagem — 58% com padding-top por tema */}
+      <div className={`flex-[58] relative overflow-hidden flex items-end justify-center w-full ${theme.imagePaddingTop}`}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.img
             key={step + '-img'}
@@ -161,35 +143,38 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         </AnimatePresence>
       </div>
 
-      {/* Área de texto + controles — 42% da tela */}
-      <div className="flex-[42] flex flex-col items-center justify-between px-6 pb-12 pt-8 z-10 w-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step + '-text'}
-            variants={textVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="text-center"
-          >
-            <h2
-              className="text-3xl font-black mb-4 leading-tight tracking-tight transition-colors duration-500"
-              style={{ color: theme.titleColor }}
+      {/* Texto + controles — 42%, ancorado na borda inferior */}
+      <div className="flex-[42] flex flex-col px-6 pb-8 pt-4 z-10 w-full">
+        {/* flex-1 absorve variação de altura do texto */}
+        <div className="flex-1 flex flex-col justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step + '-text'}
+              variants={textVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="text-center"
             >
-              {slides[step].title}
-            </h2>
-            <p
-              className="text-base leading-relaxed transition-colors duration-500"
-              style={{ color: theme.descColor }}
-            >
-              {slides[step].description}
-            </p>
-          </motion.div>
-        </AnimatePresence>
+              <h2
+                className="text-2xl font-bold mb-3 leading-tight tracking-tight transition-colors duration-500"
+                style={{ color: theme.titleColor }}
+              >
+                {slides[step].title}
+              </h2>
+              <p
+                className="text-base leading-relaxed transition-colors duration-500"
+                style={{ color: theme.descColor }}
+              >
+                {slides[step].description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-        {/* Dots */}
-        <div className="flex items-center gap-2 my-2">
+        {/* Dots — h-8 fixo, fora do AnimatePresence */}
+        <div className="h-8 flex items-center justify-center gap-2 mb-4">
           {slides.map((_, i) => (
             <motion.div
               key={i}
@@ -204,7 +189,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           ))}
         </div>
 
-        {/* Botão(ões) */}
+        {/* Botões */}
         {!isLast ? (
           <button
             onClick={() => goTo(step + 1)}
@@ -225,10 +210,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             <button
               onClick={() => onComplete('login')}
               className="w-full py-3.5 flex items-center justify-center rounded-full text-[13px] font-black uppercase tracking-widest border-2 active:scale-95 transition-all duration-300 bg-transparent text-center"
-              style={{
-                color: theme.buttonBg,
-                borderColor: theme.buttonBg,
-              }}
+              style={{ color: theme.buttonBg, borderColor: theme.buttonBg }}
             >
               Já tenho conta
             </button>
