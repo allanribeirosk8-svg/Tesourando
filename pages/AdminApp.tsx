@@ -400,8 +400,8 @@ const useScrollDirection = () => {
   return isVisible;
 };
 
-const AuthScreen: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated }) => {
-  const [view, setView] = useState<'login' | 'register'>('login');
+const AuthScreen: React.FC<{ onAuthenticated: () => void, initialView?: 'login' | 'register' }> = ({ onAuthenticated, initialView = 'login' }) => {
+  const [view, setView] = useState<'login' | 'register'>(initialView);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -742,9 +742,16 @@ export const AdminApp: React.FC = () => {
     }
   }, [activeTab]);
 
-  const handleOnboardingComplete = async () => {
+  const [authInitialView, setAuthInitialView] = useState<'login' | 'register'>('login');
+
+  const handleOnboardingComplete = async (action?: 'login' | 'register') => {
     localStorage.setItem('tesourando_onboarding_shown', 'true');
     setShowOnboarding(false);
+    if (action === 'register') {
+      setAuthInitialView('register');
+    } else {
+      setAuthInitialView('login');
+    }
   };
 
   const [photoTargetPhone, setPhotoTargetPhone] = useState<string | null>(null);
@@ -875,7 +882,7 @@ export const AdminApp: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} />;
+    return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} initialView={authInitialView} />;
   }
 
   if (isLoading) {

@@ -88,7 +88,7 @@ const slides: Slide[] = [
 ];
 
 interface OnboardingProps {
-  onComplete: () => void;
+  onComplete: (action?: 'login' | 'register') => void;
 }
 
 const slideVariants = {
@@ -216,14 +216,14 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         ) : (
           <div className="w-full flex flex-col gap-3">
             <button
-              onClick={onComplete}
+              onClick={() => onComplete('register')}
               className="w-full py-4 rounded-full text-[13px] font-black uppercase tracking-widest active:scale-95 transition-all duration-300 text-center"
               style={{ backgroundColor: theme.buttonBg, color: theme.buttonText }}
             >
               Criar conta grátis
             </button>
             <button
-              onClick={onComplete}
+              onClick={() => onComplete('login')}
               className="w-full py-3.5 flex items-center justify-center rounded-full text-[13px] font-black uppercase tracking-widest border-2 active:scale-95 transition-all duration-300 bg-transparent text-center"
               style={{
                 color: theme.buttonBg,
