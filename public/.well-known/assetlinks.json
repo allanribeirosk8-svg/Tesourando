@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.tesourando.twa",
+        "sha256_cert_fingerprints": ["46:C5:E5:E0:0F:8C:42:A3:14:61:24:C0:52:D9:50:03:EA:A6:94:53:33:11:64:EC:E5:88:28:32:F6:12:66:E2"]
+      }
+    }]
