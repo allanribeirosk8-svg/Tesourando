@@ -1487,7 +1487,7 @@ const AgendaView: React.FC<{
   }, [currentDayAppointments]);
 
   return (
-    <div className="flex-1 flex flex-col relative z-0 bg-[#363062] min-h-0">
+    <div className="flex-1 flex flex-col relative z-0 bg-[#363062] min-h-0 max-w-md mx-auto w-full">
       <div className="bg-[#1E1B4B] pt-2 pb-5 px-4 relative z-10 w-full shrink-0">
         <div {...agendaSwipeHandlers} className="overflow-hidden">
         {/* Integrated Calendar Header */}
@@ -1759,7 +1759,7 @@ const AgendaView: React.FC<{
 
       {/* Summary Cards */}
       <div 
-        className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0"
+        className="grid grid-cols-2 gap-3 px-2 mt-3 mb-0 items-stretch"
         style={{
           opacity: Math.max(0, 1 - (parallaxOffset / 100)),
           pointerEvents: parallaxOffset > 50 ? 'none' : 'auto',
@@ -1770,20 +1770,21 @@ const AgendaView: React.FC<{
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0, duration: 0.35, ease: 'easeOut' }}
+          className="h-full flex flex-col"
         >
           <button 
             onClick={onNavigateToCaixa}
-            className="w-[160.5px] h-[74.5px] -ml-[6px] rounded-[14px] py-[10px] px-[14px] flex flex-col items-start justify-center bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group text-left active:scale-[0.97] transition-transform"
+            className="w-full h-full rounded-[14px] py-[12px] px-[14px] flex flex-col justify-between bg-[#F99417] shadow-[0_4px_12px_rgba(0,0,0,0.18)] relative overflow-hidden group text-left active:scale-[0.97] transition-all min-h-[82px]"
           >
             {/* Decoração — círculo grande translúcido */}
             <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)' }}
+               style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)' }}
             />
             <div className="absolute -right-2 -bottom-8 w-24 h-24 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
+               style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
             />
             
-            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.dayLabel}</span>
+            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-1.5 relative z-10">{stats.dayLabel}</span>
             <div className="flex flex-col relative z-10">
               <span className="text-[22px] font-extrabold text-white leading-tight">{formatCurrency(stats.dayRevenue)}</span>
               <span className="text-[11px] text-white/75 leading-none mt-0.5">{stats.dayCount} {stats.dayCount === 1 ? 'atendimento' : 'atendimentos'}</span>
@@ -1796,12 +1797,13 @@ const AgendaView: React.FC<{
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08, duration: 0.35, ease: 'easeOut' }}
+          className="h-full flex flex-col"
         >
           <button 
             onClick={onNavigateToCaixa}
-            className="w-[160.5px] ml-[6px] bg-white/[0.08] rounded-[14px] py-[10px] px-[14px] flex flex-col items-start justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group text-left active:scale-[0.97] transition-transform"
+            className="w-full h-full bg-white/[0.08] rounded-[14px] py-[12px] px-[14px] flex flex-col justify-between shadow-[0_4px_12px_rgba(0,0,0,0.18)] border border-white/5 relative overflow-hidden group text-left active:scale-[0.97] transition-all min-h-[82px]"
           >
-            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-0.5 relative z-10">{stats.weekLabel}</span>
+            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-[1.4px] leading-none mb-1.5 relative z-10">{stats.weekLabel}</span>
             <div className="flex flex-col relative z-10">
               <span className="text-[22px] font-extrabold text-[#FFFFFF] leading-tight">{formatCurrency(stats.weekRevenue)}</span>
               <span className="text-[11px] font-normal text-white/75 leading-none mt-0.5">{stats.weekCount} {stats.weekCount === 1 ? 'atendimento' : 'atendimentos'}</span>
