@@ -886,7 +886,7 @@ export const AdminApp: React.FC = () => {
   }
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <div className="fixed inset-0 bg-[#363062]" />;
   }
 
   return (

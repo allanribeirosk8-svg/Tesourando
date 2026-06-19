@@ -54,7 +54,13 @@ const DEFAULT_PROFILE: BarberProfile = {
   onboarding_seen: false
 };
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<{ children: ReactNode; onReady?: () => void }> = ({ children, onReady }) => {
+  const isFirstLoad = useRef(true);
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
+
   const finishingRef = useRef<Set<string>>(new Set());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -239,6 +245,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       loadFromLocalStorage();
     } finally {
       setIsLoading(false);
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false;
+        onReadyRef.current?.();
+      }
     }
   }, []);
 
