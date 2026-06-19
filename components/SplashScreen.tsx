@@ -19,7 +19,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 bg-[#F5A623] flex items-center justify-center z-50 origin-center"
+      className="fixed inset-0 bg-[#F97316] flex items-center justify-center z-50 origin-center"
       initial={{ scale: 1, opacity: 1 }}
       animate={
         phase === 2
