@@ -71,7 +71,11 @@ import {
   EyeOff,
   Filter,
   Info,
-  Wallet
+  Wallet,
+  Link2,
+  Copy,
+  Share2,
+  ExternalLink
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { CaixaView } from './CaixaView';
@@ -239,6 +243,33 @@ const ConfiguracoesScreen: React.FC<{
 }> = ({ onOpenProfile, onOpenWeekly, onLogout }) => {
   const { barberProfile } = useStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const shareUrl = barberProfile?.slug ? `${window.location.origin}/#/agendar/${barberProfile.slug}` : '';
+
+  const handleCopy = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Agende comigo!',
+          text: `Agende seu horário com ${barberProfile?.shop_name || barberProfile?.name || 'barbeiro'}`,
+          url: shareUrl
+        });
+      } catch (e) {
+        console.log('Share canceled or failed', e);
+      }
+    } else {
+      handleCopy();
+    }
+  };
 
   return (
     <>
@@ -261,6 +292,50 @@ const ConfiguracoesScreen: React.FC<{
           </div>
           <ChevronRight size={20} className="text-title shrink-0" />
         </button>
+
+        {/* Card "Meu Link de Agendamento" */}
+        {barberProfile?.slug && (
+          <div className="bg-surface border border-white/8 rounded-2xl p-4 space-y-4 shadow-lg">
+            <div className="flex items-center gap-2 bg-[#1e1b4b]">
+              <div className="w-8 h-8 rounded-full bg-[#1e1b4b] text-white flex items-center justify-center">
+                <Link2 size={16} className="text-white bg-[#1e1b4b]" />
+              </div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Meu Link de Agendamento</h3>
+            </div>
+            
+            <div className="bg-[#1e1b4b] border border-white/5 rounded-xl p-3 flex items-center justify-between gap-2">
+              <span className="text-xs text-white/50 truncate select-all font-mono flex-1">
+                {shareUrl}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 bg-[#1e1b4b]">
+              <button
+                onClick={handleCopy}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-xs font-semibold text-white transition-all border border-white/5"
+              >
+                <Copy size={14} className={linkCopied ? "text-green-400" : "text-white/70"} />
+                <span>{linkCopied ? 'Copiado! ✓' : 'Copiar'}</span>
+              </button>
+
+              <button
+                onClick={handleShare}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-xs font-semibold text-white transition-all border border-white/5"
+              >
+                <Share2 size={14} className="text-white/70" />
+                <span>Compartilhar</span>
+              </button>
+
+              <button
+                onClick={() => window.open(shareUrl, '_blank')}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-secondary/10 hover:bg-secondary/20 active:scale-95 text-xs font-semibold text-secondary transition-all border border-secondary/10"
+              >
+                <ExternalLink size={14} />
+                <span>Abrir</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Seção CONTA */}
         <div className="space-y-4">

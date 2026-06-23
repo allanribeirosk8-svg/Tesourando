@@ -12,10 +12,11 @@ const AppContent: React.FC<{
   onSplashComplete: () => void;
 }> = ({ showSplash, appReady, onSplashComplete }) => {
   const { isLoading } = useStore();
+  const isClientRoute = window.location.hash.includes('/agendar');
 
   // If app is not ready yet or the context Store is still loading data,
   // we render a solid background using the exact background color of the splash screen
-  if (!appReady || isLoading) {
+  if (!appReady || (isLoading && !isClientRoute)) {
     return (
       <div 
         style={{ 
