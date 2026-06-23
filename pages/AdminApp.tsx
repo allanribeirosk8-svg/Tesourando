@@ -293,29 +293,35 @@ const ConfiguracoesScreen: React.FC<{
           <ChevronRight size={20} className="text-title shrink-0" />
         </button>
 
-        {/* Card "Meu Link de Agendamento" */}
+        {/* Card "Meu Link de Agendamento" — versão refinada */}
         {barberProfile?.slug && (
-          <div className="bg-surface border border-white/8 rounded-2xl p-4 space-y-4 shadow-lg">
-            <div className="flex items-center gap-2 bg-[#1e1b4b]">
-              <div className="w-8 h-8 rounded-full bg-[#1e1b4b] text-white flex items-center justify-center">
-                <Link2 size={16} className="text-white bg-[#1e1b4b]" />
-              </div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Meu Link de Agendamento</h3>
-            </div>
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#2A2760] to-[#1E1B4B] border border-white/10 rounded-2xl p-4 space-y-4 shadow-xl">
+            {/* Decoração de fundo */}
+            <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-secondary/10 blur-2xl pointer-events-none" />
             
-            <div className="bg-[#1e1b4b] border border-white/5 rounded-xl p-3 flex items-center justify-between gap-2">
-              <span className="text-xs text-white/50 truncate select-all font-mono flex-1">
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="w-9 h-9 rounded-xl bg-secondary/20 flex items-center justify-center">
+                <Link2 size={16} className="text-secondary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-wide">Meu Link de Agendamento</h3>
+                <p className="text-[11px] text-white/40">Compartilhe com seus clientes</p>
+              </div>
+            </div>
+
+            <div className="bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 relative z-10">
+              <span className="text-[11px] text-white/50 truncate select-all font-mono block">
                 {shareUrl}
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 bg-[#1e1b4b]">
+            <div className="grid grid-cols-3 gap-2 relative z-10">
               <button
                 onClick={handleCopy}
                 className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-xs font-semibold text-white transition-all border border-white/5"
               >
                 <Copy size={14} className={linkCopied ? "text-green-400" : "text-white/70"} />
-                <span>{linkCopied ? 'Copiado! ✓' : 'Copiar'}</span>
+                <span>{linkCopied ? 'Copiado!' : 'Copiar'}</span>
               </button>
 
               <button
@@ -3488,6 +3494,55 @@ const RescheduleModal: React.FC<{
   );
 };
 
+const MyBookingLink: React.FC<{ slug: string; shopName?: string }> = ({ slug, shopName }) => {
+  const [copied, setCopied] = React.useState(false);
+  const link = `${window.location.origin}${window.location.pathname}#/agendar/${slug}`;
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Agende comigo!',
+        text: `Agende seu horário com ${shopName || 'meu salão'}`,
+        url: link,
+      });
+    } else {
+      handleCopy();
+    }
+  };
+
+  return (
+    <div className="bg-surface rounded-2xl border border-white/8 p-4 mb-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Link2 className="w-4 h-4 text-secondary" />
+        <span className="text-sm font-bold text-white">Meu Link de Agendamento</span>
+      </div>
+      <div className="bg-background rounded-xl px-3 py-2.5 mb-3 border border-white/10">
+        <p className="text-xs text-white/50 truncate">{link}</p>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={handleCopy}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border border-white/10 text-white hover:bg-white/5 transition-all active:scale-95">
+          {copied ? <><Check className="w-3.5 h-3.5 text-secondary" /> Copiado!</> : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
+        </button>
+        <button onClick={handleShare}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold bg-secondary/15 border border-secondary/30 text-secondary hover:bg-secondary/20 transition-all active:scale-95">
+          <Share2 className="w-3.5 h-3.5" /> Compartilhar
+        </button>
+        <button onClick={() => window.open(link, '_blank')}
+          className="w-10 flex items-center justify-center py-2.5 rounded-xl text-xs font-semibold border border-white/10 text-white/50 hover:bg-white/5 transition-all active:scale-95">
+          <ExternalLink className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const ProfileModal: React.FC<{ 
     onClose: () => void;
     onSuccess?: (msg: string) => void;
@@ -3560,6 +3615,12 @@ const ProfileModal: React.FC<{
                               </div>
                               <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
                           </div>
+                          
+                          {/* Meu Link de Agendamento */}
+                          {barberProfile.slug && (
+                            <MyBookingLink slug={barberProfile.slug} shopName={barberProfile.shopName} />
+                          )}
+
                           <Input label="Nome da Barbearia" value={formData.shopName} onChange={e => setFormData({...formData, shopName: e.target.value})} />
                           <Input label="Endereço" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} />
                           <Input label="Instagram (@)" value={formData.instagram || ''} onChange={e => setFormData({...formData, instagram: e.target.value})} />

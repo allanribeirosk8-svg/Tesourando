@@ -9,14 +9,14 @@ import { SplashScreen } from './components/SplashScreen';
 const AppContent: React.FC<{
   showSplash: boolean;
   appReady: boolean;
+  isClientRoute: boolean;
   onSplashComplete: () => void;
-}> = ({ showSplash, appReady, onSplashComplete }) => {
+}> = ({ showSplash, appReady, isClientRoute, onSplashComplete }) => {
   const { isLoading } = useStore();
-  const isClientRoute = window.location.hash.includes('/agendar');
 
   // If app is not ready yet or the context Store is still loading data,
   // we render a solid background using the exact background color of the splash screen
-  if (!appReady || (isLoading && !isClientRoute)) {
+  if (!isClientRoute && (!appReady || isLoading)) {
     return (
       <div 
         style={{ 
@@ -50,7 +50,7 @@ const App: React.FC = () => {
   const [appReady, setAppReady] = useState(false);
 
   return (
-    <AppProvider onReady={() => {
+    <AppProvider isPublicRoute={isClientRoute} onReady={() => {
       if (!isClientRoute && !sessionStorage.getItem('splashShown')) {
         setShowSplash(true);
       }
@@ -59,6 +59,7 @@ const App: React.FC = () => {
       <AppContent
         showSplash={showSplash}
         appReady={appReady}
+        isClientRoute={isClientRoute}
         onSplashComplete={() => {
           sessionStorage.setItem('splashShown', 'true');
           setShowSplash(false);

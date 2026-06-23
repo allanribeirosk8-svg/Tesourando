@@ -62,6 +62,7 @@ export interface BarberProfile {
   website?: string;
   working_hours?: Record<string, DaySchedule>;
   onboarding_seen?: boolean;
+  slug?: string;
 }
 
 export interface Transaction {

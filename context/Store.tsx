@@ -51,10 +51,15 @@ const DEFAULT_PROFILE: BarberProfile = {
   description: '',
   instagram: '',
   website: '',
-  onboarding_seen: false
+  onboarding_seen: false,
+  slug: ''
 };
 
-export const AppProvider: React.FC<{ children: ReactNode; onReady?: () => void }> = ({ children, onReady }) => {
+export const AppProvider: React.FC<{
+  children: ReactNode;
+  onReady?: () => void;
+  isPublicRoute?: boolean;
+}> = ({ children, onReady, isPublicRoute }) => {
   const isFirstLoad = useRef(true);
   const onReadyRef = useRef(onReady);
   useEffect(() => {
@@ -272,6 +277,15 @@ export const AppProvider: React.FC<{ children: ReactNode; onReady?: () => void }
 
   // Load from Supabase (Primary) and LocalStorage (Fallback/Cache)
   useEffect(() => {
+    if (isPublicRoute) {
+      setIsLoading(false);
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false;
+        onReadyRef.current?.();
+      }
+      return;
+    }
+
     if (isSupabaseConfigured()) {
       // Fetch initial session
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -302,7 +316,7 @@ export const AppProvider: React.FC<{ children: ReactNode; onReady?: () => void }
     } else {
       loadData();
     }
-  }, [loadData, resetStore]);
+  }, [loadData, resetStore, isPublicRoute]);
 
   // Supabase Realtime Subscription
   useEffect(() => {

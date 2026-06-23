@@ -68,7 +68,8 @@ export const supabaseService = {
         personalPhone: '',
         shopName: 'Meu Corte',
         businessPhone: '',
-        onboarding_seen: false
+        onboarding_seen: false,
+        slug: ''
       } as BarberProfile;
     }
     if (error) throw error;
@@ -86,7 +87,8 @@ export const supabaseService = {
       description: d.description,
       instagram: d.instagram,
       website: d.website,
-      onboarding_seen: d.onboarding_seen
+      onboarding_seen: d.onboarding_seen,
+      slug: d.slug
     } as BarberProfile;
   },
   async updateProfile(profile: BarberProfile) {
