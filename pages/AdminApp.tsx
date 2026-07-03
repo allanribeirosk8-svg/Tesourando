@@ -1028,7 +1028,7 @@ export const AdminApp: React.FC = () => {
         {activeTab !== 'agenda' && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
             <h2 className="text-lg font-bold uppercase tracking-tight text-white ">
-              {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : activeTab === 'configuracoes' ? 'Configurações' : activeTab === 'caixa' ? 'Financeiro' : 'Financeiro'}
+              {activeTab === 'clientes' ? 'Clientes' : activeTab === 'servicos' ? 'Serviços' : activeTab === 'configuracoes' ? 'Gestão' : activeTab === 'caixa' ? 'Financeiro' : 'Financeiro'}
             </h2>
           </div>
         )}
@@ -1194,7 +1194,7 @@ export const AdminApp: React.FC = () => {
               { id: 'servicos', label: 'Serviços', icon: Scissors, ariaLabel: 'Ir para Serviços' },
               { id: 'agenda', label: 'Agenda', icon: Calendar, ariaLabel: 'Ir para Agenda', isCenter: true },
               { id: 'caixa', label: 'Financeiro', icon: Wallet, ariaLabel: 'Ir para Financeiro' },
-              { id: 'configuracoes', label: 'Configurações', icon: Settings, ariaLabel: 'Ir para Configurações' },
+              { id: 'configuracoes', label: 'Gestão', icon: Settings, ariaLabel: 'Ir para Gestão' },
             ].map((item) => {
               const isActive = activeTab === item.id;
               

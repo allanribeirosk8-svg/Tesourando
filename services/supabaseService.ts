@@ -49,47 +49,52 @@ export const supabaseService = {
 
   // Profiles
   async getProfile(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return null;
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return null;
 
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (error && error.code === 'PGRST116') {
-      // Auto-create profile if missing
-      const userResult = await supabase.auth.getUser();
-      const user = userResult?.data?.user;
-      const newProfile = {
-        id: userId,
-        name: user?.user_metadata?.name || 'Barbeiro',
-        updated_at: new Date().toISOString()
-      };
-      await supabase.from('profiles').insert(newProfile as any);
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (error && error.code === 'PGRST116') {
+        // Auto-create profile if missing
+        const userResult = await supabase.auth.getUser();
+        const user = userResult?.data?.user;
+        const newProfile = {
+          id: userId,
+          name: user?.user_metadata?.name || 'Barbeiro',
+          updated_at: new Date().toISOString()
+        };
+        await supabase.from('profiles').insert(newProfile as any);
+        return {
+          name: newProfile.name,
+          personalPhone: '',
+          shopName: 'Meu Corte',
+          businessPhone: '',
+          onboarding_seen: false,
+          slug: ''
+        } as BarberProfile;
+      }
+      if (error) throw error;
+      if (!data) return null;
+
+      const d = data as any;
       return {
-        name: newProfile.name,
-        personalPhone: '',
-        shopName: 'Meu Corte',
-        businessPhone: '',
-        onboarding_seen: false,
-        slug: ''
+        name: d.name,
+        personalPhone: d.personal_phone || '',
+        photo: d.photo,
+        shopName: d.shop_name || 'Meu Corte',
+        businessPhone: d.business_phone || '',
+        address: d.address,
+        logo: d.logo,
+        description: d.description,
+        instagram: d.instagram,
+        website: d.website,
+        onboarding_seen: d.onboarding_seen,
+        slug: d.slug
       } as BarberProfile;
+    } catch (err) {
+      console.error('[getProfile] Erro ao carregar perfil:', err);
+      return null;
     }
-    if (error) throw error;
-    if (!data) return null;
-
-    const d = data as any;
-    return {
-      name: d.name,
-      personalPhone: d.personal_phone || '',
-      photo: d.photo,
-      shopName: d.shop_name || 'Meu Corte',
-      businessPhone: d.business_phone || '',
-      address: d.address,
-      logo: d.logo,
-      description: d.description,
-      instagram: d.instagram,
-      website: d.website,
-      onboarding_seen: d.onboarding_seen,
-      slug: d.slug
-    } as BarberProfile;
   },
   async updateProfile(profile: BarberProfile) {
     const userId = await this.getUserId();
@@ -125,33 +130,40 @@ export const supabaseService = {
 
   // Services
   async getServices(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    console.log('[getServices] buscando para userId:', userId);
+    try {
+      const userId = targetUserId || await this.getUserId();
+      console.log('[getServices] buscando para userId:', userId);
 
-    if (!userId) {
-      console.warn('[getServices] userId null - retornando []');
+      if (!userId) {
+        console.warn('[getServices] userId null - retornando []');
+        return [];
+      }
+
+      const { data, error } = await supabase.from('services').select('*').eq('user_id', userId).order('order_index', { ascending: true });
+      
+      if (error) {
+        console.error('[getServices] ERRO:', error);
+        return [];
+      }
+
+      console.log('[getServices] dados brutos do banco:', data);
+      console.log('[getServices] quantidade:', data?.length);
+
+      if (!data) return [];
+
+      const mapped = (data as any[]).map(s => ({
+        id: s.id,
+        name: s.name,
+        price: Number(s.price),
+        duration: s.duration
+      })) as ServiceItem[];
+      
+      console.log('[getServices] retornando:', mapped);
+      return mapped;
+    } catch (err) {
+      console.error('[getServices] Exception:', err);
       return [];
     }
-
-    const { data, error } = await supabase.from('services').select('*').eq('user_id', userId).order('order_index', { ascending: true });
-    
-    if (error) {
-      console.error('[getServices] ERRO:', error);
-      throw error;
-    }
-
-    console.log('[getServices] dados brutos do banco:', data);
-    console.log('[getServices] quantidade:', data?.length);
-
-    const mapped = (data as any[]).map(s => ({
-      id: s.id,
-      name: s.name,
-      price: Number(s.price),
-      duration: s.duration
-    })) as ServiceItem[];
-    
-    console.log('[getServices] retornando:', mapped);
-    return mapped;
   },
   async saveServices(services: ServiceItem[]) {
     console.log('[saveServices] INICIANDO', { services });
@@ -221,24 +233,30 @@ export const supabaseService = {
 
   // Customers
   async getCustomers(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return [];
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return [];
 
-    const { data, error } = await supabase.from('customers').select('*, customer_photos(*)').eq('user_id', userId);
-    if (error) throw error;
-    return (data as any[]).map(c => ({
-      phone: c.phone,
-      name: c.name,
-      avatar: c.avatar,
-      cutCount: c.cut_count,
-      noShowCount: c.no_show_count,
-      photos: (c.customer_photos || []).map((p: any) => ({
-        url: p.url,
-        description: p.description,
-        date: p.date ? p.date.substring(0, 10) : ''
-      })),
-      history: [] // History can be derived from appointments if needed, or stored separately
-    })) as Customer[];
+      const { data, error } = await supabase.from('customers').select('*, customer_photos(*)').eq('user_id', userId);
+      if (error) throw error;
+      if (!data) return [];
+      return (data as any[]).map(c => ({
+        phone: c.phone,
+        name: c.name,
+        avatar: c.avatar,
+        cutCount: c.cut_count,
+        noShowCount: c.no_show_count,
+        photos: (c.customer_photos || []).map((p: any) => ({
+          url: p.url,
+          description: p.description,
+          date: p.date ? p.date.substring(0, 10) : ''
+        })),
+        history: [] // History can be derived from appointments if needed, or stored separately
+      })) as Customer[];
+    } catch (err) {
+      console.error('[getCustomers] Erro ao carregar clientes:', err);
+      return [];
+    }
   },
   async saveCustomer(customer: Customer, targetUserId?: string) {
     const userId = targetUserId || await this.getUserId();
@@ -358,50 +376,62 @@ export const supabaseService = {
 
   // Appointments
   async getAppointments(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return [];
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return [];
 
-    const { data, error } = await supabase.from('appointments').select('*').eq('user_id', userId);
-    if (error) throw error;
-    return (data as any[]).map(a => ({
-      id: a.id,
-      date: a.date ? a.date.substring(0, 10) : '',
-      time: normalizeTime(a.time),
-      clientName: a.client_name,
-      phone: a.phone,
-      service: a.service,
-      price: Number(a.price),
-      duration: a.duration,
-      status: a.status,
-      observation: a.observation,
-      createdAt: new Date(a.created_at).getTime()
-    })) as Appointment[];
+      const { data, error } = await supabase.from('appointments').select('*').eq('user_id', userId);
+      if (error) throw error;
+      if (!data) return [];
+      return (data as any[]).map(a => ({
+        id: a.id,
+        date: a.date ? a.date.substring(0, 10) : '',
+        time: normalizeTime(a.time),
+        clientName: a.client_name,
+        phone: a.phone,
+        service: a.service,
+        price: Number(a.price),
+        duration: a.duration,
+        status: a.status,
+        observation: a.observation,
+        createdAt: new Date(a.created_at).getTime()
+      })) as Appointment[];
+    } catch (err) {
+      console.error('[getAppointments] Erro ao carregar agendamentos:', err);
+      return [];
+    }
   },
   async getAppointmentsByDate(date: string, targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return [];
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return [];
 
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('date', date)
-      .order('time', { ascending: true });
-    
-    if (error) throw error;
-    return (data as any[]).map(a => ({
-      id: a.id,
-      date: a.date ? a.date.substring(0, 10) : '',
-      time: normalizeTime(a.time),
-      clientName: a.client_name,
-      phone: a.phone,
-      service: a.service,
-      price: Number(a.price),
-      duration: a.duration,
-      status: a.status,
-      observation: a.observation,
-      createdAt: new Date(a.created_at).getTime()
-    })) as Appointment[];
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('date', date)
+        .order('time', { ascending: true });
+      
+      if (error) throw error;
+      if (!data) return [];
+      return (data as any[]).map(a => ({
+        id: a.id,
+        date: a.date ? a.date.substring(0, 10) : '',
+        time: normalizeTime(a.time),
+        clientName: a.client_name,
+        phone: a.phone,
+        service: a.service,
+        price: Number(a.price),
+        duration: a.duration,
+        status: a.status,
+        observation: a.observation,
+        createdAt: new Date(a.created_at).getTime()
+      })) as Appointment[];
+    } catch (err) {
+      console.error(`[getAppointmentsByDate] Erro ao carregar agendamentos da data ${date}:`, err);
+      return [];
+    }
   },
   async saveAppointment(appointment: Appointment, targetUserId?: string) {
     const userId = targetUserId || await this.getUserId();
@@ -454,23 +484,28 @@ export const supabaseService = {
 
   // Weekly Schedule
   async getWeeklySchedule(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return {};
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return {};
 
-    const { data: schedule, error: sError } = await supabase.from('weekly_schedule').select('*').eq('user_id', userId);
-    const { data: breaks, error: bError } = await supabase.from('weekly_breaks').select('*').eq('user_id', userId);
-    if (sError || bError) throw sError || bError;
+      const { data: schedule, error: sError } = await supabase.from('weekly_schedule').select('*').eq('user_id', userId);
+      const { data: breaks, error: bError } = await supabase.from('weekly_breaks').select('*').eq('user_id', userId);
+      if (sError || bError) throw sError || bError;
 
-    const result: Record<number, DayConfig> = {};
-    (schedule as any[])?.forEach(s => {
-      result[s.day_of_week] = {
-        start: normalizeTime(s.start_time),
-        end: normalizeTime(s.end_time),
-        isOpen: s.is_open,
-        breaks: (breaks as any[])?.filter(b => b.day_of_week === s.day_of_week).map(b => normalizeTime(b.time)) || []
-      };
-    });
-    return result;
+      const result: Record<number, DayConfig> = {};
+      (schedule as any[])?.forEach(s => {
+        result[s.day_of_week] = {
+          start: normalizeTime(s.start_time),
+          end: normalizeTime(s.end_time),
+          isOpen: s.is_open,
+          breaks: (breaks as any[])?.filter(b => b.day_of_week === s.day_of_week).map(b => normalizeTime(b.time)) || []
+        };
+      });
+      return result;
+    } catch (err) {
+      console.error('[getWeeklySchedule] Erro ao carregar agenda semanal:', err);
+      return {};
+    }
   },
   async saveWeeklySchedule(day: number, config: DayConfig) {
     const userId = await this.getUserId();
@@ -514,17 +549,23 @@ export const supabaseService = {
 
   // Blocked/Unblocked Slots
   async getBlockedSlots(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return {};
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return {};
 
-    const { data, error } = await supabase.from('blocked_slots').select('*').eq('user_id', userId);
-    if (error) throw error;
-    const result: Record<string, string[]> = {};
-    (data as any[])?.forEach(s => {
-      if (!result[s.date]) result[s.date] = [];
-      result[s.date].push(normalizeTime(s.time));
-    });
-    return result;
+      const { data, error } = await supabase.from('blocked_slots').select('*').eq('user_id', userId);
+      if (error) throw error;
+      if (!data) return {};
+      const result: Record<string, string[]> = {};
+      (data as any[])?.forEach(s => {
+        if (!result[s.date]) result[s.date] = [];
+        result[s.date].push(normalizeTime(s.time));
+      });
+      return result;
+    } catch (err) {
+      console.error('[getBlockedSlots] Erro ao carregar horários bloqueados:', err);
+      return {};
+    }
   },
   async saveBlockedSlot(date: string, time: string, isBlocked: boolean) {
     const userId = await this.getUserId();
@@ -537,17 +578,23 @@ export const supabaseService = {
     }
   },
   async getUnblockedSlots(targetUserId?: string) {
-    const userId = targetUserId || await this.getUserId();
-    if (!userId) return {};
+    try {
+      const userId = targetUserId || await this.getUserId();
+      if (!userId) return {};
 
-    const { data, error } = await supabase.from('unblocked_slots').select('*').eq('user_id', userId);
-    if (error) throw error;
-    const result: Record<string, string[]> = {};
-    (data as any[])?.forEach(s => {
-      if (!result[s.date]) result[s.date] = [];
-      result[s.date].push(normalizeTime(s.time));
-    });
-    return result;
+      const { data, error } = await supabase.from('unblocked_slots').select('*').eq('user_id', userId);
+      if (error) throw error;
+      if (!data) return {};
+      const result: Record<string, string[]> = {};
+      (data as any[])?.forEach(s => {
+        if (!result[s.date]) result[s.date] = [];
+        result[s.date].push(normalizeTime(s.time));
+      });
+      return result;
+    } catch (err) {
+      console.error('[getUnblockedSlots] Erro ao carregar horários desbloqueados:', err);
+      return {};
+    }
   },
   async saveUnblockedSlot(date: string, time: string, isUnblocked: boolean) {
     const userId = await this.getUserId();
