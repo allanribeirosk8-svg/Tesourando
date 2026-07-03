@@ -14,8 +14,18 @@ const AppContent: React.FC<{
 }> = ({ showSplash, appReady, isClientRoute, onSplashComplete }) => {
   const { isLoading } = useStore();
 
-  // If app is not ready yet or the context Store is still loading data,
-  // we render a solid background using the exact background color of the splash screen
+  // Se o splash screen deve ser mostrado, nós o renderizamos imediatamente.
+  // Ele ficará estático na fase 'bridge' até que os dados estejam prontos (appReady e !isLoading).
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        isReady={appReady && !isLoading} 
+        onComplete={onSplashComplete} 
+      />
+    );
+  }
+
+  // Fallback de segurança para carregamento caso o splash não esteja ativo e os dados ainda estejam carregando
   if (!isClientRoute && (!appReady || isLoading)) {
     return (
       <div 
@@ -27,10 +37,6 @@ const AppContent: React.FC<{
         }} 
       />
     );
-  }
-
-  if (showSplash) {
-    return <SplashScreen onComplete={onSplashComplete} />;
   }
 
   return (
@@ -46,14 +52,12 @@ const AppContent: React.FC<{
 
 const App: React.FC = () => {
   const isClientRoute = window.location.hash.includes('/agendar');
-  const [showSplash, setShowSplash] = useState(false);
+  const shouldShowSplash = !isClientRoute && !sessionStorage.getItem('splashShown');
+  const [showSplash, setShowSplash] = useState(!!shouldShowSplash);
   const [appReady, setAppReady] = useState(false);
 
   return (
     <AppProvider isPublicRoute={isClientRoute} onReady={() => {
-      if (!isClientRoute && !sessionStorage.getItem('splashShown')) {
-        setShowSplash(true);
-      }
       setAppReady(true);
     }}>
       <AppContent
