@@ -54,7 +54,7 @@ export function SplashScreen({ onComplete, isReady = true }: SplashScreenProps) 
 
   return (
     <motion.div
-      className="fixed inset-0 bg-[#F97316] flex items-center justify-center z-50 origin-center"
+      className="fixed inset-0 bg-[#1E1B4B] flex items-center justify-center z-50 origin-center"
       initial={{ opacity: 1, scale: 1 }}
       animate={
         phase === 'exit'

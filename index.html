@@ -69,7 +69,14 @@
 <link rel="stylesheet" href="/index.css">
 </head>
 <body style="background-color: #1E1B4B; margin: 0;">
-  <div id="root"></div>
+  <div id="root">
+    <!-- Splash estático para transição visual idêntica (evita que a logo suma no carregamento do React) -->
+    <div style="background-color: #1E1B4B; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div style="width: 192px; height: 192px; display: flex; align-items: center; justify-content: center;">
+        <img src="/logosemfundo-512.png" alt="Meu Corte" style="width: 100%; height: 100%; object-fit: contain;" />
+      </div>
+    </div>
+  </div>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>

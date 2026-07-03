@@ -32,7 +32,7 @@ const AppContent: React.FC<{
         style={{ 
           position: 'fixed', 
           inset: 0, 
-          backgroundColor: '#F97316',
+          backgroundColor: '#1E1B4B',
           zIndex: 9999 
         }} 
       />
