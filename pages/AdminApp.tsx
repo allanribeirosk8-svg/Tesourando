@@ -562,7 +562,7 @@ const AuthScreen: React.FC<{ onAuthenticated: () => void, initialView?: 'login' 
         {/* Logo */}
         <div className="relative z-10 flex flex-col items-center justify-center">
           <img 
-            src="/logo.png" 
+            src="/logo512.svg" 
             alt="Logo" 
             className="w-32 h-32 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]" 
           />
